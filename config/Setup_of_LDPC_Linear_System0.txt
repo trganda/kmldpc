@@ -1,0 +1,16 @@
+minimum_snr
+50.0
+maximum_snr
+50.0
+increment_snr
+1
+maximum_error_number
+50
+maximum_block_number
+100
+
+CodesetupFile
+Setup_of_Codec.txt
+
+ModemsetupFile
+Setup_of_Modem.txt

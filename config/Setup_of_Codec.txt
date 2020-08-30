@@ -1,0 +1,7 @@
+RanXORLDPC***0***PARAMETERS
+num_Extrabits
+16
+list_Size
+7
+LDPCCodesetupFile
+LDPC.txt
