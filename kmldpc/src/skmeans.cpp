@@ -1,7 +1,3 @@
-//
-// Created by Jong on 2020/8/29.
-//
-
 #include "skmeans.h"
 
 #include <utility>

@@ -1,13 +1,13 @@
 #ifndef MODEM_H
 #define MODEM_H
-#include "stdafx.h"
+
+#include <iostream>
+#include <complex>
+#include <vector>
 
 class CModem
 {
 public:
-	CModem();
-	~CModem();
-
 	int num_symbol{};
 	int len_input{};
 	int len_output{};

@@ -5,13 +5,11 @@
 #include "utility.h"
 #include "linear_system.h"
 #include <complex>
+#include <cstring>
 
 class Modem_Linear_System
 {
 public:
-	Modem_Linear_System(void);
-	~Modem_Linear_System(void);
-
 	int m_len_cc;
 	int m_len_xx;
 

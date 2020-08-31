@@ -4,10 +4,10 @@
 cmake_minimum_required (VERSION 3.8)
 
 # include src
-include_directories(src)
+include_directories(src, include)
 
 aux_source_directory(src SRC)
 
 # Add source to this project's executable.
-add_executable (kmldpc "kmldpc.cpp" "kmldpc.h" ${SRC} src/skmeans.cpp src/skmeans.h)
+add_executable (kmldpc "kmldpc.cpp" ${SRC})
 # TODO: Add tests and install targets if needed.

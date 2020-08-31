@@ -1,13 +1,6 @@
 #include "modem.h"
 #include "utility.h"
 
-CModem::CModem()
-{
-}
-
-CModem::~CModem()
-= default;
-
 void CModem::Malloc(int code_no, char *file_name)
 {
 	int i, j;
@@ -17,7 +10,7 @@ void CModem::Malloc(int code_no, char *file_name)
 	double energy;
 	FILE *fp;
 
-	if ((fp = fopen(file_name, "r")) == NULL)
+	if ((fp = fopen(file_name, "r")) == nullptr)
 	{
 		fprintf(stderr, "\nCannot open %s", file_name);
 		exit(3);

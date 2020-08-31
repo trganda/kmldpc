@@ -1,6 +1,12 @@
 #ifndef RAND_NUM_H
 #define RAND_NUM_H
 
+#include <cstdio>
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+#include <cmath>
+
 class CRandNum  
 {
 public:

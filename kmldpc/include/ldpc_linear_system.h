@@ -5,7 +5,6 @@
 #include "xorseg_codec.h"
 #include "modem_linear_system.h"
 #include "skmeans.h"
-#include "stdafx.h"
 #include "randnum.h"
 #include <complex>
 #include <algorithm>

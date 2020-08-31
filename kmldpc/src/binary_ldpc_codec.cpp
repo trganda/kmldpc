@@ -4,12 +4,6 @@
 
 extern CLCRandNum rndGen0;
 
-CBinaryLDPCCodec::CBinaryLDPCCodec()
-= default;
-
-CBinaryLDPCCodec::~CBinaryLDPCCodec()
-= default;
-
 void CBinaryLDPCCodec::Malloc(int code_no, char *file_name)
 {	
 	int i, j;

@@ -1,14 +1,12 @@
 #ifndef KMLDPC_SKMEANS_H
 #define KMLDPC_SKMEANS_H
 
-
 #include <vector>
 #include <complex>
 #include <algorithm>
 
 class SKMeans {
 public:
-    SKMeans() = default;
     explicit SKMeans(std::vector<std::complex<double>> data, std::vector<std::complex<double>> constellations, int iter);
     ~SKMeans() = default;
 

@@ -7,10 +7,6 @@
 class XORSegCodec
 {
 public:
-	XORSegCodec(){};
-	~XORSegCodec(){};
-
-public:
 	void Malloc(int code_no, const char *file_name);
 	void Free();
 

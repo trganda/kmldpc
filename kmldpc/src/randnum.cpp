@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "randnum.h"
 
 const int CLCRandNum::A = 48271;
@@ -24,15 +23,11 @@ void CLCRandNum::SetSeed(int flag)
 		fprintf(stdout, "\nEnter the initial state: ");
 		fscanf(stdin, "%ld", &state);
 	}
-
-	return;
 }
 
 void CLCRandNum::PrintState(FILE *fp)
 {
 	fprintf(fp, "\n***init_state = %ld***\n", state);
-
-	return;
 }
 
 double CLCRandNum::Uniform()
@@ -87,8 +82,6 @@ void CLCRandNum::Normal(double *nn, int len_nn)
 
 		nn[len_nn - 1] = x1 * w;
 	}
-
-	return;
 }
 
 void CLCRandNum::Normal(std::vector<double> &nn)
@@ -130,7 +123,6 @@ void CLCRandNum::Normal(std::vector<double> &nn)
 		nn[len_nn - 1] = x1 * w;
 	}
 
-	return;
 }
 
 void CWHRandNum::SetSeed(int flag)
@@ -160,14 +152,11 @@ void CWHRandNum::SetSeed(int flag)
 		fscanf(stdin, "%d %d %d", &X, &Y, &Z);
 	}
 
-	return;
 }
 
 void CWHRandNum::PrintState(FILE *fp)
 {
 	fprintf(fp, "\n***init_state (X Y Z) = %d %d %d***\n", X, Y, Z);
-
-	return;
 }
 
 double CWHRandNum::Uniform()
@@ -221,6 +210,4 @@ void CWHRandNum::Normal(double *nn, int len_nn)
 
 		nn[len_nn - 1] = x1 * w;
 	}
-
-	return;
 }

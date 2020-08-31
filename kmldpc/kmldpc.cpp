@@ -1,5 +1,4 @@
-﻿#include "stdafx.h"
-#include "randnum.h"
+﻿#include "randnum.h"
 #include "ldpc_linear_system.h"
 #include <iostream>
 

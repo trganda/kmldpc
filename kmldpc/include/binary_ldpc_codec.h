@@ -1,6 +1,8 @@
 #ifndef BINARY_LDPC_CODEC_H
 #define BINARY_LDPC_CODEC_H
-#include "stdafx.h"
+
+#include <cstdio>
+#include <cstring>
 /**********************************************************
 类名: Edge
 功能: Tanner图上的边
@@ -31,9 +33,7 @@ typedef struct Edge
 class CBinaryLDPCCodec  
 {
 public:
-	CBinaryLDPCCodec();
-	virtual ~CBinaryLDPCCodec();
-	                         
+
 //code parameters
 	int m_codedim;//码的维数
 	int m_codelen;//码的长度

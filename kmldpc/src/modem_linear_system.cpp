@@ -1,19 +1,8 @@
-#include "stdafx.h"
 #include "modem_linear_system.h"
 #include "randnum.h"
 
 extern CLCRandNum rndGen0;
 extern CWHRandNum rndGen1;
-Modem_Linear_System::Modem_Linear_System(void)
-{
-}
-
-
-Modem_Linear_System::~
-	Modem_Linear_System(void)
-{
-}
-
 
 void Modem_Linear_System::Malloc(int len_cc, int code_no, char *file_name)
 {

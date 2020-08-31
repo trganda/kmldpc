@@ -7,9 +7,6 @@
 class Linear_System
 {
 public:
-	Linear_System(void);
-	~Linear_System(void);
-
 	double sigma;
 	double var;
 

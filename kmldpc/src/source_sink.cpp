@@ -1,16 +1,7 @@
-#include "stdafx.h"
 #include "source_sink.h"
 #include "randnum.h"
 
 extern CLCRandNum rndGen0;
-
-CSourceSink::CSourceSink()
-{
-}
-
-CSourceSink::~CSourceSink()
-= default;
-
 
 void CSourceSink::GetBitStr(int *uu, int len)
 {

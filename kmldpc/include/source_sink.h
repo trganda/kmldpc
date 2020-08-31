@@ -7,8 +7,6 @@
 class CSourceSink  
 {
 public:
-	CSourceSink();
-	virtual ~CSourceSink();
 
 	double m_num_tot_blk{};
 	double m_num_tot_bit{};
