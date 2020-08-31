@@ -10,46 +10,56 @@ namespace kmldpc
     }
 
     std::ostream& Log::getStream() {
-        return *m_logStream;
+        return *_logStream;
+    }
+
+    std::string Log::getCurrentSystemTime() {
+        std::time_t secSinceEpoch = std::chrono::system_clock::to_time_t(
+                std::chrono::system_clock::now());
+        struct tm* calendarTime = localtime(&secSinceEpoch);
+        char usrdefFormat[50] = { 0 };
+        strftime(usrdefFormat, 50,
+                "%Y-%m-%d %H:%M:%S", calendarTime);
+        return std::string(usrdefFormat);
     }
 
     void Log::setLogStream(std::ostream &stream) {
-        this->m_logStream = &stream;
+        this->_logStream = &stream;
     }
 
     Log& Log::setLevel(Level level) {
-        m_logLevel = level;
+        _logLevel = level;
         return *this;
     }
 
     Level Log::getLevel() {
-        return m_logLevel;
+        return _logLevel;
     }
 
     TeeBuf::TeeBuf(std::streambuf *sbtofile, std::streambuf *sbtoscreen) :
-        m_sbtofile(sbtofile),
-        m_sbtoscreen(sbtoscreen)
+            _sbtofile(sbtofile),
+            _sbtoscreen(sbtoscreen)
     {}
 
     int TeeBuf::overflow(int c) {
         if (c == EOF) {
             return !EOF;
         } else {
-            const int r1 = m_sbtofile->sputc(c);
-            const int r2 = m_sbtoscreen->sputc(c);
+            const int r1 = _sbtofile->sputc(c);
+            const int r2 = _sbtoscreen->sputc(c);
             return r1 == EOF || r2 == EOF ? EOF : c;
         }
     }
 
     int TeeBuf::sync() {
-        const int r1 = m_sbtofile->pubsync();
-        const int r2 = m_sbtoscreen->pubsync();
+        const int r1 = _sbtofile->pubsync();
+        const int r2 = _sbtoscreen->pubsync();
         return r1 == 0 && r2 == 0 ? 0 : -1;
     }
 
     TeeStream::TeeStream(std::ostream &o1, std::ostream &o2) :
-        std::ostream(&m_tbuf),
-        m_tbuf(o1.rdbuf(), o2.rdbuf())
+            std::ostream(&_tbuf),
+            _tbuf(o1.rdbuf(), o2.rdbuf())
     {}
 
 }

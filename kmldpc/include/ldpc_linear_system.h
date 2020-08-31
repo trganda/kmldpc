@@ -4,7 +4,7 @@
 #include "source_sink.h"
 #include "xorseg_codec.h"
 #include "modem_linear_system.h"
-#include "skmeans.h"
+#include "KMeans.h"
 #include "randnum.h"
 #include <complex>
 #include <algorithm>

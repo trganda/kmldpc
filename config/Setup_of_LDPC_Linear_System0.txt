@@ -1,7 +1,7 @@
 minimum_snr
-50.0
+15.0
 maximum_snr
-50.0
+15.0
 increment_snr
 1
 maximum_error_number

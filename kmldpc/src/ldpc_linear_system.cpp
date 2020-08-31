@@ -200,44 +200,10 @@ void LDPC_Linear_System::Simulator()
 			// Get received symbols
 			auto receivedSymbols = Modem_Lin_Sym.getRSymbol();
 			// KMeans
-			SKMeans kmeans = SKMeans(std::move(receivedSymbols), std::move(constellations), 20);
+			kmldpc::KMeans kmeans = kmldpc::KMeans(receivedSymbols, constellations, 20);
 			kmeans.run();
 			auto clusters = kmeans.getClusters();
 			auto idx = kmeans.getIdx();
-			// Record to file
-			//std::ofstream file;
-			//std::string filename = "RECEIVED_SYMBOL_SNR_" +
-			//	std::to_string(snr) + "_ID_" +
-			//	std::to_string(int(m_source_sink.m_num_tot_blk)) + ".csv";
-			//std::cout << "[Info] Writing received symbols to " << filename << std::endl;
-			//file.open(filename);
-
-			//file << "Received Symbols" << std::endl;
-			//for (auto _item : receivedSymbols) {
-			//	string postive = _item.imag() > 0.0 ? "+" : "";
-			//	file << std::to_string(_item.real()) + postive + std::to_string(_item.imag()) + 'i' << std::endl;
-			//}
-
-			//file << "Clusters" << std::endl;
-			//for (auto _item : clusters) {
-			//	string postive = _item.imag() > 0.0 ? "+" : "";
-			//	file << std::to_string(_item.real()) + postive + std::to_string(_item.imag()) + 'i' << std::endl;
-			//}
-
-			//file << "True H" << std::endl;
-			//for (auto _item : constellations) {
-			//	_item *= trueH;
-			//	string postive = _item.imag() > 0.0 ? "+" : "";
-			//	file << std::to_string(_item.real()) + postive + std::to_string(_item.imag()) + 'i' << std::endl;
-			//}
-
-			//file << "Idx" << std::endl;
-			//for (auto _item : idx) {
-			//	file << _item + 1 << std::endl;
-			//}
-
-			//std::cout << "[Info] Done." << std::endl;
-			//file.close();
 
 			// Get H hat
 			//std::complex<double> hHat = trueH;
@@ -252,39 +218,10 @@ void LDPC_Linear_System::Simulator()
 			m_source_sink.CntErr(m_uu, m_uu_hat, m_codec.m_len_uu, 1);
 
 			if (m_source_sink.m_num_err_blk > current_error_blk) {
-				std::ofstream file;
 				std::string filename = "RECEIVED_SYMBOL_SNR_" +
 					std::to_string(snr) + "_ID_" +
-					std::to_string(int(m_source_sink.m_num_tot_blk)) + ".csv";
-				std::cout << "[Info] Writing received symbols to " << filename << std::endl;
-				file.open(filename);
-
-				file << "Received Symbols" << std::endl;
-				for (auto _item : receivedSymbols) {
-					std::string postive = _item.imag() > 0.0 ? "+" : "";
-					file << std::to_string(_item.real()) + postive + std::to_string(_item.imag()) + 'i' << std::endl;
-				}
-
-				file << "Clusters" << std::endl;
-				for (auto _item : clusters) {
-					std::string postive = _item.imag() > 0.0 ? "+" : "";
-					file << std::to_string(_item.real()) + postive + std::to_string(_item.imag()) + 'i' << std::endl;
-				}
-
-				file << "True H" << std::endl;
-				for (auto _item : constellations) {
-					_item *= trueH;
-					std::string postive = _item.imag() > 0.0 ? "+" : "";
-					file << std::to_string(_item.real()) + postive + std::to_string(_item.imag()) + 'i' << std::endl;
-				}
-
-				file << "Idx" << std::endl;
-				for (auto _item : idx) {
-					file << _item + 1 << std::endl;
-				}
-
-				std::cout << "[Info] Done." << std::endl;
-				file.close();
+					std::to_string(int(m_source_sink.m_num_tot_blk)) + ".mat";
+                kmeans.dumpToMat(filename, trueH);
 			}
 
 			std::cout << "[Info] SNR = " << snr << std::endl;
@@ -294,7 +231,7 @@ void LDPC_Linear_System::Simulator()
 			{
 				fprintf(stdout, "\nsnr = %lf:\n", snr);
 				m_source_sink.PrintResult(stdout);
-				if ((fp = fopen("temp_result.txt", "w+")) == NULL)
+				if ((fp = fopen("temp_result.txt", "w+")) == nullptr)
 				{
 					fprintf(stderr, "\n Cannot open the file!!!\n");
 					exit(1);

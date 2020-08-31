@@ -5,6 +5,8 @@
 #include <fstream>
 #include <memory>
 #include <cstring>
+#include <chrono>
+#include <ctime>
 
 #ifndef __FILENAME__
 #define __FILENAME__ __FILE__
@@ -12,7 +14,8 @@
 
 #define LOG(level) \
 if (level > kmldpc::Log::get().getLevel()) ; \
-else kmldpc::Log::get().getStream() << '[' << __FILENAME__ << ":" << std::dec << __LINE__ << "] "
+else kmldpc::Log::get().getStream() << '[' << kmldpc::Log::get().getCurrentSystemTime() << ']' \
+<< '[' << __FILENAME__ << ':' << std::dec << __LINE__ << "] "
 
 namespace kmldpc
 {
@@ -33,11 +36,12 @@ namespace kmldpc
         Level getLevel();
 
         std::ostream& getStream();
+        std::string getCurrentSystemTime();
 
         static Log& get();
     private:
-        Level m_logLevel;
-        std::ostream* m_logStream;
+        Level _logLevel;
+        std::ostream* _logStream;
     };
     //Courtesy of http://wordaligned.org/articles/cpp-streambufs#toctee-streams
     class TeeBuf : public std::streambuf
@@ -53,8 +57,8 @@ namespace kmldpc
         // Sync both teed buffers.
         virtual int sync();
     private:
-        std::streambuf* m_sbtofile;
-        std::streambuf* m_sbtoscreen;
+        std::streambuf* _sbtofile;
+        std::streambuf* _sbtoscreen;
     };
 
     class TeeStream : public std::ostream
@@ -62,7 +66,7 @@ namespace kmldpc
     public:
         TeeStream(std::ostream& o1, std::ostream& o2);
     private:
-        TeeBuf m_tbuf;
+        TeeBuf _tbuf;
     };
 }
 
