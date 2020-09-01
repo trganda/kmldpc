@@ -9,7 +9,8 @@ CWHRandNum rndGen1;
 
 int main(int argc, char* argv[])
 {
-    std::ofstream logFile("kmldpc.log");
+    std::string logFileName = kmldpc::Log::get().getCurrentSystemTime() + "-kmldpc.log";
+    std::ofstream logFile(logFileName);
     kmldpc::TeeStream logTee (logFile, std::cout);
 
     if (logFile.is_open() && logFile.good())
@@ -25,12 +26,12 @@ int main(int argc, char* argv[])
     flag1 = 0;
     rndGen1.SetSeed(flag1);
 
-    std::cout << "[Info] Start simulation" << std::endl;
+    kmldpc::Log::get().setLevel(kmldpc::Info);
+    LOG(kmldpc::Info) << "Start simulation" << std::endl;
 
     LDPC_Linear_System sim_ldpc;
     sim_ldpc.Simulator();
-
-    std::cout << "[Info] Simulation done" << std::endl;
+    LOG(kmldpc::Info) << "Simulation done" << std::endl;
 
     return 0;
 }

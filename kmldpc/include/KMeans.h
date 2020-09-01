@@ -21,7 +21,7 @@ namespace kmldpc {
 
         void run();
 
-        void dumpToMat(std::string& filename, std::complex<double>& append);
+        void dumpToMat(std::string& filename, std::vector<std::complex<double>>& append);
 
     private:
         const std::vector<std::complex<double>> _data;

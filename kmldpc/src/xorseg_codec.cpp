@@ -104,17 +104,18 @@ void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system, std::vector<
 void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &hHats, int *uu_hat)
 {
 	std::vector<int> parityResults(hHats.size());
+    std::vector<std::pair<int, std::complex<double>>> temp;
 	for (int i = 0; i < parityResults.size(); i++)
 	{
-		std::vector<std::pair<int, std::complex<double>>> temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
+		temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
 		Demmaping(modem_linear_system, temp);
 		parityResults[i] = getParityCheck();
-		//std::cout << "[Info] Hhat = " << hHats[i] << ", Paritycount = " << parityResults[i] << std::endl;
+		LOG(kmldpc::Info) << "Hhat = " << hHats[i] << "Parity Count = " << parityResults[i] << std::endl;
 	}
 
 	auto minIndex = std::distance(parityResults.begin(), min_element(parityResults.begin(), parityResults.end()));
-	std::cout << "[Info] minIndex = " << minIndex << std::endl;
-	std::vector<std::pair<int, std::complex<double>>> temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
+    LOG(kmldpc::Info) << "minIndex = " << minIndex << std::endl;
+	temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
 	Demmaping(modem_linear_system, temp);
 
 	m_LDPC_codec.Decoder(bitLout, uu_hat);

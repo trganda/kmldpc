@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 #include <fstream>
+#include <iomanip>
 
 
 class LDPC_Linear_System  

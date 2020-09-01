@@ -3,6 +3,8 @@
 
 #include <complex>
 #include <vector>
+#include <iomanip>
+#include "Log.h"
 
 class CSourceSink  
 {
@@ -21,6 +23,7 @@ public:
 	void GetSymStr(int *uu, int qary, int len);
 	void ClrCnt();
 	void CntErr(int *uu, int *uu_hat, int len, int accumulator);
+    void PrintResult() const;
 	void PrintResult(FILE *fp) const;
 };
 

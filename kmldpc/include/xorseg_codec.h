@@ -3,6 +3,7 @@
 
 #include "binary_ldpc_codec.h"
 #include "modem_linear_system.h"
+#include "Log.h"
 
 class XORSegCodec
 {

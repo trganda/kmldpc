@@ -1,4 +1,5 @@
 ﻿#include "ldpc_linear_system.h"
+#include "Log.h"
 
 extern CLCRandNum rndGen0;
 extern CWHRandNum rndGen1;
@@ -44,7 +45,7 @@ void LDPC_Linear_System::StartSimulator()
 	fscanf(fp, "%s", modem_file);
 	fclose(fp);
 
-	if ((fp = fopen("snrresult.txt", "a+")) == NULL)
+	if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
 	{
 		fprintf(stderr, "\n Cannot open the file!!!\n");
 		exit(1);
@@ -52,7 +53,7 @@ void LDPC_Linear_System::StartSimulator()
 
 	fprintf(fp, "\n\n*** *** *** *** *** *** ***");
 	fprintf(fp, "\nStart Time: ");
-	loctime = time(NULL);
+	loctime = time(nullptr);
 	ptr = localtime(&loctime);
 	fprintf(fp, asctime(ptr));
 	fprintf(fp, "\n The results correspond to %s", file_name);
@@ -81,9 +82,14 @@ void LDPC_Linear_System::StartSimulator()
 	//fprintf(stdout, "\n max_blk_err : %d", m_max_blk_err);
 	//fprintf(stdout, "\n max_blk_num : %d\n", m_max_blk_num);
 	//Modem_Lin_Sym.m_modem.PrintCodeParameter(stdout);
+    LOG(kmldpc::Info) << '[' << std::fixed << std::setprecision(3)
+                           << m_min_snr << ','
+                           << m_inc_snr << ','
+                           << m_max_snr
+                           << ']' << std::endl;
 
 	//输出仿真参数到文件
-	if ((fp = fopen("snrresult.txt", "a+")) == NULL) {
+	if ((fp = fopen("snrresult.txt", "a+")) == nullptr) {
 		fprintf(stderr, "\n Cannot open the file!!!\n");
 		exit(1);
 	}
@@ -93,7 +99,7 @@ void LDPC_Linear_System::StartSimulator()
 	Modem_Lin_Sym.m_modem.PrintCodeParameter(fp);
 	fclose(fp);
 
-	if ((fp = fopen("snrber.txt", "a+")) == NULL) {
+	if ((fp = fopen("snrber.txt", "a+")) == nullptr) {
 		fprintf(stderr, "\n Cannot open the file!!!\n");
 		exit(1);
 	}
@@ -103,7 +109,7 @@ void LDPC_Linear_System::StartSimulator()
 	Modem_Lin_Sym.m_modem.PrintCodeParameter(fp);
 	fclose(fp);
 
-	if ((fp = fopen("snrfer.txt", "a+")) == NULL) {
+	if ((fp = fopen("snrfer.txt", "a+")) == nullptr) {
 		fprintf(stderr, "\n Cannot open the file!!!\n");
 		exit(1);
 	}
@@ -164,7 +170,7 @@ void LDPC_Linear_System::Simulator()
 		Modem_Lin_Sym.Lin_Sym.sigma = sigma;
 		Modem_Lin_Sym.Lin_Sym.var = var; 
 
-		std::cout << "[Info] SNR = " << snr << std::endl;
+		LOG(kmldpc::Info) << "SNR = " << snr << std::endl;
 
 		m_source_sink.ClrCnt();
 		m_source_extrabits.ClrCnt();
@@ -186,7 +192,7 @@ void LDPC_Linear_System::Simulator()
 
 			std::complex<double> trueH(real, imag);
 			trueH *= sqrt(0.5);
-			std::cout << "[Info] Generated H = " << trueH << std::endl;
+			LOG(kmldpc::Info) << "Generated H = " << trueH << std::endl;
 			std::vector<std::complex<double>> selecth(1);
 			for (auto & i : selecth) {
 				i = trueH;
@@ -194,7 +200,6 @@ void LDPC_Linear_System::Simulator()
 
 			// Modulation and pass through the channel
 			Modem_Lin_Sym.modem_linear_system_parition(m_cc, selecth);
-
 			// Get constellation
 			auto constellations = Modem_Lin_Sym.Lin_Sym.m_modem->getConstellation();
 			// Get received symbols
@@ -206,7 +211,7 @@ void LDPC_Linear_System::Simulator()
 			auto idx = kmeans.getIdx();
 
 			// Get H hat
-			//std::complex<double> hHat = trueH;
+			// std::complex<double> hHat = trueH;
 			std::complex<double> hHat = clusters[0] / constellations[0];
 			std::vector<std::complex<double>> hHats(4);
 			for (int i = 0; i < hHats.size(); i++) {
@@ -221,30 +226,15 @@ void LDPC_Linear_System::Simulator()
 				std::string filename = "RECEIVED_SYMBOL_SNR_" +
 					std::to_string(snr) + "_ID_" +
 					std::to_string(int(m_source_sink.m_num_tot_blk)) + ".mat";
-                kmeans.dumpToMat(filename, trueH);
+				hHats.push_back(trueH);
+                kmeans.dumpToMat(filename, hHats);
+                LOG(kmldpc::Info) << "Wrote error case to " << filename << std::endl;
 			}
 
-			std::cout << "[Info] SNR = " << snr << std::endl;
-			m_source_sink.PrintResult(stdout);
-
-			//if ((int)m_source_sink.m_num_tot_blk % 100 == 1 || m_source_sink.m_temp_err != 0)
-			{
-				fprintf(stdout, "\nsnr = %lf:\n", snr);
-				m_source_sink.PrintResult(stdout);
-				if ((fp = fopen("temp_result.txt", "w+")) == nullptr)
-				{
-					fprintf(stderr, "\n Cannot open the file!!!\n");
-					exit(1);
-				}
-				fprintf(fp, "\nsnr = %lf: var = %lf: \n", snr, var);
-				m_source_sink.PrintResult(fp);
-				fclose(fp);
-			}
+			m_source_sink.PrintResult();
 		}
 
-		fprintf(stdout, "\n*** *** *** *** ***\n");
-		m_source_sink.PrintResult(stdout);
-		fprintf(stdout, "\n*** *** *** *** ***\n\n");
+		m_source_sink.PrintResult();
 
 		if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
 		{
@@ -278,11 +268,6 @@ void LDPC_Linear_System::Simulator()
 			fprintf(stderr, "\n Cannot open the file!!!\n");
 			exit(1);
 		}
-		fprintf(fp, "\n\n****************   FINISH   *********************\n");
-		fprintf(fp, "finish time: ");
-		loctime = time(nullptr);
-		ptr = localtime(&loctime);
-		fprintf(fp, asctime(ptr));
 		fclose(fp);
 
 	}

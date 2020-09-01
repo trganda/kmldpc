@@ -28,11 +28,15 @@ namespace kmldpc {
         }
 
         std::vector<std::complex<double>> tempClusters(_clusters.size());
+        std::vector<int> idxCount(_clusters.size());
+        std::vector<std::complex<double>> idxSum(_clusters.size());
         for (int i = 0; i < _iter; i++) {
-            std::vector<int> idxCount(_clusters.size());
-            std::vector<std::complex<double>> idxSum(_clusters.size());
+//            std::fill(idxCount.begin(), idxCount.end(), 0);
+//            std::fill(idxSum.begin(), idxSum.end(), 0);
+            idxCount.clear();
+            idxSum.clear();
+            std::vector<double> tempAbsValues(_clusters.size());
             for (int j = 0; j < _data.size(); j++) {
-                std::vector<double> tempAbsValues(_clusters.size());
                 for (int k = 0; k < _clusters.size(); k++) {
                     tempAbsValues[k] = abs(_clusters[k] - _data[j]);
                 }
@@ -92,7 +96,7 @@ namespace kmldpc {
         return this->_idx;
     }
 
-    void KMeans::dumpToMat(std::string &filename, std::complex<double>& append) {
+    void KMeans::dumpToMat(std::string &filename, std::vector<std::complex<double>>& append) {
         Mat mat = Mat(filename);
 
         mat.open();
@@ -100,7 +104,8 @@ namespace kmldpc {
         mat.writeVector("cluster", _clusters);
         mat.writeVector("idx", _idx);
         mat.writeVector("constellations", _constellations);
-        mat.writeComplex("realH", append);
+        mat.writeVector("hHats", std::vector<std::complex<double>>(append.begin(), append.begin()+4));
+        mat.writeComplex("realH", append[4]);
 
         mat.close();
     }
