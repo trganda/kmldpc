@@ -12,5 +12,8 @@ if(NOT CMAKE_BUILD_TYPE)
             FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+# Add directory containing FindMATIO.cmake to module path
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules/;${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}")
+
 # Include sub-projects.
 add_subdirectory ("kmldpc")

@@ -246,7 +246,7 @@ void LDPC_Linear_System::Simulator()
 		m_source_sink.PrintResult(stdout);
 		fprintf(stdout, "\n*** *** *** *** ***\n\n");
 
-		if ((fp = fopen("snrresult.txt", "a+")) == NULL)
+		if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
 		{
 			fprintf(stderr, "\n Cannot open the file!!!\n");
 			exit(1);
@@ -256,7 +256,7 @@ void LDPC_Linear_System::Simulator()
 		fclose(fp);
 
 		//BER
-		if ((fp = fopen("snrber.txt", "a+")) == NULL)
+		if ((fp = fopen("snrber.txt", "a+")) == nullptr)
 		{
 			fprintf(stderr, "\n Cannot open the file!!!\n");
 			exit(1);
@@ -265,7 +265,7 @@ void LDPC_Linear_System::Simulator()
 		fclose(fp);
 
 		//FER
-		if ((fp = fopen("snrfer.txt", "a+")) == NULL)
+		if ((fp = fopen("snrfer.txt", "a+")) == nullptr)
 		{
 			fprintf(stderr, "\n Cannot open the file!!!\n");
 			exit(1);
@@ -273,14 +273,14 @@ void LDPC_Linear_System::Simulator()
 		fprintf(fp, "\n%lf %12.10lf", snr, m_source_sink.m_fer);
 		fclose(fp);
 
-		if ((fp = fopen("snrresult.txt", "a+")) == NULL)
+		if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
 		{
 			fprintf(stderr, "\n Cannot open the file!!!\n");
 			exit(1);
 		}
 		fprintf(fp, "\n\n****************   FINISH   *********************\n");
 		fprintf(fp, "finish time: ");
-		loctime = time(NULL);
+		loctime = time(nullptr);
 		ptr = localtime(&loctime);
 		fprintf(fp, asctime(ptr));
 		fclose(fp);
