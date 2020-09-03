@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : CMake project for kmldpc, include source and define
+# CMakeList.txt : CMake project for kmldpc, include source and define
 
 # Will add __FILENAME__ macros for all source files, which is the filename without full find_path
 # Courtesy of SO
@@ -22,8 +22,24 @@ endfunction()
 include_directories(src, include)
 aux_source_directory(src SRC)
 
-#link_directories(/usr/local/lib)
-#target_link_libraries(kmldpc matio)
+# Copy config folder
+file(COPY ${CMAKE_SOURCE_DIR}/config/ DESTINATION ${PROJECT_BINARY_DIR}/kmldpc FILES_MATCHING PATTERN "*.txt")
+
+set(BUILD_STATIC FALSE CACHE STRING "Set this to link external libraries statically")
+
+if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -g")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
+endif()
+
+# Set static if BUILD_STATIC is set
+if (BUILD_STATIC)
+    set(MATIO_STATIC_LIBRARIES TRUE)
+    # Link libgcc and libstc++ statically as well
+    if(CMAKE_COMPILER_IS_GNUCXX)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
+    endif()
+endif()
 
 find_package(matio REQUIRED)
 if(MATIO_FOUND)
