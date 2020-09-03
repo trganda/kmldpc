@@ -10,6 +10,7 @@ set(FIND_MATIO_PATHS
         ${MATIO_ROOT}
         $ENV{MATIO_ROOT}
         /usr/local
+        /usr/local/matio
         /usr
         /opt/local
         /opt)
