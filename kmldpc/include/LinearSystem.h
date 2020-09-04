@@ -1,7 +1,7 @@
 #ifndef LINEAR_SYSTEM_H
 #define LINEAR_SYSTEM_H
 
-#include "modem.h"
+#include "Modem.h"
 #include <complex>
 
 class Linear_System

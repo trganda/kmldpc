@@ -1,9 +1,9 @@
 #ifndef MODEM_LINEAR_SYSTEM_H
 #define MODEM_LINEAR_SYSTEM_H
 
-#include "modem.h"
-#include "utility.h"
-#include "linear_system.h"
+#include "Modem.h"
+#include "Utility.h"
+#include "LinearSystem.h"
 #include <complex>
 #include <cstring>
 

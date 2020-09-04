@@ -1,5 +1,5 @@
-#include "source_sink.h"
-#include "randnum.h"
+#include "SourceSink.h"
+#include "RandNum.h"
 
 extern CLCRandNum rndGen0;
 

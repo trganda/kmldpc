@@ -1,5 +1,5 @@
-﻿#include "xorseg_codec.h"
-#include "randnum.h"
+﻿#include "XorSegCodec.h"
+#include "RandNum.h"
 #include <vector>
 #include <complex>
 #include <algorithm>
@@ -90,17 +90,6 @@ void XORSegCodec::Encoder_Ran(int *uu, int *cc)
 	MatrixProd(uu, cc, m_generator, m_extrabits_len, m_len_cc);
 }
 
-void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &totalH, int *uu_hat, std::vector<int> &difflisterr)
-{
-	Decoder_Ran(modem_linear_system, totalH, uu_hat, difflisterr);
-
-	//std::vector<std::pair<int, std::complex<double>>> thetaList(m_extrabits_len);
-	//for (int i = 0; i < thetaList.size(); i++) {
-	//	thetaList[i] = std::pair<int, std::complex<double>>(uu_hat[m_len_uu + i], totalH[uu_hat[m_len_uu + i]]);
-	//}
-	//Demmaping(modem_linear_system, thetaList);
-}
-
 void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &hHats, int *uu_hat)
 {
 	std::vector<int> parityResults(hHats.size());
@@ -119,86 +108,6 @@ void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system, std::vector<
 	Demmaping(modem_linear_system, temp);
 
 	m_LDPC_codec.Decoder(bitLout, uu_hat);
-}
-
-void XORSegCodec::Decoder_Ran(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &totalH, int *uu_hat, std::vector<int> &difflisterr)
-{
-	std::vector<std::pair<int, std::complex<double>>> thetaList(m_extrabits_len);
-	// get gray modulation constellation
-	std::vector<std::complex<double>> graySymbol(modem_linear_system.m_modem.num_symbol);
-	for (int i = 0; i < graySymbol.size(); i++)
-	{
-		graySymbol[i] = std::complex<double>(modem_linear_system.m_modem.output_symbol[i][0],
-											 modem_linear_system.m_modem.output_symbol[i][1]);
-	}
-	// get received symbol
-	std::vector<std::complex<double>> um;
-	um = modem_linear_system.getRSymbol();
-	// calculate probability
-	int totalangle = totalH.size();
-	std::vector<std::vector<double>> optsets(thetaList.size(), std::vector<double>(totalH.size()));
-	int num_of_symbol = modem_linear_system.m_len_xx / 2;
-	int symbolPerPart = num_of_symbol / m_extrabits_len;
-	for (int i = 0; i < thetaList.size(); i++)
-	{
-		for (int j = 0; j < optsets[i].size(); j++)
-		{
-			std::vector<std::complex<double>> curdata(um.begin() + i * symbolPerPart, um.begin() + (i + 1) * symbolPerPart);
-			optsets[i][j] = adaptFunc(curdata,
-									  graySymbol, totalH[j], modem_linear_system.Lin_Sym.var);
-		}
-		//convertToPb(optsets[i]);
-		auto maxidx = std::distance(optsets[i].begin(), std::max_element(optsets[i].begin(), optsets[i].end()));
-		thetaList[i] = std::pair<int, std::complex<double>>(maxidx, totalH[maxidx]);
-	}
-
-	std::vector<std::pair<int, double>> differ(optsets.size());
-	for (int i = 0; i < differ.size(); i++)
-	{
-		differ[i] = std::pair<int, double>(i, std::abs(optsets[i][0] - optsets[i][1]));
-	}
-	auto cmp = [](std::pair<int, double> &a, std::pair<int, double> &b) { return a.second < b.second; };
-	std::sort(differ.begin(), differ.end(), cmp);
-
-	int maxlistsize = 1 << m_list_count;
-
-	for (int i = 0; i < difflisterr.size(); i++)
-	{
-		auto tempthetalist = thetaList;
-		if (!isCorrectInList(tempthetalist, differ, totalH, uu_hat, i))
-		{
-			difflisterr[i]++;
-		}
-		else
-		{
-			break;
-		}
-	}
-}
-
-int XORSegCodec::Decoder_Ran_Hist(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &totalH, int *uu)
-{
-	std::vector<std::pair<int, std::complex<double>>> thetaList(m_extrabits_len);
-	// get gray modulation constellation
-	std::vector<std::complex<double>> graySymbol(modem_linear_system.m_modem.num_symbol);
-	for (int i = 0; i < graySymbol.size(); i++)
-	{
-		graySymbol[i] = std::complex<double>(modem_linear_system.m_modem.output_symbol[i][0],
-											 modem_linear_system.m_modem.output_symbol[i][1]);
-	}
-	int totalangle = totalH.size();
-	// get received symbol
-	std::vector<std::complex<double>> um;
-	um = modem_linear_system.getRSymbol();
-
-	for (int i = 0; i < thetaList.size(); i++)
-	{
-		thetaList[i] = std::pair<int, std::complex<double>>(i, totalH[i]);
-	}
-
-	Demmaping(modem_linear_system, thetaList);
-	int result = getParityCheck(thetaList, totalangle);
-	return result;
 }
 
 void XORSegCodec::Demmaping(Modem_Linear_System &modem_linear_system, std::vector<std::pair<int, std::complex<double>>> &thetaList)
@@ -238,53 +147,6 @@ double XORSegCodec::adaptFunc(std::vector<std::complex<double>> &data, std::vect
 	}
 	result /= double(data.size());
 	return result;
-}
-
-void XORSegCodec::convertToPb(std::vector<double> &opts)
-{
-	double sum = 0.0;
-	auto maxidx = max_element(opts.begin(), opts.end());
-	for (auto &j : opts)
-	{
-		j = exp(j - *maxidx);
-		sum += j;
-	}
-	for (auto &j : opts)
-	{
-		j /= sum;
-	}
-}
-
-int XORSegCodec::getParityCheck(std::vector<std::pair<int, std::complex<double>>> &thetaList, int totalangle)
-{
-	// hard decision
-	for (int i = 0; i < m_len_cc; i++)
-	{
-		if (bitLout[i] > 0.5)
-		{
-			m_rr[i] = 1;
-		}
-		else
-		{
-			m_rr[i] = 0;
-		}
-	}
-	// xor
-	for (int i = 0; i < m_extrabits_len; i++)
-	{
-		int bitanglelen = totalangle >> 1;
-		for (int j = 0; j < bitanglelen; j++)
-		{
-			m_uu_Ran[i * bitanglelen + j] = (thetaList[i].first >> j) % 2;
-		}
-	}
-	MatrixProd(m_uu_Ran, m_cc_Ran, m_generator, m_extrabits_len, m_len_cc);
-	for (int i = 0; i < m_len_cc; i++)
-	{
-		m_rr[i] ^= m_cc_Ran[i];
-	}
-
-	return m_LDPC_codec.parityCheck(m_rr);
 }
 
 int XORSegCodec::getParityCheck()

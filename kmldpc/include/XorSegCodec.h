@@ -1,7 +1,7 @@
 #ifndef XOR_SEG_CODEC_H
 #define XOR_SEG_CODEC_H
 
-#include "binary_ldpc_codec.h"
+#include "BinaryLDPCCodec.h"
 #include "modem_linear_system.h"
 #include "Log.h"
 
@@ -14,16 +14,11 @@ public:
 public:
 	void Encoder(int *uu, int *cc);
 	void Encoder_Ran(int *uu, int *cc);
-	void Decoder(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &totalH, int *uu_hat, std::vector<int> &difflisterr);
 	void Decoder(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &hHats, int *uu_hat);
-	void Decoder_Ran(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &totalH, int *uu_hat, std::vector<int> &difflisterr);
-	int Decoder_Ran_Hist(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &totalH, int *uu);
 
 private:
 	void Demmaping(Modem_Linear_System &modem_linear_system, std::vector<std::pair<int, std::complex<double>>> &thetaList);
 	double adaptFunc(std::vector<std::complex<double>> &data, std::vector<std::complex<double>> &graySymbol, std::complex<double> &h, double var);
-	void convertToPb(std::vector<double> &optsets);
-	int getParityCheck(std::vector<std::pair<int, std::complex<double>>> &thetaList, int totalangle);
 	int getParityCheck();
 
 private:

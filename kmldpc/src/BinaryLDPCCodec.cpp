@@ -1,6 +1,6 @@
-#include "binary_ldpc_codec.h"
-#include "utility.h"
-#include "randnum.h"
+#include "BinaryLDPCCodec.h"
+#include "Utility.h"
+#include "RandNum.h"
 
 extern CLCRandNum rndGen0;
 
