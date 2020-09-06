@@ -1,4 +1,4 @@
-﻿#include "ldpc_linear_system.h"
+﻿#include "LDPCLinearSystem.h"
 #include "Log.h"
 
 extern CLCRandNum rndGen0;
@@ -132,15 +132,6 @@ void LDPC_Linear_System::EndSimulator()
 
 	m_codec.Free();
 	Modem_Lin_Sym.Free();
-}
-
-bool isSeqEqual(int* a, int* b, int len) {
-	for (int i = 0; i < len; i++) {
-		if (a[i] != b[i]) {
-			return false;
-		}
-	}
-	return true;
 }
 
 void LDPC_Linear_System::Simulator()

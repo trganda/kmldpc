@@ -2,7 +2,7 @@
 #define XOR_SEG_CODEC_H
 
 #include "BinaryLDPCCodec.h"
-#include "modem_linear_system.h"
+#include "ModemLinearSystem.h"
 #include "Log.h"
 
 class XORSegCodec

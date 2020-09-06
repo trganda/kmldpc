@@ -3,7 +3,7 @@
 
 #include "SourceSink.h"
 #include "XorSegCodec.h"
-#include "modem_linear_system.h"
+#include "ModemLinearSystem.h"
 #include "KMeans.h"
 #include "RandNum.h"
 #include <complex>

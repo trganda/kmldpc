@@ -1,5 +1,5 @@
 ﻿#include "RandNum.h"
-#include "ldpc_linear_system.h"
+#include "LDPCLinearSystem.h"
 #include <iostream>
 #include "Log.h"
 #include <matio.h>

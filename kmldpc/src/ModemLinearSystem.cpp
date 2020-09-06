@@ -1,4 +1,4 @@
-#include "modem_linear_system.h"
+#include "ModemLinearSystem.h"
 #include "RandNum.h"
 
 extern CLCRandNum rndGen0;
