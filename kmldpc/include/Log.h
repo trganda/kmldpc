@@ -12,9 +12,9 @@
 #define __FILENAME__ __FILE__
 #endif
 
-#define LOG(level) \
+#define LOG(level, flag) \
 if (level > kmldpc::Log::get().getLevel()) ; \
-else kmldpc::Log::get().getStream() << '[' << kmldpc::Log::get().getCurrentSystemTime() << ']' \
+else kmldpc::Log::get().getStream(flag) << '[' << kmldpc::Log::get().getCurrentSystemTime() << ']' \
 << '[' << __FILENAME__ << ':' << std::dec << __LINE__ << "] "
 
 namespace kmldpc
@@ -36,6 +36,7 @@ namespace kmldpc
         Level getLevel();
 
         std::ostream& getStream();
+        std::ostream& getStream(bool flag);
         std::string getCurrentSystemTime();
 
         static Log& get();
@@ -50,6 +51,7 @@ namespace kmldpc
         // Construct a streambuf which tees output to both input
         // streambufs.
         TeeBuf(std::streambuf* sbtofile, std::streambuf* sbtoscreen);
+        void setFlag(bool flag);
     private:
         // This tee buffer has no buffer. So every character "overflows"
         // and can be put directly into the teed buffers.
@@ -59,12 +61,14 @@ namespace kmldpc
     private:
         std::streambuf* _sbtofile;
         std::streambuf* _sbtoscreen;
+        bool _flag;
     };
 
     class TeeStream : public std::ostream
     {
     public:
         TeeStream(std::ostream& o1, std::ostream& o2);
+        TeeBuf& getTeeBuf();
     private:
         TeeBuf _tbuf;
     };

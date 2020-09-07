@@ -27,11 +27,11 @@ int main(int argc, char* argv[])
     rndGen1.SetSeed(flag1);
 
     kmldpc::Log::get().setLevel(kmldpc::Info);
-    LOG(kmldpc::Info) << "Start simulation" << std::endl;
+    LOG(kmldpc::Info, true) << "Start simulation" << std::endl;
 
     LDPC_Linear_System sim_ldpc;
     sim_ldpc.Simulator();
-    LOG(kmldpc::Info) << "Simulation done" << std::endl;
+    LOG(kmldpc::Info, true) << "Simulation done" << std::endl;
 
     return 0;
 }

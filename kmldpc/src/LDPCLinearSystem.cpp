@@ -82,7 +82,7 @@ void LDPC_Linear_System::StartSimulator()
 	//fprintf(stdout, "\n max_blk_err : %d", m_max_blk_err);
 	//fprintf(stdout, "\n max_blk_num : %d\n", m_max_blk_num);
 	//Modem_Lin_Sym.m_modem.PrintCodeParameter(stdout);
-    LOG(kmldpc::Info) << '[' << std::fixed << std::setprecision(3)
+    LOG(kmldpc::Info, true) << '[' << std::fixed << std::setprecision(3)
                            << m_min_snr << ','
                            << m_inc_snr << ','
                            << m_max_snr
@@ -161,7 +161,7 @@ void LDPC_Linear_System::Simulator()
 		Modem_Lin_Sym.Lin_Sym.sigma = sigma;
 		Modem_Lin_Sym.Lin_Sym.var = var; 
 
-		LOG(kmldpc::Info) << "SNR = " << snr << std::endl;
+		LOG(kmldpc::Info, true) << "SNR = " << snr << std::endl;
 
 		m_source_sink.ClrCnt();
 		m_source_extrabits.ClrCnt();
@@ -183,7 +183,7 @@ void LDPC_Linear_System::Simulator()
 
 			std::complex<double> trueH(real, imag);
 			trueH *= sqrt(0.5);
-			LOG(kmldpc::Info) << "Generated H = " << trueH << std::endl;
+			LOG(kmldpc::Info, false) << "Generated H = " << trueH << std::endl;
 			std::vector<std::complex<double>> selecth(1);
 			for (auto & i : selecth) {
 				i = trueH;
@@ -219,7 +219,7 @@ void LDPC_Linear_System::Simulator()
 					std::to_string(int(m_source_sink.m_num_tot_blk)) + ".mat";
 				hHats.push_back(trueH);
                 kmeans.dumpToMat(filename, hHats);
-                LOG(kmldpc::Info) << "Wrote error case to " << filename << std::endl;
+                LOG(kmldpc::Info, false) << "Wrote error case to " << filename << std::endl;
 			}
 
 			m_source_sink.PrintResult();

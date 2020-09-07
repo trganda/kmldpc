@@ -18,7 +18,7 @@ namespace kmldpc
                 MAT_FT_DEFAULT);
         if (nullptr == _matfp) {
             kmldpc::Log::get().setLevel(Error);
-            LOG(Error) << "Creating file failed, file name is "
+            LOG(Error, true) << "Creating file failed, file name is "
                                     << _filename << std::endl;
             exit(-1);
         }
@@ -34,7 +34,7 @@ namespace kmldpc
     void Mat::writeInt(const std::string& varname, int32_t data) {
         if (nullptr == _matfp) {
             kmldpc::Log::get().setLevel(Error);
-            LOG(Error) << "Create of open the file first" << std::endl;
+            LOG(Error, true) << "Create of open the file first" << std::endl;
             exit(-1);
         }
         size_t dims[2] = {1, 1};
@@ -43,7 +43,7 @@ namespace kmldpc
         matvar_t *matvar = Mat_VarCreate(varname.c_str(), MAT_C_INT32, MAT_T_INT32, 2, dims, datas, 0);
         if (nullptr == _matfp) {
             Log::get().setLevel(Error);
-            LOG(Error) << "Error creating variable for " << varname << std::endl;
+            LOG(Error, true) << "Error creating variable for " << varname << std::endl;
             exit(-1);
         } else {
             Mat_VarWrite(_matfp, matvar, MAT_COMPRESSION_NONE);
@@ -51,13 +51,13 @@ namespace kmldpc
         }
 
         Log::get().setLevel(Info);
-        LOG(Info) << "Writed " << varname << " to " << _filename << std::endl;
+        LOG(Info, false) << "Writed " << varname << " to " << _filename << std::endl;
     }
 
     void Mat::writeDouble(const std::string &varname, double data) {
         if (nullptr == _matfp) {
             Log::get().setLevel(Error);
-            LOG(Error) << "Create of open the file first" << std::endl;
+            LOG(Error, true) << "Create of open the file first" << std::endl;
             exit(-1);
         }
         size_t dims[2] = {1, 1};
@@ -67,7 +67,7 @@ namespace kmldpc
                 varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, datas, 0);
         if (nullptr == matvar) {
             Log::get().setLevel(Error);
-            LOG(Error) << "Error creating variable for " << varname << std::endl;
+            LOG(Error, true) << "Error creating variable for " << varname << std::endl;
             exit(-1);
         } else {
             Mat_VarWrite(_matfp, matvar, MAT_COMPRESSION_NONE);
@@ -75,13 +75,13 @@ namespace kmldpc
         }
 
         Log::get().setLevel(Info);
-        LOG(Info) << "Writed " << varname << " to " << _filename << std::endl;
+        LOG(Info, false) << "Writed " << varname << " to " << _filename << std::endl;
     }
 
     void Mat::writeComplex(const std::string& varname, std::complex<double> data) {
         if (nullptr == _matfp) {
             Log::get().setLevel(Error);
-            LOG(Error) << "Create of open the file first" << std::endl;
+            LOG(Error, true) << "Create of open the file first" << std::endl;
             exit(-1);
         }
         size_t dims[2] = {1, 1};
@@ -94,7 +94,7 @@ namespace kmldpc
                 varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &datas, MAT_F_COMPLEX);
         if (nullptr == matvar) {
             Log::get().setLevel(Error);
-            LOG(Error) << "Error creating variable for " << varname << std::endl;
+            LOG(Error, true) << "Error creating variable for " << varname << std::endl;
             exit(-1);
         } else {
             Mat_VarWrite(_matfp, matvar, MAT_COMPRESSION_NONE);
@@ -102,13 +102,13 @@ namespace kmldpc
         }
 
         Log::get().setLevel(Info);
-        LOG(Info) << "Writed " << varname << " to " << _filename << std::endl;
+        LOG(Info, false) << "Writed " << varname << " to " << _filename << std::endl;
     }
 
     void Mat::writeVector(const std::string &varname, const std::vector<int32_t> &data) {
         if (nullptr == _matfp) {
             Log::get().setLevel(Error);
-            LOG(Error) << "Create of open the file first" << std::endl;
+            LOG(Error, true) << "Create of open the file first" << std::endl;
             exit(-1);
         }
         size_t dims[2] = {data.size(), 1};
@@ -120,7 +120,7 @@ namespace kmldpc
         matvar_t *matvar = Mat_VarCreate(varname.c_str(), MAT_C_INT32, MAT_T_INT32, 2, dims, datas, 0);
         if (nullptr == _matfp) {
             Log::get().setLevel(Error);
-            LOG(Error) << "Error creating variable for " << varname << std::endl;
+            LOG(Error, true) << "Error creating variable for " << varname << std::endl;
             exit(-1);
         } else {
             Mat_VarWrite(_matfp, matvar, MAT_COMPRESSION_NONE);
@@ -128,13 +128,13 @@ namespace kmldpc
         }
 
         Log::get().setLevel(Info);
-        LOG(Info) << "Writed " << varname << " to " << _filename << std::endl;
+        LOG(Info, false) << "Writed " << varname << " to " << _filename << std::endl;
     }
 
     void Mat::writeVector(const std::string &varname, const std::vector<std::complex<double> > &data) {
         if (nullptr == _matfp) {
             kmldpc::Log::get().setLevel(Error);
-            LOG(Error) << "Create of open the file first" << std::endl;
+            LOG(Error, true) << "Create of open the file first" << std::endl;
             exit(-1);
         }
         size_t dims[2] = {data.size(), 1};
@@ -149,7 +149,7 @@ namespace kmldpc
         matvar_t* matvar = Mat_VarCreate(varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &datas, MAT_F_COMPLEX);
         if (nullptr == matvar) {
             Log::get().setLevel(Error);
-            LOG(Error) << "Error creating variable for " << varname << std::endl;
+            LOG(Error, true) << "Error creating variable for " << varname << std::endl;
             exit(-1);
         } else {
             Mat_VarWrite(_matfp, matvar, MAT_COMPRESSION_NONE);
@@ -157,6 +157,6 @@ namespace kmldpc
         }
 
         Log::get().setLevel(Info);
-        LOG(Info) << "Writed " << varname << " to " << _filename << std::endl;
+        LOG(Info, false) << "Writed " << varname << " to " << _filename << std::endl;
     }
 }

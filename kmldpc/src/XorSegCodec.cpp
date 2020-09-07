@@ -99,11 +99,11 @@ void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system, std::vector<
 		temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
 		Demmaping(modem_linear_system, temp);
 		parityResults[i] = getParityCheck();
-		LOG(kmldpc::Info) << "Hhat = " << hHats[i] << "Parity Count = " << parityResults[i] << std::endl;
+		LOG(kmldpc::Info, false) << "Hhat = " << hHats[i] << " Parity Count = " << parityResults[i] << std::endl;
 	}
 
 	auto minIndex = std::distance(parityResults.begin(), min_element(parityResults.begin(), parityResults.end()));
-    LOG(kmldpc::Info) << "minIndex = " << minIndex << std::endl;
+    LOG(kmldpc::Info, false) << "minIndex = " << minIndex << std::endl;
 	temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
 	Demmaping(modem_linear_system, temp);
 
