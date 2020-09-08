@@ -3,6 +3,7 @@
 #include <vector>
 #include <complex>
 #include <algorithm>
+#include <iomanip>
 
 extern CLCRandNum rndGen0;
 
@@ -90,16 +91,21 @@ void XORSegCodec::Encoder_Ran(int *uu, int *cc)
 	MatrixProd(uu, cc, m_generator, m_extrabits_len, m_len_cc);
 }
 
-void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &hHats, int *uu_hat)
+void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system,
+                          std::vector<std::complex<double>> &hHats, int *uu_hat)
 {
 	std::vector<int> parityResults(hHats.size());
     std::vector<std::pair<int, std::complex<double>>> temp;
-	for (int i = 0; i < parityResults.size(); i++)
+	for (auto i = 0; i < parityResults.size(); i++)
 	{
 		temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
 		Demmaping(modem_linear_system, temp);
 		parityResults[i] = getParityCheck();
-		LOG(kmldpc::Info, false) << "Hhat = " << hHats[i] << " Parity Count = " << parityResults[i] << std::endl;
+		LOG(kmldpc::Info, false) << std::fixed << std::setprecision(14)
+		                                   << "Hhat = " << hHats[i]
+		                                   << " Unsatisfied Parity Count = "
+		                                   << std::setw(5) << std::right
+		                                   << parityResults[i] << std::endl;
 	}
 
 	auto minIndex = std::distance(parityResults.begin(), min_element(parityResults.begin(), parityResults.end()));
@@ -110,7 +116,8 @@ void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system, std::vector<
 	m_LDPC_codec.Decoder(bitLout, uu_hat);
 }
 
-void XORSegCodec::Demmaping(Modem_Linear_System &modem_linear_system, std::vector<std::pair<int, std::complex<double>>> &thetaList)
+void XORSegCodec::Demmaping(Modem_Linear_System &modem_linear_system,
+                            std::vector<std::pair<int, std::complex<double>>> &thetaList)
 {
 	modem_linear_system.Soft_Demodulation(thetaList);
 
@@ -123,7 +130,9 @@ void XORSegCodec::Demmaping(Modem_Linear_System &modem_linear_system, std::vecto
 	modem_linear_system.m_modem.Demapping(bitLin, modem_linear_system.m_sym_prob, bitLout, m_len_cc);
 }
 
-double XORSegCodec::adaptFunc(std::vector<std::complex<double>> &data, std::vector<std::complex<double>> &graySymbol, std::complex<double> &h, double var)
+double XORSegCodec::adaptFunc(std::vector<std::complex<double>> &data,
+                              std::vector<std::complex<double>> &graySymbol,
+                              std::complex<double> &h, double var)
 {
 	double result = 0.0;
 	double co = 1.0 / sqrt(2 * m_PI * var);

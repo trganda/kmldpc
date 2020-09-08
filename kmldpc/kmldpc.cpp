@@ -2,10 +2,10 @@
 #include "LDPCLinearSystem.h"
 #include <iostream>
 #include "Log.h"
-#include <matio.h>
 
 CLCRandNum rndGen0;
 CWHRandNum rndGen1;
+
 
 int main(int argc, char* argv[])
 {
@@ -25,7 +25,6 @@ int main(int argc, char* argv[])
 
     flag1 = 0;
     rndGen1.SetSeed(flag1);
-
     kmldpc::Log::get().setLevel(kmldpc::Info);
     LOG(kmldpc::Info, true) << "Start simulation" << std::endl;
 

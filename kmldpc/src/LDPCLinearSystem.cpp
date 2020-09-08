@@ -75,18 +75,15 @@ void LDPC_Linear_System::StartSimulator()
 
 	m_sym_prob = new double[m_len_cc / Modem_Lin_Sym.m_modem.len_input * Modem_Lin_Sym.m_modem.num_symbol];
 
-	//屏幕输出仿真参数
-	//fprintf(stdout, "\n The results correspond to %s", file_name);
-	////fprintf(stdout, "\n EbN0dB: [%2.2lf : %2.2lf : %2.2lf]", m_min_snr, m_inc_snr, m_max_snr);
-	//fprintf(stdout, "\n SNRdB: [%2.2lf : %2.2lf : %2.2lf]", m_min_snr, m_inc_snr, m_max_snr);
-	//fprintf(stdout, "\n max_blk_err : %d", m_max_blk_err);
-	//fprintf(stdout, "\n max_blk_num : %d\n", m_max_blk_num);
-	//Modem_Lin_Sym.m_modem.PrintCodeParameter(stdout);
     LOG(kmldpc::Info, true) << '[' << std::fixed << std::setprecision(3)
                            << m_min_snr << ','
                            << m_inc_snr << ','
                            << m_max_snr
                            << ']' << std::endl;
+    LOG(kmldpc::Info, true) << '['
+                           <<"MAX_ERROR_BLK = " << m_max_blk_err << ','
+                           << "MAX_BLK = " << m_max_blk_num << ']'
+                           << std::endl;
 
 	//输出仿真参数到文件
 	if ((fp = fopen("snrresult.txt", "a+")) == nullptr) {
@@ -136,7 +133,6 @@ void LDPC_Linear_System::EndSimulator()
 
 void LDPC_Linear_System::Simulator()
 {
-	int t;
 	double snr, sigma, var;
 	FILE* fp = nullptr;
 
@@ -161,7 +157,7 @@ void LDPC_Linear_System::Simulator()
 		Modem_Lin_Sym.Lin_Sym.sigma = sigma;
 		Modem_Lin_Sym.Lin_Sym.var = var; 
 
-		LOG(kmldpc::Info, true) << "SNR = " << snr << std::endl;
+		LOG(kmldpc::Info, true) << std::fixed << std::setprecision(2) << "SNR = " << snr << std::endl;
 
 		m_source_sink.ClrCnt();
 		m_source_extrabits.ClrCnt();
@@ -214,15 +210,19 @@ void LDPC_Linear_System::Simulator()
 			m_source_sink.CntErr(m_uu, m_uu_hat, m_codec.m_len_uu, 1);
 
 			if (m_source_sink.m_num_err_blk > current_error_blk) {
-				std::string filename = "RECEIVED_SYMBOL_SNR_" +
+			    std::string dir = "records";
+				std::string filename = dir + "/" + "RECEIVED_SYMBOL_SNR_" +
 					std::to_string(snr) + "_ID_" +
 					std::to_string(int(m_source_sink.m_num_tot_blk)) + ".mat";
 				hHats.push_back(trueH);
+
                 kmeans.dumpToMat(filename, hHats);
                 LOG(kmldpc::Info, false) << "Wrote error case to " << filename << std::endl;
 			}
 
-			m_source_sink.PrintResult();
+			if (int(m_source_sink.m_num_tot_blk) > 0 && int(m_source_sink.m_num_tot_blk) % 100 == 0) {
+                m_source_sink.PrintResult();
+			}
 		}
 
 		m_source_sink.PrintResult();

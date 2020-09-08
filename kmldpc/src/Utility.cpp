@@ -34,70 +34,6 @@ double Seqmax(double *x, int num)
 	return temp;
 }
 
-double Seqmin(double *x, int num)
-{
-	int i;
-	double temp;
-
-	temp = x[0];
-	for (i = 1; i < num; i++)
-	{
-		if (x[i] < temp)
-			temp = x[i];
-	}
-	return temp;
-}
-
-double FunctionQ(double x)
-{
-	double t,dq;
-	double q;
-	if(x >= 8.5)
-	{
-		q = -log(sqrt( 2 * m_PI) * x) - x * x / 2;
-	}
-	else
-	{
-		if(x < -7)
-			return(0.0);
-
-		t = 1.0 / (1.0 + 0.2316419 * fabs(x));
-
-		dq = ((((1.330274429 * t - 1.821255978) * t + 1.78147793) * t - 0.356563782) * t
-			+ 0.319381530) * t * exp(-x*x*0.5) * 0.39894228;
-		
-		if(x > 0.0)
-			q = log(dq);
-		else
-			q = log(1.0-dq);
-
-	}
-
-	return(q);
-}
-
-int sgn(double x)
-{
-	if (x > 0)
-		return 1;
-	else if (x < 0)
-		return -1;
-	else
-		return 0;
-}
-
-double erf_inv(double x)
-{
-	double y, a;
-
-	a = 0.147;
-
-	y = sgn(x) * sqrt(sqrt(pow((2/(a*m_PI) + 0.5*log(1-x*x)), 2) - (log(1-x*x)/a)) 
-		             - (2./(a*m_PI) + 0.5*log(1-x*x)));
-
-	return y;
-}
-
 void ProbClip(double *xx, int len_xx)
 {
 	int i;
@@ -110,148 +46,6 @@ void ProbClip(double *xx, int len_xx)
 	}
 
 	return;
-}
-
-
-/**************************************************************************************
-         binary (b[0] b[1] b[2] ......), where b[0] is the MSB, b[end-1] is the LSB
-         in other words, b is the binary expression of dec number d;
-                     d     --> b = (b[0] b[1] b[2])  len_b = 3   
-         for example d = 0 --> b = (0 0 0)
-                     d = 1 --> b = (0 0 1)
-                     d = 2 --> b = (0 1 0)   
-                     d = 3 --> b = (0 1 1)
-                     d = 4 --> b = (1 0 0)   
-                     d = 5 --> b = (1 0 1)
-                     d = 6 --> b = (1 1 0)   
-                     d = 7 --> b = (1 1 1)
-                     d = 8 --> b = (0 0 0)   
-**************************************************************************************/
-
-void Dec2Bin(int d, int *b, int len_b)
-{
-	int i;
-
-	for (i = 0; i < len_b; i++)
-		b[len_b-i-1] = (d >> i) % 2;
-
-	return;
-}
-
-void SeqDec2Bin(int *bin, int *dec, int len_dec, int len_symbol)
-{
-	int i, j, t;
-
-	t = 0;
-	for (i = 0; i < len_dec; i++){
-		for (j = 0; j < len_symbol; j++){
-			bin[t] = (dec[i] >> (len_symbol-1-j)) & 1; 
-			t++;
-		}
-	}
-
-	return;
-}
-
-void SeqBin2Dec(int *bin, int *dec, int len_dec, int len_symbol)
-{
-	int i, j, t;
-
-	t = 0;
-	for (i = 0; i < len_dec; i++){
-		dec[i] = 0;
-		for (j = 0; j < len_symbol; j++){
-			dec[i] = (dec[i] << 1) ^ bin[t];
-			t++;
-		}
-	}
-
-	return;
-}
-
-int BitDotProd(int a, int b, int len)
-{
-	int i; 
-	int temp;
-	int prod;
-
-	temp = a & b;
-
-	prod = 0;
-	for (i = 0; i < len; i++)
-		prod += (temp >> i) % 2;
-	
-	return (prod % 2);
-}
-
-int Systemizer(int num_row, int num_col, int **H, int **sysH, int *pai)
-{
-	int i, j, ii, jj, m, n;
-	int flag;
-	int temp;
-	int rank;
-
-	for (j = 0; j < num_col; j++)
-		pai[j] = j;//pai[0] means that the first column (0th column) of sysH comes from the pai[0]-th of H
-
-//copy H to sysH;
-	for (i = 0; i < num_row; i++){
-		for (j = 0; j < num_col; j++)
-			sysH[i][j] = H[i][j];
-	}
-
-//initialize the rank
-	rank = 0;
-//find the most left_up non_zero element
-	for (i = 0; i < num_row; i++){
-		flag = 0;
-		for (jj = i; jj < num_col; jj++){
-			for (ii = i; ii < num_row; ii++){
-				if (sysH[ii][jj] != 0){
-					flag = 1;
-					break;
-				}
-			}
-			if (flag == 1){
-				rank++;
-				break;
-			}
-		}
-
-		if (flag == 0)
-			break;
-		else{//swap to ensure the (1,1) elment is non_zero
-//swap i and ii row
-			if (ii != i){
-				for (n = 0; n < num_col; n++){
-					temp = sysH[i][n];
-					sysH[i][n] = sysH[ii][n];
-					sysH[ii][n] = temp;
-				}
-			}
-//swap i and jj col
-			if (jj != i){
-				temp = pai[i];
-				pai[i] = pai[jj];
-				pai[jj] = temp;
-
-				for (m = 0; m < num_row; m++){
-					temp = sysH[m][i];
-					sysH[m][i] = sysH[m][jj];
-					sysH[m][jj] = temp;
-				}
-			}
-//elimination
-			for (m = 0; m < num_row; m++){
-				if (m != i && sysH[m][i] == 1){
-					for (n = 0; n < num_col; n++)
-						sysH[m][n] ^= sysH[i][n];
-				}
-			}
-		}
-	}
-
-	return rank;
 }
 
 int min(int x, int y)
@@ -421,7 +215,6 @@ void N1N2RandomIntl(int *pai, int period, int N1, int N2)
 	if (success == 0)
 		N1N2RandomIntl(pai, period, N1, N2);
 
-	return;
 }
 
 void ShiftIntl( int *pai, int shifted_pos, int period )
@@ -432,37 +225,12 @@ void ShiftIntl( int *pai, int shifted_pos, int period )
 	}
 }
 
-void LLRClip( double *xx, int len_xx )
-{
-	int i;
-
-	for (i = 0; i < len_xx; i++){
-		if (xx[i] < SMALL_LLR)
-			xx[i] = SMALL_LLR;
-		else if (xx[i] > LARGE_LLR)
-			xx[i] = LARGE_LLR;
-	}
-
-	return;
-}
-
-double maxstar( double x, double y )
-{
-	if (x>y)
-		return x + log( 1.0 + exp(y-x) );
-	else
-		return y + log( 1.0 + exp(x-y) );
-}
-
-void DFT_gen(int size_t, double** F_re, double** F_im)
-{
-	int i, j;
-	for (i = 0; i < size_t; i++)
-		for (j = 0; j < size_t; j++)
-		{
-			F_re[i][j] = 1 / sqrt(size_t*1.0) * cos(2. * m_PI * i * j / size_t);
-			F_im[i][j] = -1 / sqrt(size_t*1.0) * sin(2. * m_PI * i * j / size_t);
-		}
-
-	return;
+std::ostream & operator<<( std::ostream & os,const std::complex<double> & c) {
+    os << std::fixed << std::setprecision(14)
+       << std::resetiosflags(std::ios::showpos)
+       << '('
+       << std::showpos << c.real() << std::showpos << c.imag() << 'i'
+       << ')'
+       << std::resetiosflags(std::ios::showpos);
+    return os;
 }

@@ -59,10 +59,13 @@ void CSourceSink::CntErr(int *uu, int *uu_hat, int len, int accumulator)
 
 void CSourceSink::PrintResult() const
 {
-	LOG(kmldpc::Info, true) << std::fixed << std::setprecision(0)
-	                           << "Total blk = " << m_num_tot_blk << ' '
-                               << "Error blk = " << m_num_err_blk << ' '
-                               << "Error bit = " << m_num_err_bit << ' '
+	LOG(kmldpc::Info, true) << std::fixed << std::setprecision(0) << std::setfill('0')
+	                           << "Total blk = "
+	                           << std::setw(7) << std::right << m_num_tot_blk << ' '
+	                           << "Error blk = "
+	                           << std::setw(7) << std::right << m_num_err_blk << ' '
+                               << "Error bit = "
+                               << std::setw(7) << std::right << m_num_err_bit << ' '
                                << std::fixed << std::setprecision(14)
                                << "BER = " << m_ber << ' '
                                << "FER = " << m_fer
