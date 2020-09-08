@@ -1,7 +1,7 @@
 #ifndef XOR_SEG_CODEC_H
 #define XOR_SEG_CODEC_H
 
-#include "BinaryLDPCCodec.h"
+#include "Binary5GLDPCCodec.h"
 #include "ModemLinearSystem.h"
 #include "Log.h"
 
@@ -20,13 +20,14 @@ private:
 	void Demmaping(Modem_Linear_System &modem_linear_system, std::vector<std::pair<int, std::complex<double>>> &thetaList);
 	double adaptFunc(std::vector<std::complex<double>> &data, std::vector<std::complex<double>> &graySymbol, std::complex<double> &h, double var);
 	int getParityCheck();
+    int getParityCheckAfterDecoding();
 
 private:
 	bool isCorrectInList(std::vector<std::pair<int, std::complex<double>>> &thetaList,
 						 std::vector<std::pair<int, double>> &differ, std::vector<std::complex<double>> &totalH, int *uu, int list_len);
 
 public:
-	CBinaryLDPCCodec m_LDPC_codec;
+	CBinary5GLDPCCodec m_LDPC_codec;
 	int **m_generator;	 // random generator matrix
 	int *m_cc_Ran;		 // matrix multi results
 	int *m_uu_Ran;		 // extra bits

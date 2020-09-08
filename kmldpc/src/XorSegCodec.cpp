@@ -40,7 +40,7 @@ void XORSegCodec::Malloc(int code_no, const char *file_name)
 	// setup from "LDPC.txt"
 	m_LDPC_codec.Malloc(code_no, temp_str);
 	m_len_uu = m_LDPC_codec.m_codedim;
-	m_len_cc = m_LDPC_codec.m_codelen;
+	m_len_cc = m_LDPC_codec.m_codelen_puncture;
 	m_coderate = double(m_len_uu) / m_len_cc;
 
 	// random generator matrix
@@ -79,7 +79,7 @@ void XORSegCodec::Free()
 
 void XORSegCodec::Encoder(int *uu, int *cc)
 {
-	m_LDPC_codec.Encoder(uu, cc);
+	m_LDPC_codec.Encoder_5G(uu, cc);
 	//MatrixProd(uu + m_len_uu, m_cc_Ran, m_generator, m_extrabits_len, m_len_cc);
 	//for (int i = 0; i < m_len_cc; i++) {
 	//	cc[i] ^= m_cc_Ran[i];
@@ -100,7 +100,8 @@ void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system,
 	{
 		temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
 		Demmaping(modem_linear_system, temp);
-		parityResults[i] = getParityCheck();
+		m_LDPC_codec.Decoder_5G(bitLout, uu_hat, 5);
+		parityResults[i] = getParityCheckAfterDecoding();
 		LOG(kmldpc::Info, false) << std::fixed << std::setprecision(14)
 		                                   << "Hhat = " << hHats[i]
 		                                   << " Unsatisfied Parity Count = "
@@ -113,7 +114,7 @@ void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system,
 	temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
 	Demmaping(modem_linear_system, temp);
 
-	m_LDPC_codec.Decoder(bitLout, uu_hat);
+	m_LDPC_codec.Decoder_5G(bitLout, uu_hat, m_LDPC_codec.m_max_iter);
 }
 
 void XORSegCodec::Demmaping(Modem_Linear_System &modem_linear_system,
@@ -174,6 +175,10 @@ int XORSegCodec::getParityCheck()
 	}
 
 	return m_LDPC_codec.parityCheck(m_rr);
+}
+
+int XORSegCodec::getParityCheckAfterDecoding() {
+    return m_LDPC_codec.parityCheck(m_LDPC_codec.m_cc_hat);
 }
 
 bool XORSegCodec::isCorrectInList(std::vector<std::pair<int, std::complex<double>>> &thetaList,
