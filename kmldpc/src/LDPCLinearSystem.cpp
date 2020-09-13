@@ -198,12 +198,13 @@ void LDPC_Linear_System::Simulator()
 			auto idx = kmeans.getIdx();
 
 			// Get H hat
-			// std::complex<double> hHat = trueH;
-			std::complex<double> hHat = clusters[0] / constellations[0];
-			std::vector<std::complex<double>> hHats(4);
-			for (int i = 0; i < hHats.size(); i++) {
-				hHats[i] = hHat * exp(std::complex<double>(0, (m_PI / 2) * i));
-			}
+			std::complex<double> hHat = trueH;
+            std::vector<std::complex<double>> hHats = {hHat};
+//			std::complex<double> hHat = clusters[0] / constellations[0];
+//			std::vector<std::complex<double>> hHats(4);
+//			for (int i = 0; i < hHats.size(); i++) {
+//				hHats[i] = hHat * exp(std::complex<double>(0, (m_PI / 2) * i));
+//			}
 
 			m_codec.Decoder(Modem_Lin_Sym, hHats, m_uu_hat);
 
