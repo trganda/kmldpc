@@ -32,7 +32,7 @@ void XORSegCodec::Malloc(int code_no, const char *file_name)
 	fscanf(fp, "%s", temp_str);
 	fscanf(fp, "%d", &m_list_count);
 
-	fscanf(fp, "s", temp_str);
+	fscanf(fp, "%s", temp_str);
 	fscanf(fp, "%d", &m_iter_cnt);
 
 	fscanf(fp, "%s", temp_str);
