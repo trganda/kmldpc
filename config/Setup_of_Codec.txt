@@ -3,5 +3,7 @@ num_Extrabits
 16
 list_Size
 7
+iter_Count_5GLDPC
+5
 LDPCCodesetupFile
 LDPC.txt

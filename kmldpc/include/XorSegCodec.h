@@ -34,6 +34,7 @@ public:
 	int *m_rr;			 // hard decision
 	int m_extrabits_len; // extra bits len
 	int m_list_count;
+	int m_iter_cnt;    // iteration times while using LDPC on 5G
 	int m_len_uu;	   // length of uu for LDPC
 	int m_len_cc;	   // length of cc for LDPC
 	double m_coderate; // code rate

@@ -32,6 +32,9 @@ void XORSegCodec::Malloc(int code_no, const char *file_name)
 	fscanf(fp, "%s", temp_str);
 	fscanf(fp, "%d", &m_list_count);
 
+	fscanf(fp, "s", temp_str);
+	fscanf(fp, "%d", &m_iter_cnt);
+
 	fscanf(fp, "%s", temp_str);
 	fscanf(fp, "%s", temp_str);
 
@@ -100,7 +103,7 @@ void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system,
 	{
 		temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
 		Demmaping(modem_linear_system, temp);
-		m_LDPC_codec.Decoder_5G(bitLout, uu_hat, 5);
+		m_LDPC_codec.Decoder_5G(bitLout, uu_hat, m_iter_cnt);
 		parityResults[i] = getParityCheckAfterDecoding();
 		LOG(kmldpc::Info, false) << std::fixed << std::setprecision(14)
 		                                   << "Hhat = " << hHats[i]
