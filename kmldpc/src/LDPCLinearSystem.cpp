@@ -201,11 +201,16 @@ void LDPC_Linear_System::Simulator()
 			// std::complex<double> hHat = trueH;
 			std::complex<double> hHat = clusters[0] / constellations[0];
 			std::vector<std::complex<double>> hHats(4);
+			// GA - find closed hHat
+			std::vector<double> tempDistance(hHats.size());
 			for (int i = 0; i < hHats.size(); i++) {
 				hHats[i] = hHat * exp(std::complex<double>(0, (m_PI / 2) * i));
+				tempDistance[i] = abs(hHats[i] - trueH);
 			}
+            auto minIndex = std::distance(tempDistance.begin(), std::min_element(tempDistance.begin(), tempDistance.end()));
+            std::vector<std::complex<double>> gaHat = {hHats[minIndex]};
 
-			m_codec.Decoder(Modem_Lin_Sym, hHats, m_uu_hat);
+			m_codec.Decoder(Modem_Lin_Sym, gaHat, m_uu_hat);
 
 			m_source_sink.CntErr(m_uu, m_uu_hat, m_codec.m_len_uu, 1);
 
