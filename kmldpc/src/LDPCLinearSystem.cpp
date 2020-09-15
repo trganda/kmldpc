@@ -197,11 +197,11 @@ void LDPC_Linear_System::Simulator()
 
 			// Get H hat
 			// std::complex<double> hHat = trueH;
-			std::complex<double> hHat = clusters[0] / constellations[0];
-			std::vector<std::complex<double>> hHats(4);
-			for (int i = 0; i < hHats.size(); i++) {
-				hHats[i] = hHat * exp(std::complex<double>(0, (m_PI / 2) * i));
-			}
+//			std::complex<double> hHat = clusters[0] / constellations[0];
+			std::vector<std::complex<double>> hHats = {trueH};
+//			for (int i = 0; i < hHats.size(); i++) {
+//				hHats[i] = hHat * exp(std::complex<double>(0, (m_PI / 2) * i));
+//			}
 
 			LOG(kmldpc::Info, false) << std::fixed << std::setprecision(0) << std::setfill('0')
 			                                   << "Current Block Number = "
