@@ -2,6 +2,7 @@
 #define XOR_SEG_CODEC_H
 
 #include "Binary5GLDPCCodec.h"
+#include "BinaryLDPCCodec.h"
 #include "ModemLinearSystem.h"
 #include "Log.h"
 
@@ -27,7 +28,8 @@ private:
 						 std::vector<std::pair<int, double>> &differ, std::vector<std::complex<double>> &totalH, int *uu, int list_len);
 
 public:
-	CBinary5GLDPCCodec m_LDPC_codec;
+	CBinary5GLDPCCodec m_5GLDPC_codec;
+	CBinaryLDPCCodec m_LDPC_codec;
 	int **m_generator;	 // random generator matrix
 	int *m_cc_Ran;		 // matrix multi results
 	int *m_uu_Ran;		 // extra bits
@@ -35,6 +37,7 @@ public:
 	int m_extrabits_len; // extra bits len
 	int m_list_count;
 	int m_iter_cnt;    // iteration times while using LDPC on 5G
+	unsigned int m_using_5G_LDPC;
 	int m_len_uu;	   // length of uu for LDPC
 	int m_len_cc;	   // length of cc for LDPC
 	double m_coderate; // code rate
