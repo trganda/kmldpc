@@ -212,7 +212,7 @@ void LDPC_Linear_System::Simulator()
 			                                   << "Current Block Number = "
 			                                   << std::setw(7) << std::right << (m_source_sink.m_num_tot_blk + 1)
 			                                   << std::endl;
-			m_codec.Decoder(Modem_Lin_Sym, hHats, m_uu_hat);
+			m_codec.Decoder(Modem_Lin_Sym, gaHat, m_uu_hat);
 
 			m_source_sink.CntErr(m_uu, m_uu_hat, m_codec.m_len_uu, 1);
 
