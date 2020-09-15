@@ -57,9 +57,11 @@ void CSourceSink::CntErr(int *uu, int *uu_hat, int len, int accumulator)
 	}
 }
 
-void CSourceSink::PrintResult() const
+void CSourceSink::PrintResult(double snr) const
 {
 	LOG(kmldpc::Info, true) << std::fixed << std::setprecision(0) << std::setfill('0')
+	                           << "SNR = "
+	                           << std::setw(3) << std::right << snr << ' '
 	                           << "Total blk = "
 	                           << std::setw(7) << std::right << m_num_tot_blk << ' '
 	                           << "Error blk = "

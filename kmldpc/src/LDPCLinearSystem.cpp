@@ -157,8 +157,6 @@ void LDPC_Linear_System::Simulator()
 		Modem_Lin_Sym.Lin_Sym.sigma = sigma;
 		Modem_Lin_Sym.Lin_Sym.var = var; 
 
-		LOG(kmldpc::Info, true) << std::fixed << std::setprecision(2) << "SNR = " << snr << std::endl;
-
 		m_source_sink.ClrCnt();
 		m_source_extrabits.ClrCnt();
 
@@ -205,6 +203,10 @@ void LDPC_Linear_System::Simulator()
 				hHats[i] = hHat * exp(std::complex<double>(0, (m_PI / 2) * i));
 			}
 
+			LOG(kmldpc::Info, false) << std::fixed << std::setprecision(0) << std::setfill('0')
+			                                   << "Current Block Number = "
+			                                   << std::setw(7) << std::right << (m_source_sink.m_num_tot_blk + 1)
+			                                   << std::endl;
 			m_codec.Decoder(Modem_Lin_Sym, hHats, m_uu_hat);
 
 			m_source_sink.CntErr(m_uu, m_uu_hat, m_codec.m_len_uu, 1);
@@ -221,11 +223,10 @@ void LDPC_Linear_System::Simulator()
 			}
 
 			if (int(m_source_sink.m_num_tot_blk) > 0 && int(m_source_sink.m_num_tot_blk) % 100 == 0) {
-                m_source_sink.PrintResult();
+                m_source_sink.PrintResult(snr);
 			}
 		}
-
-		m_source_sink.PrintResult();
+		m_source_sink.PrintResult(snr);
 
 		if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
 		{
