@@ -199,9 +199,14 @@ void LDPC_Linear_System::Simulator()
 			// std::complex<double> hHat = trueH;
 			std::complex<double> hHat = clusters[0] / constellations[0];
 			std::vector<std::complex<double>> hHats(4);
+			// Find nearest hHat to trueH
+			std::vector<double> distance(hHats.size());
 			for (int i = 0; i < hHats.size(); i++) {
 				hHats[i] = hHat * exp(std::complex<double>(0, (m_PI / 2) * i));
+				distance[i] = abs(hHats[i] - trueH);
 			}
+			auto minIndex = std::distance(distance.begin(), std::min_element(distance.begin(), distance.end()));
+			std::vector<std::complex<double>> gaHat = {hHats[minIndex]};
 
 			LOG(kmldpc::Info, false) << std::fixed << std::setprecision(0) << std::setfill('0')
 			                                   << "Current Block Number = "
