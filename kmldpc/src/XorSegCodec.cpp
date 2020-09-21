@@ -33,13 +33,16 @@ void XORSegCodec::Malloc(int code_no, const char *file_name)
 	fscanf(fp, "%d", &m_list_count);
 
     fscanf(fp, "%s", temp_str);
-    fscanf(fp, "%d", &m_using_5G_LDPC);
+    fscanf(fp, "%u", &m_using_5G_LDPC);
 
 	fscanf(fp, "%s", temp_str);
 	fscanf(fp, "%d", &m_iter_cnt);
 
 	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%s", temp_str);
+	fscanf(fp, "%u", &m_using_Syndrom_Metric);
+
+    fscanf(fp, "%s", temp_str);
+    fscanf(fp, "%s", temp_str);
 
 	fclose(fp);
 
@@ -113,35 +116,58 @@ void XORSegCodec::Encoder_Ran(int *uu, int *cc)
 void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system,
                           std::vector<std::complex<double>> &hHats, int *uu_hat)
 {
-	std::vector<int> parityResults(hHats.size());
+	std::vector<double> metricResults(hHats.size(), 0);
+	std::vector<std::vector<double>> softSyndromsData(hHats.size());
     std::vector<std::pair<int, std::complex<double>>> temp;
-	for (auto i = 0; i < parityResults.size(); i++)
+	for (auto i = 0; i < metricResults.size(); i++)
 	{
 		temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
 		Demmaping(modem_linear_system, temp);
 		if (m_using_5G_LDPC == 1) {
             m_5GLDPC_codec.Decoder_5G(bitLout, uu_hat, m_iter_cnt);
-            parityResults[i] = getParityCheckAfterDecoding();
+		    if (m_using_Syndrom_Metric == 1) {
+		        softSyndromsData[i] = std::vector<double> (m_5GLDPC_codec.m_syndromsoft,
+                                                           m_5GLDPC_codec.m_syndromsoft+m_5GLDPC_codec.m_num_row);
+                for (auto j = 0; j < m_5GLDPC_codec.m_num_row; j++) {
+                    metricResults[i] += log(softSyndromsData[i][j]);
+                }
+		    } else {
+                metricResults[i] = getParityCheckAfterDecoding();
+		    }
 		} else {
-            parityResults[i] = getParityCheck();
+		    if (m_using_Syndrom_Metric == 1) {
+                m_LDPC_codec.Decoder(bitLout, uu_hat, m_iter_cnt);
+                softSyndromsData[i] = std::vector<double> (m_LDPC_codec.m_syndromsoft,
+                                                           m_LDPC_codec.m_syndromsoft+m_LDPC_codec.m_codedim);
+                for (auto j = 0; j < m_LDPC_codec.m_codedim; j++) {
+                    metricResults[i] += log(softSyndromsData[i][j]);
+                }
+		    } else {
+                metricResults[i] = getParityCheck();
+		    }
 		}
 
 		LOG(kmldpc::Info, false) << std::fixed << std::setprecision(14)
-		                                   << "Hhat = " << hHats[i]
-		                                   << " Unsatisfied Parity Count = "
-		                                   << std::setw(5) << std::right
-		                                   << parityResults[i] << std::endl;
+                                 << "Hhat = " << hHats[i]
+                                 << " Metric = "
+                                 << std::setw(5) << std::right
+                                 << metricResults[i] << std::endl;
 	}
 
-	auto minIndex = std::distance(parityResults.begin(), min_element(parityResults.begin(), parityResults.end()));
-    LOG(kmldpc::Info, false) << "minIndex = " << minIndex << std::endl;
-	temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
+	int hatIndex = -1;
+	if (m_using_Syndrom_Metric == 1) {
+        hatIndex = std::distance(metricResults.begin(), max_element(metricResults.begin(), metricResults.end()));
+	} else {
+        hatIndex = std::distance(metricResults.begin(), min_element(metricResults.begin(), metricResults.end()));
+	}
+    LOG(kmldpc::Info, false) << "hatIndex = " << hatIndex << std::endl;
+	temp = {std::pair<int, std::complex<double>>(0, hHats[hatIndex])};
 	Demmaping(modem_linear_system, temp);
 
 	if (m_using_5G_LDPC == 1) {
 	    m_5GLDPC_codec.Decoder_5G(bitLout, uu_hat, m_5GLDPC_codec.m_max_iter);
 	} else {
-	    m_LDPC_codec.Decoder(bitLout, uu_hat);
+	    m_LDPC_codec.Decoder(bitLout, uu_hat, m_LDPC_codec.m_max_iter);
 	}
 }
 

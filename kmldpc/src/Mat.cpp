@@ -118,7 +118,34 @@ namespace kmldpc
         }
 
         matvar_t *matvar = Mat_VarCreate(varname.c_str(), MAT_C_INT32, MAT_T_INT32, 2, dims, datas, 0);
+        if (nullptr == matvar) {
+            Log::get().setLevel(Error);
+            LOG(Error, true) << "Error creating variable for " << varname << std::endl;
+            exit(-1);
+        } else {
+            Mat_VarWrite(_matfp, matvar, MAT_COMPRESSION_NONE);
+            Mat_VarFree(matvar);
+        }
+
+        Log::get().setLevel(Info);
+        LOG(Info, false) << "Writed " << varname << " to " << _filename << std::endl;
+    }
+
+    void Mat::writeVector(const std::string &varname, const std::vector<double> &data) {
         if (nullptr == _matfp) {
+            Log::get().setLevel(Error);
+            LOG(Error, true) << "Create of open the file first" << std::endl;
+            exit(-1);
+        }
+        size_t dims[2] = {data.size(), 1};
+        double datas[data.size()] = {0};
+        for (int i=0; i<data.size(); i++) {
+            datas[i] = data[i];
+        }
+
+        matvar_t *matvar = Mat_VarCreate(
+                varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, datas, 0);
+        if (nullptr == matvar) {
             Log::get().setLevel(Error);
             LOG(Error, true) << "Error creating variable for " << varname << std::endl;
             exit(-1);

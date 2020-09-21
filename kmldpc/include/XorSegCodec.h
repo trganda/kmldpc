@@ -5,6 +5,7 @@
 #include "BinaryLDPCCodec.h"
 #include "ModemLinearSystem.h"
 #include "Log.h"
+#include "Mat.h"
 
 class XORSegCodec
 {
@@ -38,6 +39,7 @@ public:
 	int m_list_count;
 	int m_iter_cnt;    // iteration times while using LDPC on 5G
 	unsigned int m_using_5G_LDPC;
+	unsigned int m_using_Syndrom_Metric;
 	int m_len_uu;	   // length of uu for LDPC
 	int m_len_cc;	   // length of cc for LDPC
 	double m_coderate; // code rate

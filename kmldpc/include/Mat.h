@@ -22,6 +22,7 @@ namespace kmldpc
         void writeDouble(const std::string& varname, double data);
         void writeComplex(const std::string& varname, std::complex<double> data);
         void writeVector(const std::string& varname, const std::vector<int32_t>& data);
+        void writeVector(const std::string& varname, const std::vector<double>& data);
         void writeVector(const std::string& varname, const std::vector<std::complex<double>>& data);
 
     private:

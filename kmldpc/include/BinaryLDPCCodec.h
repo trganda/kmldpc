@@ -48,6 +48,9 @@ public:
 	char **m_decH;//用于译码的校验矩阵
 	char **m_encH;//用于编码校验矩阵
 
+	// soft syndrom
+	double *m_syndromsoft;
+
 //graph
 	Edge *m_row_head;
 	Edge *m_col_head;
@@ -63,7 +66,7 @@ public:
 	void Encoder(int *uu, int *cc);
 	void OnlineEncoder(int *uu, int *cc);
 	
-	int Decoder(double *M2V, int *uu_hat);
+	int Decoder(double *M2V, int *uu_hat, int iter_count);
 	int parityCheck(double *M2V);
 	int parityCheck(int* rr);
 	void SoftInHardOutDetectorDecoder(double *U2V, double *M2V, int *uu_hat);

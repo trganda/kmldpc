@@ -65,6 +65,8 @@ void CBinary5GLDPCCodec::Malloc(int code_no, char *file_name)
     m_row_head = new EdgeLDPC[m_num_row];
     m_col_head = new EdgeLDPC[m_num_col];
 
+    m_syndromsoft = new double[m_num_row];
+
     for (i = 0; i < m_num_row; i++){
         (m_row_head+i)->m_row_no = i;
         (m_row_head+i)->m_col_no = -1;
@@ -193,6 +195,7 @@ void CBinary5GLDPCCodec::Free()
     }
 
     delete []m_cc_hat;
+    delete []m_syndromsoft;
 
     return;
 }
@@ -1375,6 +1378,8 @@ int CBinary5GLDPCCodec::Decoder_5G(double *M2V, int *uu_hat, int iter_cnt)
 
                 p_edge = p_edge->left;
             }
+
+            m_syndromsoft[i] = (m_row_head + i)->m_alpha[0];
         }
     }
 

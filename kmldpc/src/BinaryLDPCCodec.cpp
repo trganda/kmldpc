@@ -53,6 +53,8 @@ void CBinaryLDPCCodec::Malloc(int code_no, char *file_name)
 	m_row_head = new Edge[m_num_row];
 	m_col_head = new Edge[m_num_col];
 
+    m_syndromsoft = new double[m_codedim];
+
 	for (i = 0; i < m_num_row; i++){
 		(m_row_head+i)->m_row_no = i;
 		(m_row_head+i)->m_col_no = -1;
@@ -170,6 +172,7 @@ void CBinaryLDPCCodec::Free()
 	}
 	
 	delete []m_cc_hat;
+	delete []m_syndromsoft;
 
 	return;
 }
@@ -670,7 +673,7 @@ void CBinaryLDPCCodec::InitMsg()
 	return;
 }
 
-int CBinaryLDPCCodec::Decoder(double *M2V, int *uu_hat)
+int CBinaryLDPCCodec::Decoder(double *M2V, int *uu_hat, int iter_count)
 {
 	int i;
 	int iter;
@@ -682,7 +685,7 @@ int CBinaryLDPCCodec::Decoder(double *M2V, int *uu_hat)
 //initialization
 	InitMsg();
 //iteration
-	for (iter = 0; iter < m_max_iter; iter++){
+	for (iter = 0; iter < iter_count; iter++){
 //from vnode to cnode
 		for (i = 0; i < m_num_col; i++){
 //forward
@@ -793,6 +796,8 @@ int CBinaryLDPCCodec::Decoder(double *M2V, int *uu_hat)
 				
 				p_edge = p_edge->left;
 			}
+
+             m_syndromsoft[i] = (m_row_head + i)->m_alpha[0];
 		}
 	}
 

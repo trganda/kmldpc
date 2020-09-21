@@ -53,6 +53,9 @@ public:
     char **m_decH;//用于译码的校验矩阵
     char **m_encH;//用于编码校验矩阵
 
+    // soft syndrom
+    double *m_syndromsoft;
+
 //graph
     EdgeLDPC *m_row_head;
     EdgeLDPC *m_col_head;
