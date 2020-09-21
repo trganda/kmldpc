@@ -208,7 +208,6 @@ double XORSegCodec::Histogram(Modem_Linear_System &modem_linear_system, std::vec
                                  << " Metric = "
                                  << std::setw(5) << std::right
                                  << metricResults[i] << std::endl;
-        metricResults[i] = abs(metricResults[i]);
     }
 
     return metricResults[0];
