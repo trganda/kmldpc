@@ -152,16 +152,12 @@ void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system,
                                  << " Metric = "
                                  << std::setw(5) << std::right
                                  << metricResults[i] << std::endl;
+		metricResults[i] = abs(metricResults[i]);
 	}
 
-	int hatIndex = -1;
-	if (m_using_Syndrom_Metric == 1) {
-        hatIndex = std::distance(metricResults.begin(), max_element(metricResults.begin(), metricResults.end()));
-	} else {
-        hatIndex = std::distance(metricResults.begin(), min_element(metricResults.begin(), metricResults.end()));
-	}
-    LOG(kmldpc::Info, false) << "hatIndex = " << hatIndex << std::endl;
-	temp = {std::pair<int, std::complex<double>>(0, hHats[hatIndex])};
+	auto minIndex = std::distance(metricResults.begin(), min_element(metricResults.begin(), metricResults.end()));
+    LOG(kmldpc::Info, false) << "hatIndex = " << minIndex << std::endl;
+	temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
 	Demmaping(modem_linear_system, temp);
 
 	if (m_using_5G_LDPC == 1) {
