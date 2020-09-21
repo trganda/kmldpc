@@ -42,6 +42,9 @@ void XORSegCodec::Malloc(int code_no, const char *file_name)
 	fscanf(fp, "%u", &m_using_Syndrom_Metric);
 
     fscanf(fp, "%s", temp_str);
+    fscanf(fp, "%u", &m_histogram);
+
+    fscanf(fp, "%s", temp_str);
     fscanf(fp, "%s", temp_str);
 
 	fclose(fp);
@@ -167,6 +170,50 @@ void XORSegCodec::Decoder(Modem_Linear_System &modem_linear_system,
 	}
 }
 
+double XORSegCodec::Histogram(Modem_Linear_System &modem_linear_system, std::vector<std::complex<double>> &hHats,
+                              int *uu_hat) {
+    std::vector<double> metricResults(hHats.size(), 0);
+    std::vector<std::vector<double>> softSyndromsData(hHats.size());
+    std::vector<std::pair<int, std::complex<double>>> temp;
+    for (auto i = 0; i < metricResults.size(); i++)
+    {
+        temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
+        Demmaping(modem_linear_system, temp);
+        if (m_using_5G_LDPC == 1) {
+            m_5GLDPC_codec.Decoder_5G(bitLout, uu_hat, m_iter_cnt);
+            if (m_using_Syndrom_Metric == 1) {
+                softSyndromsData[i] = std::vector<double> (m_5GLDPC_codec.m_syndromsoft,
+                                                           m_5GLDPC_codec.m_syndromsoft+m_5GLDPC_codec.m_num_row);
+                for (auto j = 0; j < m_5GLDPC_codec.m_num_row; j++) {
+                    metricResults[i] += log(softSyndromsData[i][j]);
+                }
+            } else {
+                metricResults[i] = getParityCheckAfterDecoding();
+            }
+        } else {
+            if (m_using_Syndrom_Metric == 1) {
+                m_LDPC_codec.Decoder(bitLout, uu_hat, m_iter_cnt);
+                softSyndromsData[i] = std::vector<double> (m_LDPC_codec.m_syndromsoft,
+                                                           m_LDPC_codec.m_syndromsoft+m_LDPC_codec.m_codedim);
+                for (auto j = 0; j < m_LDPC_codec.m_codedim; j++) {
+                    metricResults[i] += log(softSyndromsData[i][j]);
+                }
+            } else {
+                metricResults[i] = getParityCheck();
+            }
+        }
+
+        LOG(kmldpc::Info, false) << std::fixed << std::setprecision(14)
+                                 << "Hhat = " << hHats[i]
+                                 << " Metric = "
+                                 << std::setw(5) << std::right
+                                 << metricResults[i] << std::endl;
+        metricResults[i] = abs(metricResults[i]);
+    }
+
+    return metricResults[0];
+}
+
 void XORSegCodec::Demmaping(Modem_Linear_System &modem_linear_system,
                             std::vector<std::pair<int, std::complex<double>>> &thetaList)
 {
@@ -231,59 +278,3 @@ int XORSegCodec::getParityCheckAfterDecoding() {
     return m_5GLDPC_codec.parityCheck(m_5GLDPC_codec.m_cc_hat);
 }
 
-bool XORSegCodec::isCorrectInList(std::vector<std::pair<int, std::complex<double>>> &thetaList,
-								  std::vector<std::pair<int, double>> &differ,
-								  std::vector<std::complex<double>> &totalH,
-								  int *uu, int list_len)
-{
-	int listsize = 1 << list_len;
-	if (1 == listsize)
-	{
-		int temperr = 0;
-		for (int i = 0; i < m_extrabits_len; i++)
-		{
-			if (thetaList[i].first != uu[m_len_uu + i])
-			{
-				temperr++;
-			}
-		}
-		if (temperr > 0)
-		{
-			return false;
-		}
-		else
-		{
-			return true;
-		}
-	}
-	std::vector<int> debug(list_len);
-	for (int i = 0; i < listsize; i++)
-	{
-		for (int j = 0; j < list_len; j++)
-		{
-			debug[j] = (i >> j) % 2;
-		}
-		for (int j = 0; j < list_len; j++)
-		{
-			thetaList[differ[j].first] = std::pair<int, std::complex<double>>(debug[j], totalH[debug[j]]);
-		}
-		int temperr = 0;
-		for (int j = 0; j < m_extrabits_len; j++)
-		{
-			if (thetaList[j].first != uu[m_len_uu + j])
-			{
-				temperr++;
-			}
-		}
-		if (temperr > 0)
-		{
-			continue;
-		}
-		else
-		{
-			return true;
-		}
-	}
-
-	return false;
-}

@@ -160,6 +160,9 @@ void LDPC_Linear_System::Simulator()
 		m_source_sink.ClrCnt();
 		m_source_extrabits.ClrCnt();
 
+		std::string histfilename = "histogram_" + std::to_string(m_codec.m_histogram) + "_" + std::to_string(snr) + ".txt";
+		std::fstream out(histfilename, std::ios::out);
+
 		while ((m_source_sink.m_num_tot_blk < m_max_blk_num 
 			&& m_source_sink.m_num_err_blk < m_max_blk_err)) {
 
@@ -207,7 +210,8 @@ void LDPC_Linear_System::Simulator()
 			                                   << "Current Block Number = "
 			                                   << std::setw(7) << std::right << (m_source_sink.m_num_tot_blk + 1)
 			                                   << std::endl;
-			m_codec.Decoder(Modem_Lin_Sym, hHats, m_uu_hat);
+
+			out << m_codec.Histogram(Modem_Lin_Sym, hHats, m_uu_hat);
 
 			m_source_sink.CntErr(m_uu, m_uu_hat, m_codec.m_len_uu, 1);
 
@@ -226,42 +230,8 @@ void LDPC_Linear_System::Simulator()
                 m_source_sink.PrintResult(snr);
 			}
 		}
-		m_source_sink.PrintResult(snr);
 
-		if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
-		{
-			fprintf(stderr, "\n Cannot open the file!!!\n");
-			exit(1);
-		}
-		fprintf(fp, "\n\nsnr =  %lf: var = %lf: ", snr, var);
-		m_source_sink.PrintResult(fp);
-		fclose(fp);
-
-		//BER
-		if ((fp = fopen("snrber.txt", "a+")) == nullptr)
-		{
-			fprintf(stderr, "\n Cannot open the file!!!\n");
-			exit(1);
-		}
-		fprintf(fp, "\n%lf %12.10lf", snr, m_source_sink.m_ber);
-		fclose(fp);
-
-		//FER
-		if ((fp = fopen("snrfer.txt", "a+")) == nullptr)
-		{
-			fprintf(stderr, "\n Cannot open the file!!!\n");
-			exit(1);
-		}
-		fprintf(fp, "\n%lf %12.10lf", snr, m_source_sink.m_fer);
-		fclose(fp);
-
-		if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
-		{
-			fprintf(stderr, "\n Cannot open the file!!!\n");
-			exit(1);
-		}
-		fclose(fp);
-
+        out.close();
 	}
 
 	EndSimulator();

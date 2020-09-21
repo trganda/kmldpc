@@ -6,8 +6,10 @@ list_Size
 using_5GLDPC
 1
 iter_Count_5GLDPC
-5
+50
 using_Syndrom_Metric
+1
+histogram_true_or_false
 1
 LDPCCodesetupFile
 LDPC.txt
