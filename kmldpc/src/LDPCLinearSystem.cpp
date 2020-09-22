@@ -212,7 +212,7 @@ void LDPC_Linear_System::Simulator()
 			                                   << std::setw(7) << std::right << (m_source_sink.m_num_tot_blk + 1)
 			                                   << std::endl;
 
-			out << m_codec.Histogram(Modem_Lin_Sym, hHats, m_uu_hat);
+			out << m_codec.Histogram(Modem_Lin_Sym, hHats, m_uu_hat) << " " << abs(hHats[0]) << std::endl;
 
 			m_source_sink.CntErr(m_uu, m_uu_hat, m_codec.m_len_uu, 1);
 
