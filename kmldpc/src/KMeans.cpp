@@ -18,7 +18,7 @@ namespace kmldpc {
         for (int i = 0; i < absValues.size(); i++) {
             absValues[i] = abs(_data[i]);
         }
-        auto maxIndex = max_element(absValues.begin(), absValues.end()) - absValues.begin();
+        auto maxIndex = std::distance(absValues.begin(), max_element(absValues.begin(), absValues.end()));
         auto maxValue = _data[maxIndex];
 
         // Initial clusters
@@ -31,8 +31,6 @@ namespace kmldpc {
         std::vector<int> idxCount(_clusters.size());
         std::vector<std::complex<double>> idxSum(_clusters.size());
         for (int i = 0; i < _iter; i++) {
-//            std::fill(idxCount.begin(), idxCount.end(), 0);
-//            std::fill(idxSum.begin(), idxSum.end(), 0);
             idxCount.clear();
             idxSum.clear();
             std::vector<double> tempAbsValues(_clusters.size());
@@ -40,7 +38,8 @@ namespace kmldpc {
                 for (int k = 0; k < _clusters.size(); k++) {
                     tempAbsValues[k] = abs(_clusters[k] - _data[j]);
                 }
-                auto minIndex = min_element(tempAbsValues.begin(), tempAbsValues.end()) - tempAbsValues.begin();
+                auto minIndex = std::distance(tempAbsValues.begin(),
+                                              min_element(tempAbsValues.begin(), tempAbsValues.end()));
                 _idx[j] = minIndex;
                 idxCount[_idx[j]]++;
                 idxSum[_idx[j]] += _data[j];
@@ -69,7 +68,7 @@ namespace kmldpc {
             for (int j = 0; j < absValues.size(); j++) {
                 absValues[j] = abs(_clusters[j]);
             }
-            maxIndex = max_element(absValues.begin(), absValues.end()) - absValues.begin();
+            maxIndex = std::distance(absValues.begin(), max_element(absValues.begin(), absValues.end()));
             maxValue = _clusters[maxIndex];
 
             hatH = maxValue / _constellations[0];
