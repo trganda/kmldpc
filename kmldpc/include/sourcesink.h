@@ -4,7 +4,7 @@
 #include <complex>
 #include <vector>
 #include <iomanip>
-#include "Log.h"
+#include "log.h"
 
 class CSourceSink  
 {
