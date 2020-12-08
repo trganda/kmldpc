@@ -4,8 +4,8 @@ If you have any suggestions, please contact me at maxiao@mail.sysu.edu.cn
 The program can only be employed for academic research.
 ******************************************************************************/
 
-#include "Utility.h"
-#include "RandNum.h"
+#include "utility.h"
+#include "randnum.h"
 
 extern CLCRandNum rndGen0;
 

@@ -1,5 +1,5 @@
-#include "ModemLinearSystem.h"
-#include "RandNum.h"
+#include "modemlinearsystem.h"
+#include "randnum.h"
 
 extern CLCRandNum rndGen0;
 extern CWHRandNum rndGen1;

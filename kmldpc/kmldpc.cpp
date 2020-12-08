@@ -1,7 +1,7 @@
-﻿#include "RandNum.h"
-#include "LDPCLinearSystem.h"
+﻿#include "randnum.h"
+#include "ldpclinearsystem.h"
+#include "log.h"
 #include <iostream>
-#include "Log.h"
 
 CLCRandNum rndGen0;
 CWHRandNum rndGen1;

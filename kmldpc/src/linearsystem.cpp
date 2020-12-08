@@ -1,6 +1,6 @@
-#include "LinearSystem.h"
-#include "RandNum.h"
-#include "Utility.h"
+#include "linearsystem.h"
+#include "randnum.h"
+#include "utility.h"
 
 extern CLCRandNum rndGen0;
 extern CWHRandNum rndGen1;

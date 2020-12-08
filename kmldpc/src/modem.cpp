@@ -1,5 +1,5 @@
-#include "Modem.h"
-#include "Utility.h"
+#include "modem.h"
+#include "utility.h"
 
 void CModem::Malloc(int code_no, char *file_name)
 {

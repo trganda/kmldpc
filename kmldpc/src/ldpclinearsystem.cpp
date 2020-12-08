@@ -1,5 +1,5 @@
-﻿#include "LDPCLinearSystem.h"
-#include "Log.h"
+﻿#include "ldpclinearsystem.h"
+#include "log.h"
 
 extern CLCRandNum rndGen0;
 extern CWHRandNum rndGen1;

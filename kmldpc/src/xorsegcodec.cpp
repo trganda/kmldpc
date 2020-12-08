@@ -1,5 +1,5 @@
-﻿#include "XorSegCodec.h"
-#include "RandNum.h"
+﻿#include "xorsegcodec.h"
+#include "randnum.h"
 #include <vector>
 #include <complex>
 #include <algorithm>

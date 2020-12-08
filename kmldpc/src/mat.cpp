@@ -1,5 +1,5 @@
-#include "Mat.h"
-#include "Log.h"
+#include "mat.h"
+#include "log.h"
 
 namespace kmldpc
 {

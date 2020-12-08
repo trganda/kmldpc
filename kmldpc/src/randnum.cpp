@@ -1,4 +1,4 @@
-#include "RandNum.h"
+#include "randnum.h"
 
 const int CLCRandNum::A = 48271;
 const long CLCRandNum::M = 2147483647;
