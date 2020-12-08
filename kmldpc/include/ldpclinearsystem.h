@@ -1,11 +1,11 @@
 #ifndef LDPC_LINEAR_SYSTEM_H
 #define LDPC_LINEAR_SYSTEM_H
 
-#include "SourceSink.h"
-#include "XorSegCodec.h"
-#include "ModemLinearSystem.h"
-#include "KMeans.h"
-#include "RandNum.h"
+#include "sourcesink.h"
+#include "xorsegcodec.h"
+#include "modemlinearsystem.h"
+#include "kmeans.h"
+#include "randnum.h"
 #include <complex>
 #include <algorithm>
 #include <vector>

@@ -4,7 +4,7 @@
 #include <vector>
 #include <complex>
 #include <algorithm>
-#include "Mat.h"
+#include "mat.h"
 
 namespace kmldpc {
     class KMeans {
