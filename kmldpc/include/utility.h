@@ -14,26 +14,11 @@
 #define SMALL_LLR -28.0
 #define LARGE_LLR 28.0
 
-#ifndef MAX
-#define MAX(x, y) (((x)>(y))?(x):(y))
-#endif
-
 void MatrixProd(int* uu, int* cc, int** G, int dim, int len);
-
-int sgn(double x);
 
 void ProbClip(double *xx, int len_xx);
 
-int min(int x, int y);
-
-int max(int x, int y);
-
 double Seqmax(double *x, int num);
-
-//interleaver
-void RandomIntl(int *pai, int period);
-void N1N2RandomIntl(int *pai, int period, int N1, int N2);//|pai[i]-pai[j]| < N1 whenever 0<|i-j|>=N2
-void ShiftIntl(int *pai, int shifted_pos, int period);
 
 template <class ForwardIterator>
 void ProbClip(ForwardIterator first, ForwardIterator last);
@@ -50,6 +35,6 @@ void ProbClip(ForwardIterator first, ForwardIterator last)
 	}
 }
 
-std::ostream & operator<<( std::ostream & os,const std::complex<double> & c);
+std::ostream & operator<<( std::ostream & os, const std::complex<double> & c);
 
 #endif
