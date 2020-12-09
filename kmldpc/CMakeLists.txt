@@ -26,6 +26,8 @@ aux_source_directory(src SRC)
 file(COPY ${CMAKE_SOURCE_DIR}/config/ DESTINATION ${PROJECT_BINARY_DIR}/kmldpc FILES_MATCHING PATTERN "*.txt")
 # Crate records folder
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/kmldpc/records)
+# Crate logger folder
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/kmldpc/logs)
 
 set(BUILD_STATIC FALSE CACHE STRING "Set this to link external libraries statically")
 

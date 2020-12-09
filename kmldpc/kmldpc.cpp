@@ -9,8 +9,9 @@ CWHRandNum rndGen1;
 
 int main(int argc, char* argv[])
 {
+    std::string dirname = "logs";
     std::string logFileName = kmldpc::Log::get().getCurrentSystemTime() + "-kmldpc.log";
-    std::ofstream logFile(logFileName);
+    std::ofstream logFile(dirname + "/" + logFileName);
     kmldpc::TeeStream logTee (logFile, std::cout);
 
     if (logFile.is_open() && logFile.good())
