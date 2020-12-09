@@ -1,4 +1,4 @@
-﻿#include "ldpclinearsystem.h"
+#include "ldpclinearsystem.h"
 #include "log.h"
 
 extern CLCRandNum rndGen0;

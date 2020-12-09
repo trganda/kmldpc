@@ -1,4 +1,4 @@
-﻿#include "randnum.h"
+#include "randnum.h"
 #include "ldpclinearsystem.h"
 #include "log.h"
 #include <iostream>
