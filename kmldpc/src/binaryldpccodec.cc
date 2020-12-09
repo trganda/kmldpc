@@ -1,6 +1,4 @@
 #include "binaryldpccodec.h"
-#include "utility.h"
-#include "randnum.h"
 
 extern CLCRandNum rndGen0;
 
@@ -174,7 +172,6 @@ void CBinaryLDPCCodec::Free()
 	delete []m_cc_hat;
 	delete []m_syndromsoft;
 
-	return;
 }
 
 void CBinaryLDPCCodec::SystH()
@@ -601,7 +598,6 @@ void CBinaryLDPCCodec::Kite_Encoder(int *uu, int *cc)
 		break;
 	}
 
-	return;
 }
 
 void CBinaryLDPCCodec::Encoder(int *uu, int *cc)
@@ -630,7 +626,6 @@ void CBinaryLDPCCodec::Encoder(int *uu, int *cc)
 		break;
 	}
 
-	return;
 }
 
 void CBinaryLDPCCodec::OnlineEncoder(int *uu, int *cc)
@@ -652,8 +647,7 @@ void CBinaryLDPCCodec::OnlineEncoder(int *uu, int *cc)
 		}
 		i++;
 	}
-	
-	return;
+
 }
 
 void CBinaryLDPCCodec::InitMsg()
@@ -670,7 +664,6 @@ void CBinaryLDPCCodec::InitMsg()
 		}
 	}
 
-	return;
 }
 
 int CBinaryLDPCCodec::Decoder(double *M2V, int *uu_hat, int iter_count)

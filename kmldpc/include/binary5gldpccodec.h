@@ -1,13 +1,16 @@
 #ifndef KMLDPC_BINARY5GLDPCCODEC_H
 #define KMLDPC_BINARY5GLDPCCODEC_H
 
+#include <cstdio>
+#include <cstring>
+
+#include "utility.h"
+#include "randnum.h"
+
 /**********************************************************
 类名: EdgeLDPC
 功能: Tanner图上的边
 ***********************************************************/
-#include <cstdio>
-#include <cstring>
-
 typedef struct EdgeLDPC
 {
     int m_row_no;

@@ -14,7 +14,7 @@ void CLCRandNum::SetSeed(int flag)
 		state = 0;
 		while (state == 0)
 		{
-			srand((unsigned)time(NULL));
+			srand((unsigned)time(nullptr));
 			state = rand();
 		}
 	}

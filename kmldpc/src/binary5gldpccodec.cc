@@ -1,9 +1,6 @@
 #include "binary5gldpccodec.h"
-#include "utility.h"
-#include "randnum.h"
 
 extern CLCRandNum rndGen0;
-
 
 /***************************************************************************
 函数：ReadHMalloc(int code_no, char *file_name)

@@ -3,6 +3,10 @@
 
 #include <cstdio>
 #include <cstring>
+
+#include "utility.h"
+#include "randnum.h"
+
 /**********************************************************
 类名: Edge
 功能: Tanner图上的边

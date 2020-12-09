@@ -1,8 +1,11 @@
 #ifndef LINEAR_SYSTEM_H
 #define LINEAR_SYSTEM_H
 
-#include "modem.h"
 #include <complex>
+
+#include "modem.h"
+#include "randnum.h"
+#include "utility.h"
 
 class Linear_System
 {

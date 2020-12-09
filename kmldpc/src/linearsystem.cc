@@ -1,6 +1,4 @@
 #include "linearsystem.h"
-#include "randnum.h"
-#include "utility.h"
 
 extern CLCRandNum rndGen0;
 extern CWHRandNum rndGen1;
@@ -12,7 +10,7 @@ void Linear_System::Malloc(CModem * modem, int len_xx, int code_no, char * file_
 	m_modem = modem;
 	m_len_xx = len_xx;
 
-	if ((fp = fopen(file_name, "r")) == NULL){
+	if ((fp = fopen(file_name, "r")) == nullptr){
 		fprintf(stderr, "\nCannot open %s", file_name);
 		exit(3);
 	}
@@ -24,8 +22,6 @@ void Linear_System::Malloc(CModem * modem, int len_xx, int code_no, char * file_
 	m_symbol_prob = new double[m_modem->num_symbol];
 	
 	num_symbol = m_modem->num_symbol;
-	
-	return;
 }
 
 void Linear_System::Free()
@@ -34,8 +30,6 @@ void Linear_System::Free()
 	delete []m_yy;
 	delete []m_Nyy;
 	delete []m_symbol_prob;
-
-	return;
 }
 
 void Linear_System::AWGN_linear_system(double *xx, double *sym_prob)
@@ -62,8 +56,6 @@ void Linear_System::AWGN_linear_system(double *xx, double *sym_prob)
 		temp = i * m_modem->num_symbol;		
 		Soft_AWGN_Demodulation(m_yy, (sym_prob + temp));
 	} //end of for (i = 0; i < num_sym_in_blk; i++)
-
-	return;
 }
 
 void Linear_System::Parition_HAWGN_system(double* xx, std::vector<std::complex<double>>& selectH)
@@ -138,6 +130,4 @@ void Linear_System::Soft_AWGN_Demodulation(double *yy, double *sym_prob)
 	}
 
 	ProbClip(sym_prob, num_symbol);
-
-	return;
 }

@@ -1,5 +1,4 @@
 #include "modemlinearsystem.h"
-#include "randnum.h"
 
 extern CLCRandNum rndGen0;
 extern CWHRandNum rndGen1;
@@ -13,7 +12,7 @@ void Modem_Linear_System::Malloc(int len_cc, int code_no, char *file_name)
 	
 	m_len_cc = len_cc;
 
-	if ((fp = fopen(file_name, "r")) == NULL){
+	if ((fp = fopen(file_name, "r")) == nullptr){
 		fprintf(stderr, "\nCannot open %s", file_name);
 		exit(3);
 	}

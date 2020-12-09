@@ -1,5 +1,4 @@
 #include "sourcesink.h"
-#include "randnum.h"
 
 extern CLCRandNum rndGen0;
 
@@ -7,21 +6,19 @@ void CSourceSink::GetBitStr(int *uu, int len)
 {
 	int t; 
 
-	for (t = 0; t < len; t++)
-		uu[t] = (rndGen0.Uniform() < 0.5?0:1);
-	    //uu[t] = 0;
-
+	for (t = 0; t < len; t++) {
+        uu[t] = (rndGen0.Uniform() < 0.5 ? 0 : 1);
+    }
 }
 
 void CSourceSink::GetSymStr(int *uu, int qary, int len)
 {
 	int t; 
 
-	for (t = 0; t < len; t++){
+	for (t = 0; t < len; t++) {
 		uu[t] = qary;
 		while (uu[t] == qary)
 			uu[t] = (int)(qary * rndGen0.Uniform());
-//	    uu[t] = 0;
 	}
 }
 
@@ -33,7 +30,7 @@ void CSourceSink::ClrCnt()
 	m_num_err_bit = 0;
 }
 
-void CSourceSink::CntErr(int *uu, int *uu_hat, int len, int accumulator)
+void CSourceSink::CntErr(const int *uu, const int *uu_hat, int len, int accumulator)
 {
 	int t;
 

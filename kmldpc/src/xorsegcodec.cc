@@ -1,9 +1,4 @@
-#include "xorsegcodec.h"
-#include "randnum.h"
-#include <vector>
-#include <complex>
-#include <algorithm>
-#include <iomanip>
+﻿#include "xorsegcodec.h"
 
 extern CLCRandNum rndGen0;
 

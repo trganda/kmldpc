@@ -1,11 +1,13 @@
 #ifndef MODEM_LINEAR_SYSTEM_H
 #define MODEM_LINEAR_SYSTEM_H
 
-#include "modem.h"
-#include "utility.h"
-#include "linearsystem.h"
 #include <complex>
 #include <cstring>
+
+#include "modem.h"
+#include "utility.h"
+#include "randnum.h"
+#include "linearsystem.h"
 
 class Modem_Linear_System
 {

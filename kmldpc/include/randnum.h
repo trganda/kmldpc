@@ -62,4 +62,4 @@ private:
     int X, Y, Z;
 };
 
-#endif
+#endif //RAND_NUM_H

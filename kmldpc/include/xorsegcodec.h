@@ -1,11 +1,17 @@
 #ifndef XOR_SEG_CODEC_H
 #define XOR_SEG_CODEC_H
 
+#include <vector>
+#include <complex>
+#include <algorithm>
+#include <iomanip>
+
 #include "binary5gldpccodec.h"
 #include "binaryldpccodec.h"
 #include "modemlinearsystem.h"
 #include "log.h"
 #include "mat.h"
+#include "randnum.h"
 #include "utility.h"
 
 class XORSegCodec

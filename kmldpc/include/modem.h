@@ -5,6 +5,8 @@
 #include <complex>
 #include <vector>
 
+#include "utility.h"
+
 class CModem
 {
 public:
