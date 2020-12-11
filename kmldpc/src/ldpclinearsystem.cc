@@ -206,16 +206,16 @@ void LDPCLinearSystem::Simulator()
 
 			source_sink_.CntErr(uu_, uu_hat_, codec_.GetUuLen(), 1);
 
-			if (source_sink_.GetNumErrBlk() > current_error_blk) {
-			    std::string dir = "records";
-				std::string filename = dir + "/" + "RECEIVED_SYMBOL_SNR_" +
-                                       std::to_string(snr) + "_ID_" +
-                                       std::to_string(int(source_sink_.GetNumTotBlk())) + ".mat";
-				hHats.push_back(trueH);
-
-                kmeans.dumpToMat(filename, hHats);
-                LOG(lab::logger::Info, false) << "Wrote error case to " << filename << std::endl;
-			}
+//			if (source_sink_.GetNumErrBlk() > current_error_blk) {
+//			    std::string dir = "records";
+//				std::string filename = dir + "/" + "RECEIVED_SYMBOL_SNR_" +
+//                                       std::to_string(snr) + "_ID_" +
+//                                       std::to_string(int(source_sink_.GetNumTotBlk())) + ".mat";
+//				hHats.push_back(trueH);
+//
+//                kmeans.dumpToMat(filename, hHats);
+//                LOG(lab::logger::Info, false) << "Wrote error case to " << filename << std::endl;
+//			}
 
 			if (int(source_sink_.GetNumTotBlk()) > 0 && int(source_sink_.GetNumTotBlk()) % 100 == 0) {
                 source_sink_.PrintResult(snr);

@@ -97,7 +97,7 @@ class ModemLinearSystem {
             int symbolPerPart = um.size() / thetaList.size();
 
             std::vector<std::complex<double>> tum(um.size());
-            for (int i = 0; i < thetaList.size(); i++) {
+            for (size_t i = 0; i < thetaList.size(); i++) {
                 for (int j = 0; j < symbolPerPart; j++) {
                     tum[j + i * symbolPerPart] = um[j + i * symbolPerPart] / thetaList[i].second;
                     linsym_.GetYy()[0] = tum[j + i * symbolPerPart].real();
@@ -110,7 +110,7 @@ class ModemLinearSystem {
 
         std::vector<std::complex<double>> GetRSymbol() const {
             std::vector<std::complex<double>> um(xx_len_ / 2);
-            for (int i = 0; i < um.size(); i++) {
+            for (size_t i = 0; i < um.size(); i++) {
                 um[i] = std::complex<double>(linsym_.GetNyy()[i * 2], linsym_.GetNyy()[i * 2 + 1]);
             }
             return um;
