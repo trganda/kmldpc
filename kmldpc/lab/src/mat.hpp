@@ -150,7 +150,7 @@ class Mat {
             }
             size_t dims[2] = {data.size(), 1};
             int32_t* data_wrap = new int32_t[data.size()];
-            for (int i=0; i<data.size(); i++) {
+            for (size_t i = 0; i < data.size(); i++) {
                 data_wrap[i] = data[i];
             }
 
@@ -178,7 +178,7 @@ class Mat {
             size_t dims[2] = {data.size(), 1};
             double x[data.size()],
                     y[data.size()];
-            for (int i=0; i<data.size(); i++) {
+            for (size_t i = 0; i < data.size(); i++) {
                 x[i] = data[i].real();
                 y[i] = data[i].imag();
             }

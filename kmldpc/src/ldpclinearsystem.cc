@@ -194,7 +194,7 @@ void LDPCLinearSystem::Simulator()
 			// std::complex<double> hHat = trueH;
 			std::complex<double> hHat = clusters[0] / constellations[0];
 			std::vector<std::complex<double>> hHats(4);
-			for (int i = 0; i < hHats.size(); i++) {
+			for (size_t i = 0; i < hHats.size(); i++) {
 				hHats[i] = hHat * exp(std::complex<double>(0, (lab::kPi / 2) * i));
 			}
 

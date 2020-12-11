@@ -65,13 +65,13 @@ class XORSegCodec {
             if (using_ldpc_5g_ == 1) {
                 LOG(logger::Info, true) << "Using 5G LDPC." << std::endl;
                 ldpc_codec_5g_.Malloc(code_no, temp_str);
-                uu_len_ = ldpc_codec_5g_.m_codedim;
-                cc_len_ = ldpc_codec_5g_.m_codelen_puncture;
+                uu_len_ = ldpc_codec_5g_.GetCodeDim();
+                cc_len_ = ldpc_codec_5g_.GetCodeenPuncture();
             } else {
                 LOG(logger::Info, true) << "Using traditional LDPC." << std::endl;
                 ldpc_codec_.Malloc(code_no, temp_str);
-                uu_len_ = ldpc_codec_.m_codedim;
-                cc_len_ = ldpc_codec_.m_codelen;
+                uu_len_ = ldpc_codec_.GetCodeDim();
+                cc_len_ = ldpc_codec_.GetCodeLen();
             }
 
             rr_ = new int[cc_len_];
@@ -92,16 +92,16 @@ class XORSegCodec {
             std::vector<double> metricResults(hHats.size(), 0);
             std::vector<std::vector<double>> softSyndromsData(hHats.size());
             std::vector<std::pair<int, std::complex<double>>> temp;
-            for (auto i = 0; i < metricResults.size(); i++)
+            for (size_t i = 0; i < metricResults.size(); i++)
             {
                 temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
                 DeMapping(modem_linear_system, temp);
                 if (using_ldpc_5g_ == 1) {
                     ldpc_codec_5g_.Decoder_5G(bit_l_out_, uu_hat, iter_cnt_);
                     if (using_syndrom_metric_ == 1) {
-                        softSyndromsData[i] = std::vector<double> (ldpc_codec_5g_.m_syndromsoft,
-                                                                   ldpc_codec_5g_.m_syndromsoft + ldpc_codec_5g_.m_num_row);
-                        for (auto j = 0; j < ldpc_codec_5g_.m_num_row; j++) {
+                        softSyndromsData[i] = std::vector<double> (ldpc_codec_5g_.GetSyndromSoft(),
+                                                                   ldpc_codec_5g_.GetSyndromSoft() + ldpc_codec_5g_.GetNumRow());
+                        for (auto j = 0; j < ldpc_codec_5g_.GetNumRow(); j++) {
                             metricResults[i] += log(softSyndromsData[i][j]);
                         }
                     } else {
@@ -110,9 +110,9 @@ class XORSegCodec {
                 } else {
                     if (using_syndrom_metric_ == 1) {
                         ldpc_codec_.Decoder(bit_l_out_, uu_hat, iter_cnt_);
-                        softSyndromsData[i] = std::vector<double> (ldpc_codec_.m_syndromsoft,
-                                                                   ldpc_codec_.m_syndromsoft + ldpc_codec_.m_codedim);
-                        for (auto j = 0; j < ldpc_codec_.m_codedim; j++) {
+                        softSyndromsData[i] = std::vector<double> (ldpc_codec_.GetSyndromSoft(),
+                                                                   ldpc_codec_.GetSyndromSoft() + ldpc_codec_.GetCodeDim());
+                        for (auto j = 0; j < ldpc_codec_.GetCodeDim(); j++) {
                             metricResults[i] += log(softSyndromsData[i][j]);
                         }
                     } else {
@@ -134,9 +134,9 @@ class XORSegCodec {
             DeMapping(modem_linear_system, temp);
 
             if (using_ldpc_5g_ == 1) {
-                ldpc_codec_5g_.Decoder_5G(bit_l_out_, uu_hat, ldpc_codec_5g_.m_max_iter);
+                ldpc_codec_5g_.Decoder_5G(bit_l_out_, uu_hat, ldpc_codec_5g_.GetMaxIter());
             } else {
-                ldpc_codec_.Decoder(bit_l_out_, uu_hat, ldpc_codec_.m_max_iter);
+                ldpc_codec_.Decoder(bit_l_out_, uu_hat, ldpc_codec_.GetMaxIter());
             }
         }
         // Getter
@@ -174,11 +174,11 @@ class XORSegCodec {
                 }
             }
 
-            return ldpc_codec_.parityCheck(rr_);
+            return ldpc_codec_.ParityCheck(rr_);
         }
 
         int GetParityCheckAfterDecoding() {
-            return ldpc_codec_5g_.parityCheck(ldpc_codec_5g_.m_cc_hat);
+            return ldpc_codec_5g_.ParityCheck(ldpc_codec_5g_.GetCcHat());
         }
 
     private:

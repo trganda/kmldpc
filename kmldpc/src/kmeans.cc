@@ -9,12 +9,12 @@ KMeans::KMeans(std::vector<std::complex<double>> &data,
     idx_ = std::vector<int>(data.size());
 }
 
-KMeans::~KMeans() {}
+KMeans::~KMeans() = default;
 
 void KMeans::run() {
     // Find the point far from the origin to be the outlier
     std::vector<double> absValues(data_.size());
-    for (int i = 0; i < absValues.size(); i++) {
+    for (size_t i = 0; i < absValues.size(); i++) {
         absValues[i] = abs(data_[i]);
     }
     auto maxIndex = std::distance(absValues.begin(), max_element(absValues.begin(), absValues.end()));
@@ -22,19 +22,19 @@ void KMeans::run() {
 
     // Initial clusters
     auto hatH = maxValue / constellations_[0];
-    for (int i = 0; i < clusters_.size(); i++) {
+    for (size_t i = 0; i < clusters_.size(); i++) {
         clusters_[i] = constellations_[i] * hatH;
     }
 
     std::vector<std::complex<double>> tempClusters(clusters_.size());
     std::vector<int> idxCount(clusters_.size());
     std::vector<std::complex<double>> idxSum(clusters_.size());
-    for (int i = 0; i < iter_; i++) {
+    for (size_t i = 0; i < iter_; i++) {
         idxCount.clear();
         idxSum.clear();
         std::vector<double> tempAbsValues(clusters_.size());
-        for (int j = 0; j < data_.size(); j++) {
-            for (int k = 0; k < clusters_.size(); k++) {
+        for (size_t j = 0; j < data_.size(); j++) {
+            for (size_t k = 0; k < clusters_.size(); k++) {
                 tempAbsValues[k] = abs(clusters_[k] - data_[j]);
             }
             auto minIndex = std::distance(tempAbsValues.begin(),
@@ -45,7 +45,7 @@ void KMeans::run() {
         }
 
         bool flag = true;
-        for (int j = 0; j < clusters_.size(); j++) {
+        for (size_t j = 0; j < clusters_.size(); j++) {
             if (clusters_[j] != tempClusters[j]) {
                 flag &= false;
                 break;
@@ -58,27 +58,27 @@ void KMeans::run() {
 
         // Updating the cluster
         tempClusters = clusters_;
-        for (int j = 0; j < clusters_.size(); j++) {
+        for (size_t j = 0; j < clusters_.size(); j++) {
             clusters_[j] = idxSum[j] / std::complex<double>(idxCount[j], 0);
         }
 
         // Form to the constellation schema
         absValues.clear();
-        for (int j = 0; j < absValues.size(); j++) {
+        for (size_t j = 0; j < absValues.size(); j++) {
             absValues[j] = abs(clusters_[j]);
         }
         maxIndex = std::distance(absValues.begin(), max_element(absValues.begin(), absValues.end()));
         maxValue = clusters_[maxIndex];
 
         hatH = maxValue / constellations_[0];
-        for (int j = 0; j < clusters_.size(); j++) {
+        for (size_t j = 0; j < clusters_.size(); j++) {
             clusters_[j] = constellations_[j] * hatH;
         }
     }
 
-    for (int i = 0; i < data_.size(); i++) {
+    for (size_t i = 0; i < data_.size(); i++) {
         std::vector<double> tempAbsValues(clusters_.size());
-        for (int j = 0; j < clusters_.size(); j++) {
+        for (size_t j = 0; j < clusters_.size(); j++) {
             tempAbsValues[j] = abs(clusters_[j] - data_[i]);
         }
         auto minIndex = min_element(tempAbsValues.begin(), tempAbsValues.end()) - tempAbsValues.begin();

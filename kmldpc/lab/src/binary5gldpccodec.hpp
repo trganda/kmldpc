@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "utility.hpp"
+#include "binaryldpccodec.hpp"
 
 namespace lab {
 
@@ -13,1362 +14,518 @@ namespace lab {
 功能 ：二进制LDPC码编译码
 *************************************************************/
 
-class Binary5GLDPCCodec
-{
-public:
-    void Free() {
-        Free_Tanner_Graph();
+class Binary5GLDPCCodec : public BinaryLDPCCodec {
+    public:
+        explicit Binary5GLDPCCodec()
+                : code_len_no_puncture_(0), code_len_puncture_(0), lifting_factor_(0),
+                  cc_no_puncture_(nullptr), cc_soft_no_puncture_(nullptr) {}
 
-        if (m_encoder_active != 0) {
-            for (int i = 0; i < m_num_row; i++) {
-                delete []m_encH[i];
+        ~Binary5GLDPCCodec() override {
+            delete[] cc_no_puncture_;
+            delete[] cc_soft_no_puncture_;
+        }
+
+        void Malloc(int code_no, char *file_name) override {
+            int i, j;
+            int row_no, row_deg, col_no;
+            char matrix_filename[255];
+            Edge *temp_edge;
+            FILE *fq = nullptr;
+
+            char temp_str[80] = {' '};
+            char mark[80];
+            FILE *fp;
+
+            sprintf(mark, "LDPC***%d***PARAMETERS",code_no);
+
+            if ((fp = fopen(file_name, "r")) == nullptr){
+                fprintf(stderr, "\nCannot Open %s", file_name);
+                exit(3);
             }
-            delete []m_encH;
-        }
 
-        delete []m_cc_hat;
-        delete []m_syndromsoft;
-    }
+            while (strcmp(temp_str, mark) != 0)
+                fscanf(fp, "%s", temp_str);
 
-    void Malloc(int code_no, char *file_name) {
-        int i, j;
-        int row_no, row_deg, col_no;
-        Edge *temp_edge;
-        FILE *fq = nullptr;
-
-        char temp_str[80] = {' '};
-        char mark[80];
-        FILE *fp;
-
-        sprintf(mark, "LDPC***%d***PARAMETERS",code_no);
-
-        if ((fp = fopen(file_name, "r")) == nullptr){
-            fprintf(stderr, "\nCannot Open %s", file_name);
-            exit(3);
-        }
-
-        while (strcmp(temp_str, mark) != 0)
+            //decdoing
             fscanf(fp, "%s", temp_str);
+            fscanf(fp, "%d", &max_iter_);
 
-//decdoing
-        fscanf(fp, "%s", temp_str);
-        fscanf(fp, "%d", &m_max_iter);
+            fscanf(fp, "%s", temp_str);
+            fscanf(fp, "%d", &encoder_active_);
 
-        fscanf(fp, "%s", temp_str);
-        fscanf(fp, "%d", &m_encoder_active);
+            //file_name_of_H
+            fscanf(fp, "%s", temp_str);
+            fscanf(fp, "%s", matrix_filename);
 
-        //file_name_of_H
-        fscanf(fp, "%s", temp_str);
-        fscanf(fp, "%s", m_file_name_of_H);
+            fclose(fp);
 
-        fclose(fp);
-
-//Read H from file temp_str
-        if ((fp = fopen(m_file_name_of_H, "r")) == nullptr){
-            fprintf(stderr, "\nCannot Open %s", m_file_name_of_H);
-            exit(0);
-        }
-
-        fscanf(fp, "%s", temp_str);
-        fscanf(fp, "%d %d %d %d", &m_num_row, &m_num_col, &m_codechk, &m_lifting_factor);
-        m_codelen_no_puncture = m_num_col;
-        m_codelen_puncture = m_num_col - m_lifting_factor * 2;
-        m_codedim = m_codelen_no_puncture - m_codechk;
-        m_coderate = (double)m_codedim / m_codelen_puncture;
-
-        m_cc_nopuncture = new int[m_codelen_no_puncture];
-
-        m_cc_soft_nopuncture = new double[m_codelen_no_puncture];
-
-        m_row_head = new Edge[m_num_row];
-        m_col_head = new Edge[m_num_col];
-
-        m_syndromsoft = new double[m_num_row];
-
-        for (i = 0; i < m_num_row; i++){
-            (m_row_head+i)->m_row_no = i;
-            (m_row_head+i)->m_col_no = -1;
-            (m_row_head+i)->left = m_row_head+i;
-            (m_row_head+i)->right = m_row_head+i;
-            (m_row_head+i)->up = m_row_head+i;
-            (m_row_head+i)->down = m_row_head+i;
-        }
-
-        for (i = 0; i < m_num_col; i++){
-            (m_col_head+i)->m_row_no = -1;
-            (m_col_head+i)->m_col_no = i;
-            (m_col_head+i)->left = m_col_head+i;
-            (m_col_head+i)->right = m_col_head+i;
-            (m_col_head+i)->up = m_col_head+i;
-            (m_col_head+i)->down = m_col_head+i;
-        }
-
-        fscanf(fp, "%s", temp_str);
-        for (i = 0; i < m_num_row; i++){
-            fscanf(fp, "%d %d", &row_no, &row_deg);
-            for (j = 0; j < row_deg; j++){
-                temp_edge = new Edge;
-                temp_edge->m_row_no = row_no;
-                fscanf(fp, "%d", &col_no);
-                temp_edge->m_col_no = col_no;
-
-                temp_edge->right = (m_row_head+i)->right;
-                (m_row_head+i)->right = temp_edge;
-                temp_edge->left = m_row_head+i;
-                (temp_edge->right)->left = temp_edge;
-
-                temp_edge->down = (m_col_head+col_no)->down;
-                (m_col_head+col_no)->down = temp_edge;
-                temp_edge->up = m_col_head+col_no;
-                (temp_edge->down)->up = temp_edge;
+            //Read H from file temp_str
+            if ((fp = fopen(matrix_filename, "r")) == nullptr){
+                fprintf(stderr, "\nCannot Open %s", matrix_filename);
+                exit(0);
             }
-        }
 
-        fclose(fp);
-#ifdef _DEBUG
-        if ((fq = fopen("a.txt", "a+")) == NULL){
-		fprintf(stderr, "\nCannot open %s", "a.txt");
-		exit(0);
-	}
+            fscanf(fp, "%s", temp_str);
+            fscanf(fp, "%d %d %d %d", &num_row_, &num_col_, &code_chk_, &lifting_factor_);
+            code_len_no_puncture_ = num_col_;
+            code_len_puncture_ = num_col_ - lifting_factor_ * 2;
+            code_dim_ = code_len_no_puncture_ - code_chk_;
+            coderate_ = (double)code_dim_ / code_len_puncture_;
 
-	for(i = 0; i < m_num_row; i++){
-		fprintf(fp,  "%d: %d* %d --- %d* %d --- %d* %d --- %d* %d --- %d* %d\n",i,
-		             (m_row_head + i) -> m_row_no,(m_row_head + i)-> m_col_no,
-		             (m_row_head + i) -> left -> m_row_no,(m_row_head + i) -> left -> m_col_no,
-					 (m_row_head + i) -> right -> m_row_no,(m_row_head + i) -> right -> m_col_no,
-					 (m_row_head + i) -> up -> m_row_no,(m_row_head + i) -> up -> m_col_no,
-					 (m_row_head + i) -> down -> m_row_no,(m_row_head + i) -> down -> m_col_no);
-	}
+            cc_no_puncture_ = new int[code_len_no_puncture_];
 
-    for(i = 0; i < m_num_col; i++){
-		fprintf(fp,  "%d: %d* %d --- %d* %d --- %d* %d --- %d* %d --- %d* %d\n",i,
-		             (m_col_head + i) -> m_row_no,(m_col_head + i)-> m_col_no,
-		             (m_col_head + i) -> left -> m_row_no,(m_col_head + i) -> left -> m_col_no,
-					 (m_col_head + i) -> right -> m_row_no,(m_col_head + i) -> right -> m_col_no,
-					 (m_col_head + i) -> up -> m_row_no,(m_col_head + i) -> up -> m_col_no,
-					 (m_col_head + i) -> down -> m_row_no,(m_col_head + i) -> down -> m_col_no);
-	}
-	fclose(fq);
-#endif
-        if (m_encoder_active == 1)
-            SystH_5G();
+            cc_soft_no_puncture_ = new double[code_len_no_puncture_];
 
-        m_cc_hat = new int[m_codelen_no_puncture];
-    }
+            row_head_ = new Edge[num_row_];
+            col_head_ = new Edge[num_col_];
 
-    void Encoder(int *uu, int *cc) {
-        int i, j, t;
+            syndrom_soft_ = new double[num_row_];
 
-//codeword = [parity_check_bits information_bits]
-        switch (m_encoder_active){
-            case 0:
-                for (i = 0; i < m_codedim; i++)
-                    uu[i] = 0;
-                for (i = 0; i < m_codelen_no_puncture; i++)
-                    cc[i] = 0;
-                break;
-            case 1:
-                for (t = m_codechk; t < m_codelen_no_puncture; t++)
-                    cc[t] = uu[t- m_codechk];
+            for (i = 0; i < num_row_; i++){
+                (row_head_ + i)->m_row_no = i;
+                (row_head_ + i)->m_col_no = -1;
+                (row_head_ + i)->left = row_head_ + i;
+                (row_head_ + i)->right = row_head_ + i;
+                (row_head_ + i)->up = row_head_ + i;
+                (row_head_ + i)->down = row_head_ + i;
+            }
 
-                for (t = 0; t < m_codechk; t++){
-                    cc[t] = 0;
-                    for (j = m_codechk; j < m_codelen_no_puncture; j++)
-                        cc[t] ^= (cc[j] & m_encH[t][j]);
-                }
-                break;
-            default:
-                break;
-        }
-    }
+            for (i = 0; i < num_col_; i++){
+                (col_head_ + i)->m_row_no = -1;
+                (col_head_ + i)->m_col_no = i;
+                (col_head_ + i)->left = col_head_ + i;
+                (col_head_ + i)->right = col_head_ + i;
+                (col_head_ + i)->up = col_head_ + i;
+                (col_head_ + i)->down = col_head_ + i;
+            }
 
-    void Encoder_5G(int *uu, int *cc) {
-        int i, j, t;
+            fscanf(fp, "%s", temp_str);
+            for (i = 0; i < num_row_; i++){
+                fscanf(fp, "%d %d", &row_no, &row_deg);
+                for (j = 0; j < row_deg; j++){
+                    temp_edge = new Edge;
+                    temp_edge->m_row_no = row_no;
+                    fscanf(fp, "%d", &col_no);
+                    temp_edge->m_col_no = col_no;
 
-        for (i = 0; i < m_codelen_puncture; i++)
-            m_cc_nopuncture[i] = 0;
+                    temp_edge->right = (row_head_ + i)->right;
+                    (row_head_ + i)->right = temp_edge;
+                    temp_edge->left = row_head_ + i;
+                    (temp_edge->right)->left = temp_edge;
 
-        //codeword = [parity_check_bits information_bits]
-        switch (m_encoder_active) {
-            case 0:
-                for (i = 0; i < m_codedim; i++)
-                    uu[i] = 0;
-                for (i = 0; i < m_codelen_puncture; i++)
-                    cc[i] = 0;
-                break;
-            case 1:
-                for (t = 0; t < m_codedim; t++)
-                    m_cc_nopuncture[t] = uu[t];
-                for (t = 0; t < m_codechk; t++) {
-                    m_cc_nopuncture[m_codedim + t] = 0;
-                    for (j = 0; j < m_codedim; j++)
-                        m_cc_nopuncture[m_codedim + t] ^= (m_cc_nopuncture[j] & m_encH[t][j]);
-                }
-                for (t = 0; t < m_codelen_puncture; t++) {
-                    cc[t] = m_cc_nopuncture[t + m_lifting_factor * 2];
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    int Decoder(double *M2V, int *uu_hat) {
-        int i;
-        int iter;
-        int parity_check;
-        double temp0, temp1, temp_sum;
-
-        Edge *p_edge;
-
-//initialization
-        InitMsg();
-//iteration
-        for (iter = 0; iter < m_max_iter; iter++){
-//from vnode to cnode
-            for (i = 0; i < m_num_col; i++){
-//forward
-                p_edge = (m_col_head+i)->down;
-                p_edge->m_alpha[0] = M2V[i];
-                p_edge->m_alpha[1] = 1.0 - M2V[i];
-
-                while (p_edge->m_row_no != -1){
-                    p_edge->down->m_alpha[0] = p_edge->m_alpha[0] * p_edge->m_c2v[0];
-                    p_edge->down->m_alpha[1] = p_edge->m_alpha[1] * p_edge->m_c2v[1];
-                    temp_sum = p_edge->down->m_alpha[0] + p_edge->down->m_alpha[1];
-                    p_edge->down->m_alpha[0] /= temp_sum;
-                    p_edge->down->m_alpha[1] /= temp_sum;
-                    p_edge = p_edge->down;
-                }
-//hard decision
-                if ((m_col_head+i)->m_alpha[0] > (m_col_head+i)->m_alpha[1])
-                    m_cc_hat[i] = 0;
-                else
-                    m_cc_hat[i] = 1;
-
-//backward
-                p_edge = (m_col_head+i)->up;
-                p_edge->m_beta[0] = 1.0;
-                p_edge->m_beta[1] = 1.0;
-                while (p_edge->m_row_no != -1){
-                    temp0 = p_edge->m_alpha[0] * p_edge->m_beta[0];
-                    temp1 = p_edge->m_alpha[1] * p_edge->m_beta[1];
-                    temp_sum = temp0 + temp1;
-
-                    p_edge->m_v2c[0] = temp0 / temp_sum;
-                    p_edge->m_v2c[1] = temp1 / temp_sum;
-
-
-                    p_edge->up->m_beta[0] = p_edge->m_beta[0] * p_edge->m_c2v[0];
-                    p_edge->up->m_beta[1] = p_edge->m_beta[1] * p_edge->m_c2v[1];
-
-                    temp_sum = p_edge->up->m_beta[0] + p_edge->up->m_beta[1];
-                    p_edge->up->m_beta[0] /= temp_sum;
-                    p_edge->up->m_beta[1] /= temp_sum;
-
-                    p_edge = p_edge->up;
+                    temp_edge->down = (col_head_ + col_no)->down;
+                    (col_head_ + col_no)->down = temp_edge;
+                    temp_edge->up = col_head_ + col_no;
+                    (temp_edge->down)->up = temp_edge;
                 }
             }
 
-            for (i = 0; i < m_codedim; i++)
-            {
-                uu_hat[i] = m_cc_hat[i+m_codechk];
-//			uu_hat[i] = cc_hat_[i];//kite使用
+            fclose(fp);
+    #ifdef _DEBUG
+            if ((fq = fopen("a.txt", "a+")) == NULL){
+                fprintf(stderr, "\nCannot open %s", "a.txt");
+                exit(0);
             }
-//parity checking
-            m_success = 1;
-            for (i = 0; i < m_num_row; i++){
-                parity_check = 0;
-                p_edge = (m_row_head+i)->right;
-                while (p_edge->m_col_no != -1){
-                    parity_check = parity_check ^ m_cc_hat[p_edge->m_col_no];
-                    p_edge = p_edge->right;
-                }
-                if (parity_check != 0){
-                    m_success = 0;
+
+            for(i = 0; i < m_num_row; i++){
+                fprintf(fp,  "%d: %d* %d --- %d* %d --- %d* %d --- %d* %d --- %d* %d\n",i,
+                             (m_row_head + i) -> m_row_no,(m_row_head + i)-> m_col_no,
+                             (m_row_head + i) -> left -> m_row_no,(m_row_head + i) -> left -> m_col_no,
+                             (m_row_head + i) -> right -> m_row_no,(m_row_head + i) -> right -> m_col_no,
+                             (m_row_head + i) -> up -> m_row_no,(m_row_head + i) -> up -> m_col_no,
+                             (m_row_head + i) -> down -> m_row_no,(m_row_head + i) -> down -> m_col_no);
+            }
+
+            for(i = 0; i < m_num_col; i++){
+                fprintf(fp,  "%d: %d* %d --- %d* %d --- %d* %d --- %d* %d --- %d* %d\n",i,
+                             (m_col_head + i) -> m_row_no,(m_col_head + i)-> m_col_no,
+                             (m_col_head + i) -> left -> m_row_no,(m_col_head + i) -> left -> m_col_no,
+                             (m_col_head + i) -> right -> m_row_no,(m_col_head + i) -> right -> m_col_no,
+                             (m_col_head + i) -> up -> m_row_no,(m_col_head + i) -> up -> m_col_no,
+                             (m_col_head + i) -> down -> m_row_no,(m_col_head + i) -> down -> m_col_no);
+            }
+            fclose(fq);
+    #endif
+            if (encoder_active_ == 1)
+                SystH_5G();
+
+            cc_hat_ = new int[code_len_no_puncture_];
+        }
+
+        void Encoder_5G(int *uu, int *cc) {
+            int i, j, t;
+
+            for (i = 0; i < code_len_puncture_; i++)
+                cc_no_puncture_[i] = 0;
+
+            //codeword = [parity_check_bits information_bits]
+            switch (encoder_active_) {
+                case 0:
+                    for (i = 0; i < code_dim_; i++)
+                        uu[i] = 0;
+                    for (i = 0; i < code_len_puncture_; i++)
+                        cc[i] = 0;
                     break;
-                }
-            }
-
-            if (m_success == 1)
-                break;
-
-//from c node to v node
-            for (i = 0; i < m_num_row; i++){
-//forward
-                p_edge = (m_row_head + i)->right;
-                p_edge->m_alpha[0] = 1.0;
-                p_edge->m_alpha[1] = 0.0;
-                while (p_edge->m_col_no != -1){//over trellis with two states
-                    p_edge->right->m_alpha[0] = p_edge->m_alpha[0] * p_edge->m_v2c[0] + p_edge->m_alpha[1] * p_edge->m_v2c[1];
-                    p_edge->right->m_alpha[1] = p_edge->m_alpha[0] * p_edge->m_v2c[1] + p_edge->m_alpha[1] * p_edge->m_v2c[0];
-                    temp_sum = p_edge->right->m_alpha[0] + p_edge->right->m_alpha[1];
-                    p_edge->right->m_alpha[0] /= temp_sum;
-                    p_edge->right->m_alpha[1] /= temp_sum;
-
-                    p_edge = p_edge->right;
-                }
-//backward
-                p_edge = (m_row_head + i)->left;
-                p_edge->m_beta[0] = 1.0;
-                p_edge->m_beta[1] = 0.0;
-                while (p_edge->m_col_no != -1){
-                    temp0 = p_edge->m_alpha[0] * p_edge->m_beta[0] + p_edge->m_alpha[1] * p_edge->m_beta[1];
-                    temp1 = p_edge->m_alpha[0] * p_edge->m_beta[1] + p_edge->m_alpha[1] * p_edge->m_beta[0];
-                    temp_sum = temp0 + temp1;
-                    p_edge->m_c2v[0] = temp0 / temp_sum;
-                    p_edge->m_c2v[1] = temp1 / temp_sum;
-
-                    if (p_edge->m_c2v[0] > 1.0 - kSmallestProb)
-                        p_edge->m_c2v[0] = 1.0 - kSmallestProb;
-                    if (p_edge->m_c2v[0] < kSmallestProb)
-                        p_edge->m_c2v[0] = kSmallestProb;
-
-                    p_edge->m_c2v[1] = 1.0 - p_edge->m_c2v[0];
-
-                    p_edge->left->m_beta[0] = p_edge->m_beta[0] * p_edge->m_v2c[0] + p_edge->m_beta[1] * p_edge->m_v2c[1];
-                    p_edge->left->m_beta[1] = p_edge->m_beta[0] * p_edge->m_v2c[1] + p_edge->m_beta[1] * p_edge->m_v2c[0];
-
-                    temp_sum = p_edge->left->m_beta[0] + p_edge->left->m_beta[1];
-                    p_edge->left->m_beta[0] /= temp_sum;
-                    p_edge->left->m_beta[1] /= temp_sum;
-
-                    p_edge = p_edge->left;
-                }
+                case 1:
+                    for (t = 0; t < code_dim_; t++)
+                        cc_no_puncture_[t] = uu[t];
+                    for (t = 0; t < code_chk_; t++) {
+                        cc_no_puncture_[code_dim_ + t] = 0;
+                        for (j = 0; j < code_dim_; j++)
+                            cc_no_puncture_[code_dim_ + t] ^= (cc_no_puncture_[j] & enc_h_[t][j]);
+                    }
+                    for (t = 0; t < code_len_puncture_; t++) {
+                        cc[t] = cc_no_puncture_[t + lifting_factor_ * 2];
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
-        return iter + (iter<m_max_iter);
-    }
+        int Decoder_5G(const double *M2V, int *uu_hat, int iter_cnt) {
+            int i;
+            int iter;
+            int parity_check;
+            double temp0, temp1, temp_sum;
 
-    int Decoder_5G(double *M2V, int *uu_hat, int iter_cnt) {
-        int i;
-        int iter;
-        int parity_check;
-        double temp0, temp1, temp_sum;
+            Edge *p_edge;
 
-        Edge *p_edge;
+            //initialization
+            InitMsg();
+            //iteration
+            for (iter = 0; iter < iter_cnt; iter++) {
+                //from vnode to cnode
+                for (i = 0; i < num_col_; i++) {
+                    //forward
+                    if (i < lifting_factor_ * 2) {
+                        p_edge = (col_head_ + i)->down;
+                        p_edge->m_alpha[0] = 0.5;
+                        p_edge->m_alpha[1] = 1.0 - 0.5;
+                    }
+                    else {
+                        p_edge = (col_head_ + i)->down;
+                        p_edge->m_alpha[0] = M2V[i - lifting_factor_ * 2];
+                        p_edge->m_alpha[1] = 1.0 - M2V[i - lifting_factor_ * 2];
+                    }
 
-        //initialization
-        InitMsg();
-        //iteration
-        for (iter = 0; iter < iter_cnt; iter++) {
-            //from vnode to cnode
-            for (i = 0; i < m_num_col; i++) {
-                //forward
-                if (i < m_lifting_factor * 2) {
-                    p_edge = (m_col_head + i)->down;
-                    p_edge->m_alpha[0] = 0.5;
-                    p_edge->m_alpha[1] = 1.0 - 0.5;
+                    while (p_edge->m_row_no != -1) {
+                        p_edge->down->m_alpha[0] = p_edge->m_alpha[0] * p_edge->m_c2v[0];
+                        p_edge->down->m_alpha[1] = p_edge->m_alpha[1] * p_edge->m_c2v[1];
+                        temp_sum = p_edge->down->m_alpha[0] + p_edge->down->m_alpha[1];
+                        p_edge->down->m_alpha[0] /= temp_sum;
+                        p_edge->down->m_alpha[1] /= temp_sum;
+                        p_edge = p_edge->down;
+                    }
+                    //hard decision
+                    if ((col_head_ + i)->m_alpha[0] > (col_head_ + i)->m_alpha[1])
+                        cc_hat_[i] = 0;
+                    else
+                        cc_hat_[i] = 1;
+
+                    //backward
+                    p_edge = (col_head_ + i)->up;
+                    p_edge->m_beta[0] = 1.0;
+                    p_edge->m_beta[1] = 1.0;
+                    while (p_edge->m_row_no != -1) {
+                        temp0 = p_edge->m_alpha[0] * p_edge->m_beta[0];
+                        temp1 = p_edge->m_alpha[1] * p_edge->m_beta[1];
+                        temp_sum = temp0 + temp1;
+
+                        p_edge->m_v2c[0] = temp0 / temp_sum;
+                        p_edge->m_v2c[1] = temp1 / temp_sum;
+
+
+                        p_edge->up->m_beta[0] = p_edge->m_beta[0] * p_edge->m_c2v[0];
+                        p_edge->up->m_beta[1] = p_edge->m_beta[1] * p_edge->m_c2v[1];
+
+                        temp_sum = p_edge->up->m_beta[0] + p_edge->up->m_beta[1];
+                        p_edge->up->m_beta[0] /= temp_sum;
+                        p_edge->up->m_beta[1] /= temp_sum;
+
+                        p_edge = p_edge->up;
+                    }
                 }
-                else {
-                    p_edge = (m_col_head + i)->down;
-                    p_edge->m_alpha[0] = M2V[i - m_lifting_factor * 2];
-                    p_edge->m_alpha[1] = 1.0 - M2V[i - m_lifting_factor * 2];
+
+                for (i = 0; i < code_dim_; i++)
+                {
+                    //			uu_hat[i] = cc_hat_[i+m_codechk];
+                    uu_hat[i] = cc_hat_[i];//kite使用
+                }
+                //parity checking
+                success_ = 1;
+                for (i = 0; i < num_row_; i++) {
+                    parity_check = 0;
+                    p_edge = (row_head_ + i)->right;
+                    while (p_edge->m_col_no != -1) {
+                        parity_check = parity_check ^ cc_hat_[p_edge->m_col_no];
+                        p_edge = p_edge->right;
+                    }
+                    if (parity_check != 0) {
+                        success_ = 0;
+                        break;
+                    }
                 }
 
-                while (p_edge->m_row_no != -1) {
-                    p_edge->down->m_alpha[0] = p_edge->m_alpha[0] * p_edge->m_c2v[0];
-                    p_edge->down->m_alpha[1] = p_edge->m_alpha[1] * p_edge->m_c2v[1];
-                    temp_sum = p_edge->down->m_alpha[0] + p_edge->down->m_alpha[1];
-                    p_edge->down->m_alpha[0] /= temp_sum;
-                    p_edge->down->m_alpha[1] /= temp_sum;
-                    p_edge = p_edge->down;
-                }
-                //hard decision
-                if ((m_col_head + i)->m_alpha[0] > (m_col_head + i)->m_alpha[1])
-                    m_cc_hat[i] = 0;
-                else
-                    m_cc_hat[i] = 1;
+                if (success_ == 1)
+                    break;
 
-                //backward
-                p_edge = (m_col_head + i)->up;
-                p_edge->m_beta[0] = 1.0;
-                p_edge->m_beta[1] = 1.0;
-                while (p_edge->m_row_no != -1) {
-                    temp0 = p_edge->m_alpha[0] * p_edge->m_beta[0];
-                    temp1 = p_edge->m_alpha[1] * p_edge->m_beta[1];
-                    temp_sum = temp0 + temp1;
+                //from c node to v node
+                for (i = 0; i < num_row_; i++) {
+                    //forward
+                    p_edge = (row_head_ + i)->right;
+                    p_edge->m_alpha[0] = 1.0;
+                    p_edge->m_alpha[1] = 0.0;
+                    while (p_edge->m_col_no != -1) {//over trellis with two states
+                        p_edge->right->m_alpha[0] = p_edge->m_alpha[0] * p_edge->m_v2c[0] + p_edge->m_alpha[1] * p_edge->m_v2c[1];
+                        p_edge->right->m_alpha[1] = p_edge->m_alpha[0] * p_edge->m_v2c[1] + p_edge->m_alpha[1] * p_edge->m_v2c[0];
+                        temp_sum = p_edge->right->m_alpha[0] + p_edge->right->m_alpha[1];
+                        p_edge->right->m_alpha[0] /= temp_sum;
+                        p_edge->right->m_alpha[1] /= temp_sum;
 
-                    p_edge->m_v2c[0] = temp0 / temp_sum;
-                    p_edge->m_v2c[1] = temp1 / temp_sum;
+                        p_edge = p_edge->right;
+                    }
+                    //backward
+                    p_edge = (row_head_ + i)->left;
+                    p_edge->m_beta[0] = 1.0;
+                    p_edge->m_beta[1] = 0.0;
+                    while (p_edge->m_col_no != -1) {
+                        temp0 = p_edge->m_alpha[0] * p_edge->m_beta[0] + p_edge->m_alpha[1] * p_edge->m_beta[1];
+                        temp1 = p_edge->m_alpha[0] * p_edge->m_beta[1] + p_edge->m_alpha[1] * p_edge->m_beta[0];
+                        temp_sum = temp0 + temp1;
+                        p_edge->m_c2v[0] = temp0 / temp_sum;
+                        p_edge->m_c2v[1] = temp1 / temp_sum;
 
+                        if (p_edge->m_c2v[0] > 1.0 - kSmallestProb)
+                            p_edge->m_c2v[0] = 1.0 - kSmallestProb;
+                        if (p_edge->m_c2v[0] < kSmallestProb)
+                            p_edge->m_c2v[0] = kSmallestProb;
 
-                    p_edge->up->m_beta[0] = p_edge->m_beta[0] * p_edge->m_c2v[0];
-                    p_edge->up->m_beta[1] = p_edge->m_beta[1] * p_edge->m_c2v[1];
+                        p_edge->m_c2v[1] = 1.0 - p_edge->m_c2v[0];
 
-                    temp_sum = p_edge->up->m_beta[0] + p_edge->up->m_beta[1];
-                    p_edge->up->m_beta[0] /= temp_sum;
-                    p_edge->up->m_beta[1] /= temp_sum;
+                        p_edge->left->m_beta[0] = p_edge->m_beta[0] * p_edge->m_v2c[0] + p_edge->m_beta[1] * p_edge->m_v2c[1];
+                        p_edge->left->m_beta[1] = p_edge->m_beta[0] * p_edge->m_v2c[1] + p_edge->m_beta[1] * p_edge->m_v2c[0];
 
-                    p_edge = p_edge->up;
+                        temp_sum = p_edge->left->m_beta[0] + p_edge->left->m_beta[1];
+                        p_edge->left->m_beta[0] /= temp_sum;
+                        p_edge->left->m_beta[1] /= temp_sum;
+
+                        p_edge = p_edge->left;
+                    }
+
+                    syndrom_soft_[i] = (row_head_ + i)->m_alpha[0];
                 }
             }
 
-            for (i = 0; i < m_codedim; i++)
-            {
-                //			uu_hat[i] = cc_hat_[i+m_codechk];
-                uu_hat[i] = m_cc_hat[i];//kite使用
+            return iter + (iter < max_iter_);
+        }
+
+        int GetCodeenPuncture() const {
+            return code_len_puncture_;
+        }
+
+    private:
+        void SystH_5G() {
+            int i, j, ii, jj, m, n;
+            int temp;
+            int flag;
+            int *tempP;
+            char **tempH;
+            Edge *p_edge;
+
+            dec_h_ = new char*[num_row_];
+            for (i = 0; i < num_row_; i++)
+                dec_h_[i] = new char[num_col_];
+
+            for (i = 0; i < num_row_; i++) {
+                for (j = 0; j < num_col_; j++)
+                    dec_h_[i][j] = 0;
             }
-            //parity checking
-            m_success = 1;
-            for (i = 0; i < m_num_row; i++) {
-                parity_check = 0;
-                p_edge = (m_row_head + i)->right;
+
+            for (i = 0; i < num_row_; i++) {
+                p_edge = (row_head_ + i)->right;
                 while (p_edge->m_col_no != -1) {
-                    parity_check = parity_check ^ m_cc_hat[p_edge->m_col_no];
+                    dec_h_[i][p_edge->m_col_no] = 1;
                     p_edge = p_edge->right;
                 }
-                if (parity_check != 0) {
-                    m_success = 0;
-                    break;
-                }
             }
 
-            if (m_success == 1)
-                break;
+            tempP = new int[num_col_];
+            for (j = 0; j < num_col_; j++)
+                tempP[j] = j;
+            tempH = new char*[num_row_];
+            for (i = 0; i < num_row_; i++)
+                tempH[i] = new char[num_col_];
 
-            //from c node to v node
-            for (i = 0; i < m_num_row; i++) {
-                //forward
-                p_edge = (m_row_head + i)->right;
-                p_edge->m_alpha[0] = 1.0;
-                p_edge->m_alpha[1] = 0.0;
-                while (p_edge->m_col_no != -1) {//over trellis with two states
-                    p_edge->right->m_alpha[0] = p_edge->m_alpha[0] * p_edge->m_v2c[0] + p_edge->m_alpha[1] * p_edge->m_v2c[1];
-                    p_edge->right->m_alpha[1] = p_edge->m_alpha[0] * p_edge->m_v2c[1] + p_edge->m_alpha[1] * p_edge->m_v2c[0];
-                    temp_sum = p_edge->right->m_alpha[0] + p_edge->right->m_alpha[1];
-                    p_edge->right->m_alpha[0] /= temp_sum;
-                    p_edge->right->m_alpha[1] /= temp_sum;
-
-                    p_edge = p_edge->right;
-                }
-                //backward
-                p_edge = (m_row_head + i)->left;
-                p_edge->m_beta[0] = 1.0;
-                p_edge->m_beta[1] = 0.0;
-                while (p_edge->m_col_no != -1) {
-                    temp0 = p_edge->m_alpha[0] * p_edge->m_beta[0] + p_edge->m_alpha[1] * p_edge->m_beta[1];
-                    temp1 = p_edge->m_alpha[0] * p_edge->m_beta[1] + p_edge->m_alpha[1] * p_edge->m_beta[0];
-                    temp_sum = temp0 + temp1;
-                    p_edge->m_c2v[0] = temp0 / temp_sum;
-                    p_edge->m_c2v[1] = temp1 / temp_sum;
-
-                    if (p_edge->m_c2v[0] > 1.0 - kSmallestProb)
-                        p_edge->m_c2v[0] = 1.0 - kSmallestProb;
-                    if (p_edge->m_c2v[0] < kSmallestProb)
-                        p_edge->m_c2v[0] = kSmallestProb;
-
-                    p_edge->m_c2v[1] = 1.0 - p_edge->m_c2v[0];
-
-                    p_edge->left->m_beta[0] = p_edge->m_beta[0] * p_edge->m_v2c[0] + p_edge->m_beta[1] * p_edge->m_v2c[1];
-                    p_edge->left->m_beta[1] = p_edge->m_beta[0] * p_edge->m_v2c[1] + p_edge->m_beta[1] * p_edge->m_v2c[0];
-
-                    temp_sum = p_edge->left->m_beta[0] + p_edge->left->m_beta[1];
-                    p_edge->left->m_beta[0] /= temp_sum;
-                    p_edge->left->m_beta[1] /= temp_sum;
-
-                    p_edge = p_edge->left;
-                }
-
-                m_syndromsoft[i] = (m_row_head + i)->m_alpha[0];
+            for (i = 0; i < num_row_; i++) {
+                for (j = 0; j < num_col_; j++)
+                    tempH[i][j] = dec_h_[i][j];
             }
-        }
 
-        return iter + (iter<m_max_iter);
-    }
-
-    int Parity_Checking() {
-        int i;
-        int iter;
-        int parity_check;
-        double temp0, temp1, temp_sum;
-
-        Edge *p_edge;
-
-        //parity checking
-        m_success = 1;
-        for (i = 0; i < m_num_row; i++) {
-            parity_check = 0;
-            p_edge = (m_row_head + i)->right;
-            while (p_edge->m_col_no != -1) {
-                parity_check = parity_check ^ m_cc_hat[p_edge->m_col_no];
-                p_edge = p_edge->right;
-            }
-            if (parity_check != 0) {
-                m_success = 0;
-                break;
-            }
-        }
-
-        return m_success;
-    }
-
-    int parityCheck(int *cc) {
-        int i;
-        int parity_check;
-        int count = 0;
-
-        Edge *p_edge;
-
-        //parity checking
-        m_success = 1;
-        for (i = 0; i < m_num_row; i++) {
-            parity_check = 0;
-            p_edge = (m_row_head + i)->right;
-            while (p_edge->m_col_no != -1) {
-                parity_check = parity_check ^ cc[p_edge->m_col_no];
-                p_edge = p_edge->right;
-            }
-            if (parity_check != 0) {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    void InitMsg() {
-        int i;
-        Edge *p_edge;
-
-        for (i = 0; i < m_num_col; i++){
-            p_edge = (m_col_head+i)->down;
-            while (p_edge->m_row_no != -1){
-                p_edge->m_c2v[0] = 0.5;
-                p_edge->m_c2v[1] = 0.5;
-                p_edge = p_edge->down;
-            }
-        }
-    }
-
-private:
-    void SystH() {
-        int i, j, ii, jj, m, n;
-        int temp;
-        int flag;
-        int *tempP;
-        char **tempH;
-        Edge *p_edge;
-
-        m_decH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-            m_decH[i] = new char[m_num_col];
-
-        for (i = 0; i < m_num_row; i++){
-            for (j = 0; j < m_num_col; j++)
-                m_decH[i][j] = 0;
-        }
-
-        for (i = 0; i < m_num_row; i++){
-            p_edge = (m_row_head + i)->right;
-            while (p_edge->m_col_no != -1){
-                m_decH[i][p_edge->m_col_no] = 1;
-                p_edge = p_edge->right;
-            }
-        }
-
-        tempP = new int[m_num_col];
-        for (j = 0; j < m_num_col; j++)
-            tempP[j] = j;
-        tempH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-            tempH[i] = new char[m_num_col];
-
-        for (i = 0; i < m_num_row; i++){
-            for (j = 0; j < m_num_col; j++)
-                tempH[i][j] = m_decH[i][j];
-        }
-
-        m_encH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-        {
-            m_encH[i] = new char[m_num_col];
-        }
-        for (i = 0; i < m_num_row; i++)
-        {
-            for (j = 0; j < m_num_col; j++)
+            enc_h_ = new char*[num_row_];
+            for (i = 0; i < num_row_; i++)
             {
-                m_encH[i][j] = m_decH[i][j];
+                enc_h_[i] = new char[num_col_];
             }
-        }
-
-        m_codechk = 0;
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            flag = 0;
-            for (jj = i; jj < m_num_col; jj++)
+            for (i = 0; i < num_row_; i++)
             {
-                for (ii = i; ii < m_num_row; ii++)
+                for (j = 0; j < num_col_; j++)
                 {
-                    if (m_encH[ii][jj] != 0)
+                    enc_h_[i][j] = dec_h_[i][j];
+                }
+            }
+
+            code_chk_ = 0;
+
+            for (i = num_row_ - 1; i >= 0; --i)
+            {
+                flag = 0;
+                for (jj = i + num_col_ - num_row_; jj >= 0; --jj)
+                {
+                    for (ii = i; ii >= 0; --ii)
                     {
-                        flag = 1;
+                        if (enc_h_[ii][jj] != 0)
+                        {
+                            flag = 1;
+                            break;
+                        }
+                    }
+                    if (flag == 1)
+                    {
+                        code_chk_++;
                         break;
                     }
                 }
-                if (flag == 1)
-                {
-                    m_codechk++;
+
+                if (flag == 0)
                     break;
-                }
-            }
-
-            if (flag == 0)
-                break;
-            else
-            {
-//swap i and ii row
-                if (ii != i)
+                else
                 {
-                    for (n = 0; n < m_num_col; n++)
+                    //swap i and ii row
+                    if (ii != i)
                     {
-                        temp = m_encH[i][n];
-                        m_encH[i][n] = m_encH[ii][n];
-                        m_encH[ii][n] = temp;
+                        for (n = 0; n < num_col_; n++)
+                        {
+                            temp = enc_h_[i][n];
+                            enc_h_[i][n] = enc_h_[ii][n];
+                            enc_h_[ii][n] = temp;
+                        }
                     }
-                }
-//swap i and jj col
-                if (jj != i)
-                {
-                    temp = tempP[i];
-                    tempP[i] = tempP[jj];
-                    tempP[jj] = temp;
+                    //swap (i + m_num_col - m_num_row) and jj col
+                    if (jj != i + num_col_ - num_row_)
+                    {
+                        temp = tempP[i + num_col_ - num_row_];
+                        tempP[i + num_col_ - num_row_] = tempP[jj];
+                        tempP[jj] = temp;
 
-                    for (m = 0; m < m_num_row; m++)
-                    {
-                        temp = m_encH[m][i];
-                        m_encH[m][i] = m_encH[m][jj];
-                        m_encH[m][jj] = temp;
+                        for (m = 0; m < num_row_; m++)
+                        {
+                            temp = enc_h_[m][i + num_col_ - num_row_];
+                            enc_h_[m][i + num_col_ - num_row_] = enc_h_[m][jj];
+                            enc_h_[m][jj] = temp;
+                        }
                     }
-                }
-//elimination
-                for (m = 0; m < m_num_row; m++)
-                {
-                    if (m != i && m_encH[m][i] == 1)
+                    //elimination
+                    for (m = num_row_ - 1; m >= 0; --m)
                     {
-                        for (n = 0; n < m_num_col; n++)
-                            m_encH[m][n] ^= m_encH[i][n];
+                        if (m != i && enc_h_[m][i + num_col_ - num_row_] == 1)
+                        {
+                            for (n = 0; n < num_col_; n++)
+                                enc_h_[m][n] ^= enc_h_[i][n];
+                        }
                     }
                 }
             }
-        }
 
-        //for (i = 0; i < m_num_col; i++)
-        //{
-        //	if (tempP[i] != i)
-        //	{
-        //		fprintf(stderr, "\nWarning: please make sure the information bits on the right!");
-        //	}
-        //}
+            //for (i = 0; i < m_num_col; i++)
+            //{
+            //	if (tempP[i] != i)
+            //	{
+            //		fprintf(stderr, "\nWarning: please make sure the information bits on the right!");
+            //	}
+            //}
 
 
-        for (j = 0; j < m_num_col; j++)
-        {
-            for (i = 0; i < m_num_row; i++)
+            for (j = 0; j < num_col_; j++)
             {
-                m_decH[i][j] = tempH[i][tempP[j]];
-            }
-        }
-
-/* By Zhaosc
------由于在Gauss消元过程中有行列变换
------需要删除原有的Tanner Graph，重新建立.
-*/
-        Free_Tanner_Graph();
-
-        m_row_head = new Edge[m_num_row];
-        m_col_head = new Edge[m_num_col];
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            (m_row_head + i)->m_row_no = i;
-            (m_row_head + i)->m_col_no = -1;
-            (m_row_head + i)->left = m_row_head+i;
-            (m_row_head + i)->right = m_row_head+i;
-            (m_row_head + i)->up = m_row_head+i;
-            (m_row_head + i)->down = m_row_head+i;
-        }
-
-        for (i = 0; i < m_num_col; i++)
-        {
-            (m_col_head + i)->m_row_no = -1;
-            (m_col_head + i)->m_col_no = i;
-            (m_col_head + i)->left = m_col_head+i;
-            (m_col_head + i)->right = m_col_head+i;
-            (m_col_head + i)->up = m_col_head+i;
-            (m_col_head + i)->down = m_col_head+i;
-        }
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            for (j = 0; j < m_num_col; j++)
-            {
-                if (m_decH[i][j] != 0)
+                for (i = 0; i < num_row_; i++)
                 {
-                    p_edge = new Edge;
-                    p_edge->m_row_no = i;
-                    p_edge->m_col_no = j;
-
-                    p_edge->right = (m_row_head + i)->right;
-                    (m_row_head + i)->right = p_edge;
-                    p_edge->left = m_row_head + i;
-                    (p_edge->right)->left = p_edge;
-
-                    p_edge->down = (m_col_head + j)->down;
-                    (m_col_head + j)->down = p_edge;
-                    p_edge->up = m_col_head + j;
-                    (p_edge->down)->up = p_edge;
+                    dec_h_[i][j] = tempH[i][tempP[j]];
                 }
             }
-        }
 
-        m_codelen_no_puncture = m_num_col;
-        m_codedim = m_codelen_no_puncture - m_codechk;
-        m_coderate = (double)m_codedim / m_codelen_no_puncture;
+            /* By Zhaosc
+            -----由于在Gauss消元过程中有行列变换
+            -----需要删除原有的Tanner Graph，重新建立.
+            */
+            FreeTannerGraph();
 
-        delete []tempP;
-        for (i = 0; i < m_num_row; i++)
-        {
-            delete[]tempH[i];
-            delete[]m_decH[i];
-        }
-        delete []tempH;
-        delete []m_decH;
-    }
-    /***************************************************************************
-    函数：SystH_1()
-    功能：把5G LDPC 校验矩阵化为系统形式 单位阵在后面 系统位在前面
-    ****************************************************************************/
-    void SystH_1() {
-        int i, j, ii, jj, m, n;
-        int temp;
-        int flag;
-        int *tempP;
-        char **tempH;
-        Edge *p_edge;
+            row_head_ = new Edge[num_row_];
+            col_head_ = new Edge[num_col_];
 
-        m_decH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-            m_decH[i] = new char[m_num_col];
-
-        for (i = 0; i < m_num_row; i++) {
-            for (j = 0; j < m_num_col; j++)
-                m_decH[i][j] = 0;
-        }
-
-        for (i = 0; i < m_num_row; i++) {
-            p_edge = (m_row_head + i)->right;
-            while (p_edge->m_col_no != -1) {
-                m_decH[i][p_edge->m_col_no] = 1;
-                p_edge = p_edge->right;
-            }
-        }
-
-        tempP = new int[m_num_col];
-        for (j = 0; j < m_num_col; j++)
-            tempP[j] = j;
-        tempH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-            tempH[i] = new char[m_num_col];
-
-        for (i = 0; i < m_num_row; i++) {
-            for (j = 0; j < m_num_col; j++)
-                tempH[i][j] = m_decH[i][j];
-        }
-
-        m_encH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-        {
-            m_encH[i] = new char[m_num_col];
-        }
-        for (i = 0; i < m_num_row; i++)
-        {
-            for (j = 0; j < m_num_col; j++)
+            for (i = 0; i < num_row_; i++)
             {
-                m_encH[i][j] = m_decH[i][j];
+                (row_head_ + i)->m_row_no = i;
+                (row_head_ + i)->m_col_no = -1;
+                (row_head_ + i)->left = row_head_ + i;
+                (row_head_ + i)->right = row_head_ + i;
+                (row_head_ + i)->up = row_head_ + i;
+                (row_head_ + i)->down = row_head_ + i;
             }
-        }
 
-        m_codechk = 0;
-
-        for (i = m_num_row - 1; i >= 0; --i)
-        {
-            flag = 0;
-            for (jj = i + m_num_col - m_num_row; jj >= 0; --jj)
+            for (i = 0; i < num_col_; i++)
             {
-                for (ii = i; ii >= 0; --ii)
+                (col_head_ + i)->m_row_no = -1;
+                (col_head_ + i)->m_col_no = i;
+                (col_head_ + i)->left = col_head_ + i;
+                (col_head_ + i)->right = col_head_ + i;
+                (col_head_ + i)->up = col_head_ + i;
+                (col_head_ + i)->down = col_head_ + i;
+            }
+
+            for (i = 0; i < num_row_; i++)
+            {
+                for (j = 0; j < num_col_; j++)
                 {
-                    if (m_encH[ii][jj] != 0)
+                    if (dec_h_[i][j] != 0)
                     {
-                        flag = 1;
-                        break;
-                    }
-                }
-                if (flag == 1)
-                {
-                    m_codechk++;
-                    break;
-                }
-            }
+                        p_edge = new Edge;
+                        p_edge->m_row_no = i;
+                        p_edge->m_col_no = j;
 
-            if (flag == 0)
-                break;
-            else
-            {
-                //swap i and ii row
-                if (ii != i)
-                {
-                    for (n = 0; n < m_num_col; n++)
-                    {
-                        temp = m_encH[i][n];
-                        m_encH[i][n] = m_encH[ii][n];
-                        m_encH[ii][n] = temp;
-                    }
-                }
-                //swap i and jj col
-                if (jj != i + m_num_col - m_num_row)
-                {
-                    temp = tempP[i];
-                    tempP[i] = tempP[jj];
-                    tempP[jj] = temp;
+                        p_edge->right = (row_head_ + i)->right;
+                        (row_head_ + i)->right = p_edge;
+                        p_edge->left = row_head_ + i;
+                        (p_edge->right)->left = p_edge;
 
-                    for (m = 0; m < m_num_row; m++)
-                    {
-                        temp = m_encH[m][i];
-                        m_encH[m][i] = m_encH[m][jj];
-                        m_encH[m][jj] = temp;
-                    }
-                }
-                //elimination
-                for (m = m_num_row - 1; m >= 0; --m)
-                {
-                    if (m != i && m_encH[m][i + m_num_col - m_num_row] == 1)
-                    {
-                        for (n = 0; n < m_num_col; n++)
-                            m_encH[m][n] ^= m_encH[i][n];
+                        p_edge->down = (col_head_ + j)->down;
+                        (col_head_ + j)->down = p_edge;
+                        p_edge->up = col_head_ + j;
+                        (p_edge->down)->up = p_edge;
                     }
                 }
             }
-        }
 
-        //for (i = 0; i < m_num_col; i++)
-        //{
-        //	if (tempP[i] != i)
-        //	{
-        //		fprintf(stderr, "\nWarning: please make sure the information bits on the right!");
-        //	}
-        //}
+            code_len_no_puncture_ = num_col_;
+            code_dim_ = code_len_no_puncture_ - code_chk_;
+            coderate_ = (double)code_dim_ / code_len_puncture_;
 
-
-        for (j = 0; j < m_num_col; j++)
-        {
-            for (i = 0; i < m_num_row; i++)
+            delete[]tempP;
+            for (i = 0; i < num_row_; i++)
             {
-                m_decH[i][j] = tempH[i][tempP[j]];
+                delete[]tempH[i];
+                delete[]dec_h_[i];
             }
+            delete[]tempH;
+            delete[]dec_h_;
         }
 
-        /* By Zhaosc
-        -----由于在Gauss消元过程中有行列变换
-        -----需要删除原有的Tanner Graph，重新建立.
-        */
-        Free_Tanner_Graph();
-
-        m_row_head = new Edge[m_num_row];
-        m_col_head = new Edge[m_num_col];
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            (m_row_head + i)->m_row_no = i;
-            (m_row_head + i)->m_col_no = -1;
-            (m_row_head + i)->left = m_row_head + i;
-            (m_row_head + i)->right = m_row_head + i;
-            (m_row_head + i)->up = m_row_head + i;
-            (m_row_head + i)->down = m_row_head + i;
-        }
-
-        for (i = 0; i < m_num_col; i++)
-        {
-            (m_col_head + i)->m_row_no = -1;
-            (m_col_head + i)->m_col_no = i;
-            (m_col_head + i)->left = m_col_head + i;
-            (m_col_head + i)->right = m_col_head + i;
-            (m_col_head + i)->up = m_col_head + i;
-            (m_col_head + i)->down = m_col_head + i;
-        }
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            for (j = 0; j < m_num_col; j++)
-            {
-                if (m_decH[i][j] != 0)
-                {
-                    p_edge = new Edge;
-                    p_edge->m_row_no = i;
-                    p_edge->m_col_no = j;
-
-                    p_edge->right = (m_row_head + i)->right;
-                    (m_row_head + i)->right = p_edge;
-                    p_edge->left = m_row_head + i;
-                    (p_edge->right)->left = p_edge;
-
-                    p_edge->down = (m_col_head + j)->down;
-                    (m_col_head + j)->down = p_edge;
-                    p_edge->up = m_col_head + j;
-                    (p_edge->down)->up = p_edge;
-                }
-            }
-        }
-
-        m_codelen_no_puncture = m_num_col;
-        m_codedim = m_codelen_no_puncture - m_codechk;
-        m_coderate = (double)m_codedim / m_codelen_puncture;
-
-        delete[]tempP;
-        for (i = 0; i < m_num_row; i++)
-        {
-            delete[]tempH[i];
-            delete[]m_decH[i];
-        }
-        delete[]tempH;
-        delete[]m_decH;
-    }
-    void SystH2() {
-        int i, j, ii, jj, m, n;
-        int temp;
-        int flag;
-        int *tempP;
-        char **tempH;
-        Edge *p_edge;
-
-        m_decH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-            m_decH[i] = new char[m_num_col];
-
-        for (i = 0; i < m_num_row; i++){
-            for (j = 0; j < m_num_col; j++)
-                m_decH[i][j] = 0;
-        }
-
-        for (i = 0; i < m_num_row; i++){
-            p_edge = (m_row_head + i)->right;
-            while (p_edge->m_col_no != -1){
-                m_decH[i][p_edge->m_col_no] = 1;
-                p_edge = p_edge->right;
-            }
-        }
-
-        tempP = new int[m_num_col];
-        for (j = 0; j < m_num_col; j++)
-            tempP[j] = j;
-        tempH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-            tempH[i] = new char[m_num_col];
-
-        for (i = 0; i < m_num_row; i++){
-            for (j = 0; j < m_num_col; j++)
-                tempH[i][j] = m_decH[i][j];
-        }
-
-        m_encH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-        {
-            m_encH[i] = new char[m_num_col];
-        }
-        for (i = 0; i < m_num_row; i++)
-        {
-            for (j = 0; j < m_num_col; j++)
-            {
-                m_encH[i][j] = m_decH[i][j];
-            }
-        }
-
-        m_codechk = 0;
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            flag = 0;
-            for (jj = i; jj < m_num_col; jj++)
-            {
-                for (ii = i; ii < m_num_row; ii++)
-                {
-                    if (m_encH[ii][jj] != 0)
-                    {
-                        flag = 1;
-                        break;
-                    }
-                }
-                if (flag == 1)
-                {
-                    m_codechk++;
-                    break;
-                }
-            }
-
-            if (flag == 0)
-                break;
-            else
-            {
-                //swap i and ii row
-                if (ii != i)
-                {
-                    for (n = 0; n < m_num_col; n++)
-                    {
-                        temp = m_encH[i][n];
-                        m_encH[i][n] = m_encH[ii][n];
-                        m_encH[ii][n] = temp;
-                    }
-                }
-                //swap i and jj col
-                if (jj != i)
-                {
-                    temp = tempP[i];
-                    tempP[i] = tempP[jj];
-                    tempP[jj] = temp;
-
-                    for (m = 0; m < m_num_row; m++)
-                    {
-                        temp = m_encH[m][i];
-                        m_encH[m][i] = m_encH[m][jj];
-                        m_encH[m][jj] = temp;
-                    }
-                }
-                //elimination
-                for (m = 0; m < m_num_row; m++)
-                {
-                    if (m != i && m_encH[m][i] == 1)
-                    {
-                        for (n = 0; n < m_num_col; n++)
-                            m_encH[m][n] ^= m_encH[i][n];
-                    }
-                }
-            }
-        }
-
-        //for (i = 0; i < m_num_col; i++)
-        //{
-        //	if (tempP[i] != i)
-        //	{
-        //		fprintf(stderr, "\nWarning: please make sure the information bits on the right!");
-        //	}
-        //}
-
-
-        for (j = 0; j < m_num_col; j++)
-        {
-            for (i = 0; i < m_num_row; i++)
-            {
-                m_decH[i][j] = tempH[i][tempP[j]];
-            }
-        }
-
-        /* By Zhaosc
-        -----由于在Gauss消元过程中有行列变换
-        -----需要删除原有的Tanner Graph，重新建立.
-        */
-        Free_Tanner_Graph();
-
-        m_row_head = new Edge[m_num_row];
-        m_col_head = new Edge[m_num_col];
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            (m_row_head + i)->m_row_no = i;
-            (m_row_head + i)->m_col_no = -1;
-            (m_row_head + i)->left = m_row_head+i;
-            (m_row_head + i)->right = m_row_head+i;
-            (m_row_head + i)->up = m_row_head+i;
-            (m_row_head + i)->down = m_row_head+i;
-        }
-
-        for (i = 0; i < m_num_col; i++)
-        {
-            (m_col_head + i)->m_row_no = -1;
-            (m_col_head + i)->m_col_no = i;
-            (m_col_head + i)->left = m_col_head+i;
-            (m_col_head + i)->right = m_col_head+i;
-            (m_col_head + i)->up = m_col_head+i;
-            (m_col_head + i)->down = m_col_head+i;
-        }
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            for (j = 0; j < m_num_col; j++)
-            {
-                if (m_decH[i][j] != 0)
-                {
-                    p_edge = new Edge;
-                    p_edge->m_row_no = i;
-                    p_edge->m_col_no = j;
-
-                    p_edge->right = (m_row_head + i)->right;
-                    (m_row_head + i)->right = p_edge;
-                    p_edge->left = m_row_head + i;
-                    (p_edge->right)->left = p_edge;
-
-                    p_edge->down = (m_col_head + j)->down;
-                    (m_col_head + j)->down = p_edge;
-                    p_edge->up = m_col_head + j;
-                    (p_edge->down)->up = p_edge;
-                }
-            }
-        }
-
-        m_codelen_no_puncture = m_num_col;
-        m_codedim = m_codelen_no_puncture - m_codechk;
-        m_coderate = (double)m_codedim / m_codelen_no_puncture;
-
-        delete []tempP;
-        for (i = 0; i < m_num_row; i++)
-        {
-            delete[]tempH[i];
-            delete[]m_decH[i];
-        }
-        delete []tempH;
-        delete []m_decH;
-    }
-    void SystH_5G() {
-        int i, j, ii, jj, m, n;
-        int temp;
-        int flag;
-        int *tempP;
-        char **tempH;
-        Edge *p_edge;
-
-        m_decH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-            m_decH[i] = new char[m_num_col];
-
-        for (i = 0; i < m_num_row; i++) {
-            for (j = 0; j < m_num_col; j++)
-                m_decH[i][j] = 0;
-        }
-
-        for (i = 0; i < m_num_row; i++) {
-            p_edge = (m_row_head + i)->right;
-            while (p_edge->m_col_no != -1) {
-                m_decH[i][p_edge->m_col_no] = 1;
-                p_edge = p_edge->right;
-            }
-        }
-
-        tempP = new int[m_num_col];
-        for (j = 0; j < m_num_col; j++)
-            tempP[j] = j;
-        tempH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-            tempH[i] = new char[m_num_col];
-
-        for (i = 0; i < m_num_row; i++) {
-            for (j = 0; j < m_num_col; j++)
-                tempH[i][j] = m_decH[i][j];
-        }
-
-        m_encH = new char*[m_num_row];
-        for (i = 0; i < m_num_row; i++)
-        {
-            m_encH[i] = new char[m_num_col];
-        }
-        for (i = 0; i < m_num_row; i++)
-        {
-            for (j = 0; j < m_num_col; j++)
-            {
-                m_encH[i][j] = m_decH[i][j];
-            }
-        }
-
-        m_codechk = 0;
-
-        for (i = m_num_row - 1; i >= 0; --i)
-        {
-            flag = 0;
-            for (jj = i + m_num_col - m_num_row; jj >= 0; --jj)
-            {
-                for (ii = i; ii >= 0; --ii)
-                {
-                    if (m_encH[ii][jj] != 0)
-                    {
-                        flag = 1;
-                        break;
-                    }
-                }
-                if (flag == 1)
-                {
-                    m_codechk++;
-                    break;
-                }
-            }
-
-            if (flag == 0)
-                break;
-            else
-            {
-                //swap i and ii row
-                if (ii != i)
-                {
-                    for (n = 0; n < m_num_col; n++)
-                    {
-                        temp = m_encH[i][n];
-                        m_encH[i][n] = m_encH[ii][n];
-                        m_encH[ii][n] = temp;
-                    }
-                }
-                //swap (i + m_num_col - m_num_row) and jj col
-                if (jj != i + m_num_col - m_num_row)
-                {
-                    temp = tempP[i + m_num_col - m_num_row];
-                    tempP[i + m_num_col - m_num_row] = tempP[jj];
-                    tempP[jj] = temp;
-
-                    for (m = 0; m < m_num_row; m++)
-                    {
-                        temp = m_encH[m][i + m_num_col - m_num_row];
-                        m_encH[m][i + m_num_col - m_num_row] = m_encH[m][jj];
-                        m_encH[m][jj] = temp;
-                    }
-                }
-                //elimination
-                for (m = m_num_row - 1; m >= 0; --m)
-                {
-                    if (m != i && m_encH[m][i + m_num_col - m_num_row] == 1)
-                    {
-                        for (n = 0; n < m_num_col; n++)
-                            m_encH[m][n] ^= m_encH[i][n];
-                    }
-                }
-            }
-        }
-
-        //for (i = 0; i < m_num_col; i++)
-        //{
-        //	if (tempP[i] != i)
-        //	{
-        //		fprintf(stderr, "\nWarning: please make sure the information bits on the right!");
-        //	}
-        //}
-
-
-        for (j = 0; j < m_num_col; j++)
-        {
-            for (i = 0; i < m_num_row; i++)
-            {
-                m_decH[i][j] = tempH[i][tempP[j]];
-            }
-        }
-
-        /* By Zhaosc
-        -----由于在Gauss消元过程中有行列变换
-        -----需要删除原有的Tanner Graph，重新建立.
-        */
-        Free_Tanner_Graph();
-
-        m_row_head = new Edge[m_num_row];
-        m_col_head = new Edge[m_num_col];
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            (m_row_head + i)->m_row_no = i;
-            (m_row_head + i)->m_col_no = -1;
-            (m_row_head + i)->left = m_row_head + i;
-            (m_row_head + i)->right = m_row_head + i;
-            (m_row_head + i)->up = m_row_head + i;
-            (m_row_head + i)->down = m_row_head + i;
-        }
-
-        for (i = 0; i < m_num_col; i++)
-        {
-            (m_col_head + i)->m_row_no = -1;
-            (m_col_head + i)->m_col_no = i;
-            (m_col_head + i)->left = m_col_head + i;
-            (m_col_head + i)->right = m_col_head + i;
-            (m_col_head + i)->up = m_col_head + i;
-            (m_col_head + i)->down = m_col_head + i;
-        }
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            for (j = 0; j < m_num_col; j++)
-            {
-                if (m_decH[i][j] != 0)
-                {
-                    p_edge = new Edge;
-                    p_edge->m_row_no = i;
-                    p_edge->m_col_no = j;
-
-                    p_edge->right = (m_row_head + i)->right;
-                    (m_row_head + i)->right = p_edge;
-                    p_edge->left = m_row_head + i;
-                    (p_edge->right)->left = p_edge;
-
-                    p_edge->down = (m_col_head + j)->down;
-                    (m_col_head + j)->down = p_edge;
-                    p_edge->up = m_col_head + j;
-                    (p_edge->down)->up = p_edge;
-                }
-            }
-        }
-
-        m_codelen_no_puncture = m_num_col;
-        m_codedim = m_codelen_no_puncture - m_codechk;
-        m_coderate = (double)m_codedim / m_codelen_puncture;
-
-        delete[]tempP;
-        for (i = 0; i < m_num_row; i++)
-        {
-            delete[]tempH[i];
-            delete[]m_decH[i];
-        }
-        delete[]tempH;
-        delete[]m_decH;
-    }
-    void Free_Tanner_Graph() {
-        int i;
-        Edge *temp_edge;
-
-        for (i = 0; i < m_num_row; i++)
-        {
-            while ((m_row_head+i)->right->m_col_no != -1)
-            {
-                temp_edge = (m_row_head+i)->right;
-                (m_row_head+i)->right = temp_edge->right;
-                delete temp_edge;
-            }
-        }
-
-        delete []m_row_head;
-        delete []m_col_head;
-    }
-
-public:
-    //code parameters
-    int m_codedim;//码的维数
-    int m_codelen_no_puncture;//码的总长度
-    int m_codelen_puncture;  //码的发送长度，打孔之后
-    int m_codechk;//校验位的个数
-    double m_coderate;//码率
-    int m_encoder_active;//是否编码   0：不编码  1：编码
-    char m_file_name_of_H[255];
-
-    int m_lifting_factor;
-
-    int *m_cc_nopuncture;
-    double *m_cc_soft_nopuncture;
-    //parity-check matrix
-    int m_num_row;//校验矩阵的行数
-    int m_num_col;//校验矩阵的列数
-    char **m_decH;//用于译码的校验矩阵
-    char **m_encH;//用于编码校验矩阵
-    // soft syndrom
-    double *m_syndromsoft;
-    //graph
-    Edge *m_row_head;
-    Edge *m_col_head;
-
-    int *m_cc_hat;
-    int m_max_iter;
-    int m_success;
+    private:
+        int code_len_no_puncture_;  // Code length before puncture
+        int code_len_puncture_;     // Code length after puncture
+        int lifting_factor_;
+        int* cc_no_puncture_;
+        double *cc_soft_no_puncture_;
 };
 
 }
