@@ -1,10 +1,22 @@
 ﻿#include "ldpclinearsystem.h"
 
-extern CLCRandNum rndGen0;
-extern CWHRandNum rndGen1;
+LDPCLinearSystem::LDPCLinearSystem()
+    : source_sink_(lab::CSourceSink()),
+      codec_(lab::XORSegCodec()), modem_linear_system_(lab::ModemLinearSystem()),
+      min_snr_(0.0), max_snr_(0.0), step_snr_(0.0),
+      max_err_blk_(0), max_num_blk_(0), total_angle_(0),
+      uu_(nullptr), uu_hat_(nullptr), uu_len_(0),
+      cc_(nullptr), cc_hat_(nullptr), cc_len_(0), m_sym_prob(nullptr) {}
 
+LDPCLinearSystem::~LDPCLinearSystem() {
+    delete[] uu_;
+    delete[] uu_hat_;
+    delete[] cc_;
+    delete[] cc_hat_;
+    delete[] m_sym_prob;
+}
 
-void LDPC_Linear_System::StartSimulator()
+void LDPCLinearSystem::StartSimulator()
 {
 	int setup_no;
 	char file_name[80];
@@ -18,24 +30,24 @@ void LDPC_Linear_System::StartSimulator()
 
 	if ((fp = fopen(file_name, "r")) == nullptr)
 	{
-		fprintf(stderr, "\nCan't open the %s file!\n", file_name);
-		exit(1);
+		fprintf(stderr, "\nCan't Open the %s file!\n", file_name);
+		exit(-1);
 	}
 
 	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%lf", &m_min_snr);
+	fscanf(fp, "%lf", &min_snr_);
 
 	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%lf", &m_max_snr);
+	fscanf(fp, "%lf", &max_snr_);
 
 	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%lf", &m_inc_snr);
+	fscanf(fp, "%lf", &step_snr_);
 
 	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%d", &m_max_blk_err);
+	fscanf(fp, "%d", &max_err_blk_);
 
 	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%d", &m_max_blk_num);
+	fscanf(fp, "%d", &max_num_blk_);
 
 	fscanf(fp, "%s", temp_str);
 	fscanf(fp, "%s", codec_file);
@@ -46,91 +58,77 @@ void LDPC_Linear_System::StartSimulator()
 
 	if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
 	{
-		fprintf(stderr, "\n Cannot open the file!!!\n");
+		fprintf(stderr, "\n Cannot Open the file!!!\n");
 		exit(1);
 	}
 
 	fprintf(fp, "\n\n*** *** *** *** *** *** ***");
 	fprintf(fp, "\nStart Time: ");
-	loctime = time(nullptr);
-	ptr = localtime(&loctime);
+    time_t _localtime = time(nullptr);
+    struct tm* ptr = localtime(&_localtime);
 	fprintf(fp, asctime(ptr));
 	fprintf(fp, "\n The results correspond to %s", file_name);
 	fclose(fp);
 
-	m_codec.Malloc(0, codec_file);
+	codec_.Malloc(0, codec_file);
 
-	m_total_angle = 2;
-	m_len_uu = m_codec.m_extrabits_len + m_codec.m_len_uu;
-	m_len_cc = m_codec.m_len_cc;
+    total_angle_ = 2;
+    uu_len_ = codec_.GetUuLen();
+    cc_len_ = codec_.GetCcLen();
 
-	Modem_Lin_Sym.Malloc(m_len_cc, 0, modem_file);
+	modem_linear_system_.Malloc(cc_len_, 0, modem_file);
 
-	m_uu = new int[m_len_uu];
-	m_uu_hat = new int[m_len_uu];
+    uu_ = new int[uu_len_];
+    uu_hat_ = new int[uu_len_];
 
-	m_cc = new int[m_len_cc];
-	m_cc_hat = new int[m_len_cc];
+    cc_ = new int[cc_len_];
+    cc_hat_ = new int[cc_len_];
 
-	m_sym_prob = new double[m_len_cc / Modem_Lin_Sym.m_modem.len_input * Modem_Lin_Sym.m_modem.num_symbol];
+	m_sym_prob = new double[cc_len_ / modem_linear_system_.GetModem().GetInputLen()
+                         * modem_linear_system_.GetModem().GetNumSymbol()];
 
-    LOG(kmldpc::Info, true) << '[' << std::fixed << std::setprecision(3)
-                           << m_min_snr << ','
-                           << m_inc_snr << ','
-                           << m_max_snr
-                           << ']' << std::endl;
-    LOG(kmldpc::Info, true) << '['
-                           <<"MAX_ERROR_BLK = " << m_max_blk_err << ','
-                           << "MAX_BLK = " << m_max_blk_num << ']'
-                           << std::endl;
+    LOG(lab::logger::Info, true) << '[' << std::fixed << std::setprecision(3)
+                                 << min_snr_ << ','
+                                 << step_snr_ << ','
+                                 << max_snr_
+                                 << ']' << std::endl;
+    LOG(lab::logger::Info, true) << '['
+                                 << "MAX_ERROR_BLK = " << max_err_blk_ << ','
+                                 << "MAX_BLK = " << max_num_blk_ << ']'
+                                 << std::endl;
 
-	//输出仿真参数到文件
 	if ((fp = fopen("snrresult.txt", "a+")) == nullptr) {
-		fprintf(stderr, "\n Cannot open the file!!!\n");
+		fprintf(stderr, "\n Cannot Open the file!!!\n");
 		exit(1);
 	}
-	fprintf(fp, "\n SNR: [%2.2lf : %2.2lf : %2.2lf]", m_min_snr, m_inc_snr, m_max_snr);
-	fprintf(fp, "\n max_blk_err : %d", m_max_blk_err);
-	fprintf(fp, "\n max_blk_num : %d", m_max_blk_num);
-	Modem_Lin_Sym.m_modem.PrintCodeParameter(fp);
+	fprintf(fp, "\n SNR: [%2.2lf : %2.2lf : %2.2lf]", min_snr_, step_snr_, max_snr_);
+	fprintf(fp, "\n max_blk_err : %d", max_err_blk_);
+	fprintf(fp, "\n max_blk_num : %d", max_num_blk_);
+	modem_linear_system_.GetModem().PrintCodeParameter(fp);
 	fclose(fp);
 
 	if ((fp = fopen("snrber.txt", "a+")) == nullptr) {
-		fprintf(stderr, "\n Cannot open the file!!!\n");
+		fprintf(stderr, "\n Cannot Open the file!!!\n");
 		exit(1);
 	}
-	fprintf(fp, "\n SNR: [%2.2lf : %2.2lf : %2.2lf]", m_min_snr, m_inc_snr, m_max_snr);
-	fprintf(fp, "\n max_blk_err : %d", m_max_blk_err);
-	fprintf(fp, "\n max_blk_num : %d", m_max_blk_num);
-	Modem_Lin_Sym.m_modem.PrintCodeParameter(fp);
+	fprintf(fp, "\n SNR: [%2.2lf : %2.2lf : %2.2lf]", min_snr_, step_snr_, max_snr_);
+	fprintf(fp, "\n max_blk_err : %d", max_err_blk_);
+	fprintf(fp, "\n max_blk_num : %d", max_num_blk_);
+	modem_linear_system_.GetModem().PrintCodeParameter(fp);
 	fclose(fp);
 
 	if ((fp = fopen("snrfer.txt", "a+")) == nullptr) {
-		fprintf(stderr, "\n Cannot open the file!!!\n");
+		fprintf(stderr, "\n Cannot Open the file!!!\n");
 		exit(1);
 	}
-	fprintf(fp, "\n SNR: [%2.2lf : %2.2lf : %2.2lf]", m_min_snr, m_inc_snr, m_max_snr);
-	fprintf(fp, "\n max_blk_err : %d", m_max_blk_err);
-	fprintf(fp, "\n max_blk_num : %d", m_max_blk_num);
-	Modem_Lin_Sym.m_modem.PrintCodeParameter(fp);
+	fprintf(fp, "\n SNR: [%2.2lf : %2.2lf : %2.2lf]", min_snr_, step_snr_, max_snr_);
+	fprintf(fp, "\n max_blk_err : %d", max_err_blk_);
+	fprintf(fp, "\n max_blk_num : %d", max_num_blk_);
+	modem_linear_system_.GetModem().PrintCodeParameter(fp);
 	fclose(fp);
 }
 
-void LDPC_Linear_System::EndSimulator()
-{
-	delete[]m_uu;
-	delete[]m_uu_hat;
-
-	delete[]m_cc;
-	delete[]m_cc_hat;
-
-	delete[]m_sym_prob;
-
-	m_codec.Free();
-	Modem_Lin_Sym.Free();
-}
-
-void LDPC_Linear_System::Simulator()
+void LDPCLinearSystem::Simulator()
 {
 	double snr, sigma, var;
 	FILE* fp = nullptr;
@@ -140,54 +138,52 @@ void LDPC_Linear_System::Simulator()
 	std::vector<std::complex<double>> totalH;
 	std::vector<std::complex<double>> um;
 
-	for (int i = 0; i < m_total_angle; i++) {
-		std::complex<double> H(0.0, ((m_PI / 2) / (m_total_angle)) * (i));
+	for (int i = 0; i < total_angle_; i++) {
+		std::complex<double> H(0.0, ((lab::kPi / 2) / (total_angle_)) * (i));
 		H = exp(H);
 		totalH.push_back(H);
 	}
 
-	for (snr = m_min_snr; snr < m_max_snr + 0.5 * m_inc_snr; snr += m_inc_snr)
+	for (snr = min_snr_; snr < max_snr_ + 0.5 * step_snr_; snr += step_snr_)
 	{
-		//var = pow(10.0, -0.1 * (snr)) / (m_codec.m_coderate * Modem_Lin_Sym.m_modem.len_input);
+		//var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
 		var = pow(10.0, -0.1 * (snr));
 
 		sigma = sqrt(var);
 
-		Modem_Lin_Sym.Lin_Sym.sigma = sigma;
-		Modem_Lin_Sym.Lin_Sym.var = var; 
+        modem_linear_system_.GetLinearSystem().SetSigma(sigma);
+        modem_linear_system_.GetLinearSystem().SetVar(var);
 
-		m_source_sink.ClrCnt();
-		m_source_extrabits.ClrCnt();
+		source_sink_.ClrCnt();
 
-		while ((m_source_sink.m_num_tot_blk < m_max_blk_num 
-			&& m_source_sink.m_num_err_blk < m_max_blk_err)) {
+		while ((source_sink_.GetNumTotBlk() < max_num_blk_
+                && source_sink_.GetNumErrBlk() < max_err_blk_)) {
 
-			int current_error_blk = m_source_sink.m_num_err_blk;
+			int current_error_blk = source_sink_.GetNumErrBlk();
 
-			m_source_sink.GetBitStr(m_uu, m_codec.m_len_uu);
-			m_source_extrabits.GetBitStr(m_uu + m_codec.m_len_uu, m_codec.m_extrabits_len);
-			m_codec.Encoder(m_uu, m_cc);
+			source_sink_.GetBitStr(uu_, codec_.GetUuLen());
+			codec_.Encoder(uu_, cc_);
 
 			// Generate H
 			double real;
 			double imag;
-			rndGen0.Normal(&real, 1);
-			rndGen0.Normal(&imag, 1);
+            lab::CLCRandNum::Get().Normal(&real, 1);
+            lab::CLCRandNum::Get().Normal(&imag, 1);
 
 			std::complex<double> trueH(real, imag);
 			trueH *= sqrt(0.5);
-			LOG(kmldpc::Info, false) << "Generated H = " << trueH << std::endl;
+			LOG(lab::logger::Info, false) << "Generated H = " << trueH << std::endl;
 			std::vector<std::complex<double>> selecth(1);
 			for (auto & i : selecth) {
 				i = trueH;
 			}
 
 			// Modulation and pass through the channel
-			Modem_Lin_Sym.modem_linear_system_parition(m_cc, selecth);
+            modem_linear_system_.MLSystemPartition(cc_, selecth);
 			// Get constellation
-			auto constellations = Modem_Lin_Sym.Lin_Sym.m_modem->getConstellation();
+			auto constellations = modem_linear_system_.GetLinearSystem().GetMModem()->GetConstellations();
 			// Get received symbols
-			auto receivedSymbols = Modem_Lin_Sym.getRSymbol();
+			auto receivedSymbols = modem_linear_system_.GetRSymbol();
 			// KMeans
 			kmldpc::KMeans kmeans = kmldpc::KMeans(receivedSymbols, constellations, 20);
 			kmeans.run();
@@ -199,69 +195,67 @@ void LDPC_Linear_System::Simulator()
 			std::complex<double> hHat = clusters[0] / constellations[0];
 			std::vector<std::complex<double>> hHats(4);
 			for (int i = 0; i < hHats.size(); i++) {
-				hHats[i] = hHat * exp(std::complex<double>(0, (m_PI / 2) * i));
+				hHats[i] = hHat * exp(std::complex<double>(0, (lab::kPi / 2) * i));
 			}
 
-			LOG(kmldpc::Info, false) << std::fixed << std::setprecision(0) << std::setfill('0')
-			                                   << "Current Block Number = "
-			                                   << std::setw(7) << std::right << (m_source_sink.m_num_tot_blk + 1)
-			                                   << std::endl;
-			m_codec.Decoder(Modem_Lin_Sym, hHats, m_uu_hat);
+			LOG(lab::logger::Info, false) << std::fixed << std::setprecision(0) << std::setfill('0')
+                                          << "Current Block Number = "
+                                          << std::setw(7) << std::right << (source_sink_.GetNumTotBlk() + 1)
+                                          << std::endl;
+			codec_.Decoder(modem_linear_system_, hHats, uu_hat_);
 
-			m_source_sink.CntErr(m_uu, m_uu_hat, m_codec.m_len_uu, 1);
+			source_sink_.CntErr(uu_, uu_hat_, codec_.GetUuLen(), 1);
 
-			if (m_source_sink.m_num_err_blk > current_error_blk) {
+			if (source_sink_.GetNumErrBlk() > current_error_blk) {
 			    std::string dir = "records";
 				std::string filename = dir + "/" + "RECEIVED_SYMBOL_SNR_" +
-					std::to_string(snr) + "_ID_" +
-					std::to_string(int(m_source_sink.m_num_tot_blk)) + ".mat";
+                                       std::to_string(snr) + "_ID_" +
+                                       std::to_string(int(source_sink_.GetNumTotBlk())) + ".mat";
 				hHats.push_back(trueH);
 
                 kmeans.dumpToMat(filename, hHats);
-                LOG(kmldpc::Info, false) << "Wrote error case to " << filename << std::endl;
+                LOG(lab::logger::Info, false) << "Wrote error case to " << filename << std::endl;
 			}
 
-			if (int(m_source_sink.m_num_tot_blk) > 0 && int(m_source_sink.m_num_tot_blk) % 100 == 0) {
-                m_source_sink.PrintResult(snr);
+			if (int(source_sink_.GetNumTotBlk()) > 0 && int(source_sink_.GetNumTotBlk()) % 100 == 0) {
+                source_sink_.PrintResult(snr);
 			}
 		}
-		m_source_sink.PrintResult(snr);
+		source_sink_.PrintResult(snr);
 
 		if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
 		{
-			fprintf(stderr, "\n Cannot open the file!!!\n");
+			fprintf(stderr, "\n Cannot Open the file!!!\n");
 			exit(1);
 		}
-		fprintf(fp, "\n\nsnr =  %lf: var = %lf: ", snr, var);
-		m_source_sink.PrintResult(fp);
+		fprintf(fp, "\n\nsnr =  %lf: var_ = %lf: ", snr, var);
+		source_sink_.PrintResult(fp);
 		fclose(fp);
 
 		//BER
 		if ((fp = fopen("snrber.txt", "a+")) == nullptr)
 		{
-			fprintf(stderr, "\n Cannot open the file!!!\n");
+			fprintf(stderr, "\n Cannot Open the file!!!\n");
 			exit(1);
 		}
-		fprintf(fp, "\n%lf %12.10lf", snr, m_source_sink.m_ber);
+		fprintf(fp, "\n%lf %12.10lf", snr, source_sink_.GetBer());
 		fclose(fp);
 
 		//FER
 		if ((fp = fopen("snrfer.txt", "a+")) == nullptr)
 		{
-			fprintf(stderr, "\n Cannot open the file!!!\n");
+			fprintf(stderr, "\n Cannot Open the file!!!\n");
 			exit(1);
 		}
-		fprintf(fp, "\n%lf %12.10lf", snr, m_source_sink.m_fer);
+		fprintf(fp, "\n%lf %12.10lf", snr, source_sink_.GetFer());
 		fclose(fp);
 
 		if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
 		{
-			fprintf(stderr, "\n Cannot open the file!!!\n");
+			fprintf(stderr, "\n Cannot Open the file!!!\n");
 			exit(1);
 		}
 		fclose(fp);
 
 	}
-
-	EndSimulator();
 }

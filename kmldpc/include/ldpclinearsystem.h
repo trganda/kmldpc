@@ -1,5 +1,5 @@
-#ifndef LDPC_LINEAR_SYSTEM_H
-#define LDPC_LINEAR_SYSTEM_H
+#ifndef KMLDPC_LDPC_LINEAR_SYSTEM_H
+#define KMLDPC_LDPC_LINEAR_SYSTEM_H
 
 #include <complex>
 #include <algorithm>
@@ -7,50 +7,48 @@
 #include <fstream>
 #include <iomanip>
 
-#include "sourcesink.h"
-#include "xorsegcodec.h"
-#include "modemlinearsystem.h"
+#include "sourcesink.hpp"
+#include "xorsegcodec.hpp"
+#include "modemlinearsystem.hpp"
+#include "randnum.hpp"
+#include "log.hpp"
+
 #include "kmeans.h"
-#include "randnum.h"
-#include "log.h"
 
-class LDPC_Linear_System  
-{
-public:
-	LDPC_Linear_System() {}
-	virtual ~LDPC_Linear_System(){}
+class LDPCLinearSystem {
+    public:
+        explicit LDPCLinearSystem();
+        virtual ~LDPCLinearSystem();
 
-	//read Setup_of_LDPC_Linear_System*.txt
-	double m_min_snr;
-	double m_max_snr;
-	double m_inc_snr;
-	int m_max_blk_err;
-	int m_max_blk_num;
+        void StartSimulator();
+        void Simulator();
 
-	int m_total_angle;
-		
-	int * m_uu;
-	int * m_uu_hat;
-	int   m_len_uu;
-	
-	int * m_cc;
-	int * m_cc_hat;
-	int   m_len_cc;
+    private:
+        lab::CSourceSink source_sink_;
+        lab::XORSegCodec codec_;
+        lab::ModemLinearSystem modem_linear_system_;
 
-	double * m_sym_prob;
-	
-	struct tm * ptr;
-	time_t loctime;
+        // Simulation bound of snr
+        double min_snr_;
+        double max_snr_;
+        // Step size for increase snr
+        double step_snr_;
+        // Maximum error blocks, stop simulation of one snr while
+        // errors block is equal to it
+        int max_err_blk_;
+        // Maximum blocks for simulation
+        int max_num_blk_;
+        int total_angle_;
+        // Uncoded codeword
+        int* uu_;
+        int* uu_hat_;
+        int  uu_len_;
+        // Encoded codeword
+        int* cc_;
+        int* cc_hat_;
+        int  cc_len_;
 
-	CSourceSink m_source_sink;
-	CSourceSink m_source_extrabits;
-
-	XORSegCodec m_codec;
-	Modem_Linear_System Modem_Lin_Sym;
-				
-	void StartSimulator();
-	void EndSimulator();
-	void Simulator();
+        double* m_sym_prob;
 };
 
 #endif

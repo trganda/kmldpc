@@ -7,7 +7,7 @@
 #include <utility>
 #include <iostream>
 
-#include "mat.h"
+#include "mat.hpp"
 
 namespace kmldpc {
 
@@ -26,13 +26,13 @@ public:
     void dumpToMat(std::string& filename, std::vector<std::complex<double>>& append);
 
 private:
-    const std::vector<std::complex<double>> _data;
-    const std::vector<std::complex<double>> _constellations;
-    std::vector<std::complex<double>> _clusters;
-    std::vector<int> _idx;
-    unsigned int _iter;
+    const std::vector<std::complex<double>> data_;
+    const std::vector<std::complex<double>> constellations_;
+    std::vector<std::complex<double>> clusters_;
+    std::vector<int> idx_;
+    unsigned int iter_;
 };
 
-}   // namespace
+} // namespace
 
 #endif //KMLDPC_KMEANS_H

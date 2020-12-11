@@ -1,37 +1,35 @@
-#include "randnum.h"
-#include "ldpclinearsystem.h"
-#include "log.h"
 #include <iostream>
 
-CLCRandNum rndGen0;
-CWHRandNum rndGen1;
+#include "randnum.hpp"
+#include "log.hpp"
 
+#include "ldpclinearsystem.h"
 
-int main(int argc, char* argv[])
+int main()
 {
     std::string dirname = "logs";
-    std::string logFileName = kmldpc::Log::get().getCurrentSystemTime() + "-kmldpc.log";
+    std::string logFileName = lab::logger::Log::GetCurrentSystemTime() + "-kmldpc.logger";
     std::ofstream logFile(dirname + "/" + logFileName);
-    kmldpc::TeeStream logTee (logFile, std::cout);
+    lab::logger::TeeStream logTee (logFile, std::cout);
 
     if (logFile.is_open() && logFile.good())
-        kmldpc::Log::get().setLogStream(logTee);
+        lab::logger::Log::Get().SetLogStream(logTee);
     else
-        kmldpc::Log::get().setLogStream(std::cout);
+        lab::logger::Log::Get().SetLogStream(std::cout);
 
     int flag0, flag1;
 
     flag0 = 0;
-    rndGen0.SetSeed(flag0);
+    lab::CLCRandNum::Get().SetSeed(flag0);
 
     flag1 = 0;
-    rndGen1.SetSeed(flag1);
-    kmldpc::Log::get().setLevel(kmldpc::Info);
-    LOG(kmldpc::Info, true) << "Start simulation" << std::endl;
+    lab::CWHRandNum::Get().SetSeed(flag1);
+    lab::logger::Log::Get().SetLevel(lab::logger::Info);
+    LOG(lab::logger::Info, true) << "Start simulation" << std::endl;
 
-    LDPC_Linear_System sim_ldpc;
+    LDPCLinearSystem sim_ldpc;
     sim_ldpc.Simulator();
-    LOG(kmldpc::Info, true) << "Simulation done" << std::endl;
+    LOG(lab::logger::Info, true) << "Simulation done" << std::endl;
 
     return 0;
 }

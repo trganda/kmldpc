@@ -52,9 +52,17 @@ else()
     message("\nmatio directory not found.")
 endif()
 
+# include lab code
+add_subdirectory("lab")
+
 # Add source to this project's executable.
 add_executable (kmldpc "kmldpc.cpp" ${SRC})
-target_link_libraries(kmldpc ${MATIO_LIBRARY})
+target_link_libraries(kmldpc ${MATIO_LIBRARY} lab)
+
+# add the binary tree to the search path for include files
+target_include_directories(kmldpc PUBLIC
+        "${PROJECT_SOURCE_DIR}/kmldpc/lab/src"
+        )
 
 define_file_basename_for_sources(kmldpc)
 # TODO: Add tests and install targets if needed.

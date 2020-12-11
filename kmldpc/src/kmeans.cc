@@ -4,49 +4,49 @@ namespace kmldpc {
 
 KMeans::KMeans(std::vector<std::complex<double>> &data,
                std::vector<std::complex<double>> &constellations, int iter)
-        : _data(data), _constellations(constellations), _iter(iter) {
-    _clusters = std::vector<std::complex<double>>(constellations.size());
-    _idx = std::vector<int>(data.size());
+        : data_(data), constellations_(constellations), iter_(iter) {
+    clusters_ = std::vector<std::complex<double>>(constellations.size());
+    idx_ = std::vector<int>(data.size());
 }
 
 KMeans::~KMeans() {}
 
 void KMeans::run() {
     // Find the point far from the origin to be the outlier
-    std::vector<double> absValues(_data.size());
+    std::vector<double> absValues(data_.size());
     for (int i = 0; i < absValues.size(); i++) {
-        absValues[i] = abs(_data[i]);
+        absValues[i] = abs(data_[i]);
     }
     auto maxIndex = std::distance(absValues.begin(), max_element(absValues.begin(), absValues.end()));
-    auto maxValue = _data[maxIndex];
+    auto maxValue = data_[maxIndex];
 
     // Initial clusters
-    auto hatH = maxValue / _constellations[0];
-    for (int i = 0; i < _clusters.size(); i++) {
-        _clusters[i] = _constellations[i] * hatH;
+    auto hatH = maxValue / constellations_[0];
+    for (int i = 0; i < clusters_.size(); i++) {
+        clusters_[i] = constellations_[i] * hatH;
     }
 
-    std::vector<std::complex<double>> tempClusters(_clusters.size());
-    std::vector<int> idxCount(_clusters.size());
-    std::vector<std::complex<double>> idxSum(_clusters.size());
-    for (int i = 0; i < _iter; i++) {
+    std::vector<std::complex<double>> tempClusters(clusters_.size());
+    std::vector<int> idxCount(clusters_.size());
+    std::vector<std::complex<double>> idxSum(clusters_.size());
+    for (int i = 0; i < iter_; i++) {
         idxCount.clear();
         idxSum.clear();
-        std::vector<double> tempAbsValues(_clusters.size());
-        for (int j = 0; j < _data.size(); j++) {
-            for (int k = 0; k < _clusters.size(); k++) {
-                tempAbsValues[k] = abs(_clusters[k] - _data[j]);
+        std::vector<double> tempAbsValues(clusters_.size());
+        for (int j = 0; j < data_.size(); j++) {
+            for (int k = 0; k < clusters_.size(); k++) {
+                tempAbsValues[k] = abs(clusters_[k] - data_[j]);
             }
             auto minIndex = std::distance(tempAbsValues.begin(),
                                           min_element(tempAbsValues.begin(), tempAbsValues.end()));
-            _idx[j] = minIndex;
-            idxCount[_idx[j]]++;
-            idxSum[_idx[j]] += _data[j];
+            idx_[j] = minIndex;
+            idxCount[idx_[j]]++;
+            idxSum[idx_[j]] += data_[j];
         }
 
         bool flag = true;
-        for (int j = 0; j < _clusters.size(); j++) {
-            if (_clusters[j] != tempClusters[j]) {
+        for (int j = 0; j < clusters_.size(); j++) {
+            if (clusters_[j] != tempClusters[j]) {
                 flag &= false;
                 break;
             }
@@ -57,55 +57,55 @@ void KMeans::run() {
         }
 
         // Updating the cluster
-        tempClusters = _clusters;
-        for (int j = 0; j < _clusters.size(); j++) {
-            _clusters[j] = idxSum[j] / std::complex<double>(idxCount[j], 0);
+        tempClusters = clusters_;
+        for (int j = 0; j < clusters_.size(); j++) {
+            clusters_[j] = idxSum[j] / std::complex<double>(idxCount[j], 0);
         }
 
         // Form to the constellation schema
         absValues.clear();
         for (int j = 0; j < absValues.size(); j++) {
-            absValues[j] = abs(_clusters[j]);
+            absValues[j] = abs(clusters_[j]);
         }
         maxIndex = std::distance(absValues.begin(), max_element(absValues.begin(), absValues.end()));
-        maxValue = _clusters[maxIndex];
+        maxValue = clusters_[maxIndex];
 
-        hatH = maxValue / _constellations[0];
-        for (int j = 0; j < _clusters.size(); j++) {
-            _clusters[j] = _constellations[j] * hatH;
+        hatH = maxValue / constellations_[0];
+        for (int j = 0; j < clusters_.size(); j++) {
+            clusters_[j] = constellations_[j] * hatH;
         }
     }
 
-    for (int i = 0; i < _data.size(); i++) {
-        std::vector<double> tempAbsValues(_clusters.size());
-        for (int j = 0; j < _clusters.size(); j++) {
-            tempAbsValues[j] = abs(_clusters[j] - _data[i]);
+    for (int i = 0; i < data_.size(); i++) {
+        std::vector<double> tempAbsValues(clusters_.size());
+        for (int j = 0; j < clusters_.size(); j++) {
+            tempAbsValues[j] = abs(clusters_[j] - data_[i]);
         }
         auto minIndex = min_element(tempAbsValues.begin(), tempAbsValues.end()) - tempAbsValues.begin();
-        _idx[i] = minIndex;
+        idx_[i] = minIndex;
     }
 }
 
 std::vector<std::complex<double>> KMeans::getClusters() {
-    return this->_clusters;
+    return this->clusters_;
 }
 
 std::vector<int> KMeans::getIdx() {
-    return this->_idx;
+    return this->idx_;
 }
 
 void KMeans::dumpToMat(std::string &filename, std::vector<std::complex<double>>& append) {
-    Mat mat = Mat(filename);
+    lab::Mat mat = lab::Mat(filename);
 
-    mat.open();
-    mat.writeVector("data", _data);
-    mat.writeVector("cluster", _clusters);
-    mat.writeVector("idx", _idx);
-    mat.writeVector("constellations", _constellations);
-    mat.writeVector("hHats", std::vector<std::complex<double>>(append.begin(), append.begin()+4));
-    mat.writeComplex("realH", append[4]);
+    mat.Open();
+    mat.WriteVector("data", data_);
+    mat.WriteVector("cluster", clusters_);
+    mat.WriteVector("idx", idx_);
+    mat.WriteVector("constellations", constellations_);
+    mat.WriteVector("hHats", std::vector<std::complex<double>>(append.begin(), append.begin() + 4));
+    mat.WriteComplex("realH", append[4]);
 
-    mat.close();
+    mat.Close();
 }
 
 }   // namespace
