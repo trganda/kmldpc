@@ -56,20 +56,6 @@ void LDPCLinearSystem::StartSimulator()
 	fscanf(fp, "%s", modem_file);
 	fclose(fp);
 
-	if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
-	{
-		fprintf(stderr, "\n Cannot Open the file!!!\n");
-		exit(1);
-	}
-
-	fprintf(fp, "\n\n*** *** *** *** *** *** ***");
-	fprintf(fp, "\nStart Time: ");
-    time_t _localtime = time(nullptr);
-    struct tm* ptr = localtime(&_localtime);
-	fprintf(fp, asctime(ptr));
-	fprintf(fp, "\n The results correspond to %s", file_name);
-	fclose(fp);
-
 	codec_.Malloc(0, codec_file);
 
     total_angle_ = 2;
@@ -96,41 +82,11 @@ void LDPCLinearSystem::StartSimulator()
                                  << "MAX_ERROR_BLK = " << max_err_blk_ << ','
                                  << "MAX_BLK = " << max_num_blk_ << ']'
                                  << std::endl;
-
-	if ((fp = fopen("snrresult.txt", "a+")) == nullptr) {
-		fprintf(stderr, "\n Cannot Open the file!!!\n");
-		exit(1);
-	}
-	fprintf(fp, "\n SNR: [%2.2lf : %2.2lf : %2.2lf]", min_snr_, step_snr_, max_snr_);
-	fprintf(fp, "\n max_blk_err : %d", max_err_blk_);
-	fprintf(fp, "\n max_blk_num : %d", max_num_blk_);
-	modem_linear_system_.GetModem().PrintCodeParameter(fp);
-	fclose(fp);
-
-	if ((fp = fopen("snrber.txt", "a+")) == nullptr) {
-		fprintf(stderr, "\n Cannot Open the file!!!\n");
-		exit(1);
-	}
-	fprintf(fp, "\n SNR: [%2.2lf : %2.2lf : %2.2lf]", min_snr_, step_snr_, max_snr_);
-	fprintf(fp, "\n max_blk_err : %d", max_err_blk_);
-	fprintf(fp, "\n max_blk_num : %d", max_num_blk_);
-	modem_linear_system_.GetModem().PrintCodeParameter(fp);
-	fclose(fp);
-
-	if ((fp = fopen("snrfer.txt", "a+")) == nullptr) {
-		fprintf(stderr, "\n Cannot Open the file!!!\n");
-		exit(1);
-	}
-	fprintf(fp, "\n SNR: [%2.2lf : %2.2lf : %2.2lf]", min_snr_, step_snr_, max_snr_);
-	fprintf(fp, "\n max_blk_err : %d", max_err_blk_);
-	fprintf(fp, "\n max_blk_num : %d", max_num_blk_);
-	modem_linear_system_.GetModem().PrintCodeParameter(fp);
-	fclose(fp);
 }
 
 void LDPCLinearSystem::Simulator()
 {
-	double snr, sigma, var;
+	double sigma, var;
 	FILE* fp = nullptr;
 
 	StartSimulator();
@@ -144,118 +100,99 @@ void LDPCLinearSystem::Simulator()
 		totalH.push_back(H);
 	}
 
-	for (snr = min_snr_; snr < max_snr_ + 0.5 * step_snr_; snr += step_snr_)
-	{
-		//var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
-		var = pow(10.0, -0.1 * (snr));
+	std::vector<std::pair<double, double>> ber_result;
+	std::vector<std::pair<double, double>> fer_result;
 
-		sigma = sqrt(var);
+	double snr = min_snr_;
+	while (snr <= max_snr_) {
+        //var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
+        var = pow(10.0, -0.1 * (snr));
+
+        sigma = sqrt(var);
 
         modem_linear_system_.GetLinearSystem().SetSigma(sigma);
         modem_linear_system_.GetLinearSystem().SetVar(var);
 
-		source_sink_.ClrCnt();
+        source_sink_.ClrCnt();
 
-		while ((source_sink_.GetNumTotBlk() < max_num_blk_
+        while ((source_sink_.GetNumTotBlk() < max_num_blk_
                 && source_sink_.GetNumErrBlk() < max_err_blk_)) {
 
-			int current_error_blk = source_sink_.GetNumErrBlk();
+            source_sink_.GetBitStr(uu_, codec_.GetUuLen());
+            codec_.Encoder(uu_, cc_);
 
-			source_sink_.GetBitStr(uu_, codec_.GetUuLen());
-			codec_.Encoder(uu_, cc_);
-
-			// Generate H
-			double real;
-			double imag;
+            // Generate H
+            double real;
+            double imag;
             lab::CLCRandNum::Get().Normal(&real, 1);
             lab::CLCRandNum::Get().Normal(&imag, 1);
 
-			std::complex<double> trueH(real, imag);
-			trueH *= sqrt(0.5);
-			LOG(lab::logger::Info, false) << "Generated H = " << trueH << std::endl;
-			std::vector<std::complex<double>> selecth(1);
-			for (auto & i : selecth) {
-				i = trueH;
-			}
+            std::complex<double> trueH(real, imag);
+            trueH *= sqrt(0.5);
+            LOG(lab::logger::Info, false) << "Generated H = " << trueH << std::endl;
+            std::vector<std::complex<double>> selecth(1);
+            for (auto & i : selecth) {
+                i = trueH;
+            }
 
-			// Modulation and pass through the channel
+            // Modulation and pass through the channel
             modem_linear_system_.MLSystemPartition(cc_, selecth);
-			// Get constellation
-			auto constellations = modem_linear_system_.GetLinearSystem().GetMModem()->GetConstellations();
-			// Get received symbols
-			auto receivedSymbols = modem_linear_system_.GetRSymbol();
-			// KMeans
-			kmldpc::KMeans kmeans = kmldpc::KMeans(receivedSymbols, constellations, 20);
-			kmeans.run();
-			auto clusters = kmeans.getClusters();
-			auto idx = kmeans.getIdx();
+            // Get constellation
+            auto constellations = modem_linear_system_.GetLinearSystem().GetMModem()->GetConstellations();
+            // Get received symbols
+            auto receivedSymbols = modem_linear_system_.GetRSymbol();
+            // KMeans
+            kmldpc::KMeans kmeans = kmldpc::KMeans(receivedSymbols, constellations, 20);
+            kmeans.run();
+            auto clusters = kmeans.getClusters();
+            auto idx = kmeans.getIdx();
 
-			// Get H hat
-			// std::complex<double> hHat = trueH;
-			std::complex<double> hHat = clusters[0] / constellations[0];
-			std::vector<std::complex<double>> hHats(4);
-			for (size_t i = 0; i < hHats.size(); i++) {
-				hHats[i] = hHat * exp(std::complex<double>(0, (lab::kPi / 2) * i));
-			}
+            // Get H hat
+            // std::complex<double> hHat = trueH;
+            std::complex<double> hHat = clusters[0] / constellations[0];
+            std::vector<std::complex<double>> hHats(4);
+            for (size_t i = 0; i < hHats.size(); i++) {
+                hHats[i] = hHat * exp(std::complex<double>(0, (lab::kPi / 2) * i));
+            }
 
-			LOG(lab::logger::Info, false) << std::fixed << std::setprecision(0) << std::setfill('0')
+            LOG(lab::logger::Info, false) << std::fixed << std::setprecision(0) << std::setfill('0')
                                           << "Current Block Number = "
                                           << std::setw(7) << std::right << (source_sink_.GetNumTotBlk() + 1)
                                           << std::endl;
-			codec_.Decoder(modem_linear_system_, hHats, uu_hat_);
+            codec_.Decoder(modem_linear_system_, hHats, uu_hat_);
 
-			source_sink_.CntErr(uu_, uu_hat_, codec_.GetUuLen(), 1);
+            source_sink_.CntErr(uu_, uu_hat_, codec_.GetUuLen(), 1);
 
-//			if (source_sink_.GetNumErrBlk() > current_error_blk) {
-//			    std::string dir = "records";
-//				std::string filename = dir + "/" + "RECEIVED_SYMBOL_SNR_" +
-//                                       std::to_string(snr) + "_ID_" +
-//                                       std::to_string(int(source_sink_.GetNumTotBlk())) + ".mat";
-//				hHats.push_back(trueH);
-//
-//                kmeans.dumpToMat(filename, hHats);
-//                LOG(lab::logger::Info, false) << "Wrote error case to " << filename << std::endl;
-//			}
-
-			if (int(source_sink_.GetNumTotBlk()) > 0 && int(source_sink_.GetNumTotBlk()) % 100 == 0) {
+            if (int(source_sink_.GetNumTotBlk()) > 0 && int(source_sink_.GetNumTotBlk()) % 100 == 0) {
                 source_sink_.PrintResult(snr);
-			}
-		}
-		source_sink_.PrintResult(snr);
+            }
+        }
+        source_sink_.PrintResult(snr);
 
-		if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
-		{
-			fprintf(stderr, "\n Cannot Open the file!!!\n");
-			exit(1);
-		}
-		fprintf(fp, "\n\nsnr =  %lf: var_ = %lf: ", snr, var);
-		source_sink_.PrintResult(fp);
-		fclose(fp);
+        // BER
+        ber_result.emplace_back(snr, source_sink_.GetBer());
 
-		//BER
-		if ((fp = fopen("snrber.txt", "a+")) == nullptr)
-		{
-			fprintf(stderr, "\n Cannot Open the file!!!\n");
-			exit(1);
-		}
-		fprintf(fp, "\n%lf %12.10lf", snr, source_sink_.GetBer());
-		fclose(fp);
+        // FER
+        fer_result.emplace_back(snr, source_sink_.GetFer());
 
-		//FER
-		if ((fp = fopen("snrfer.txt", "a+")) == nullptr)
-		{
-			fprintf(stderr, "\n Cannot Open the file!!!\n");
-			exit(1);
-		}
-		fprintf(fp, "\n%lf %12.10lf", snr, source_sink_.GetFer());
-		fclose(fp);
-
-		if ((fp = fopen("snrresult.txt", "a+")) == nullptr)
-		{
-			fprintf(stderr, "\n Cannot Open the file!!!\n");
-			exit(1);
-		}
-		fclose(fp);
-
+        snr += step_snr_;
 	}
+
+	LOG(lab::logger::Info, true) << "BER Result" << std::endl;
+	for (auto item : ber_result) {
+	    LOG(lab::logger::Info, true) << std::fixed << std::setprecision(3) << std::setfill('0')
+	                                           << std::setw(3) << std::right
+	                                           << item.first << ' '
+	                                           << std::setprecision(14)
+	                                           << item.second << std::endl;
+	}
+
+    LOG(lab::logger::Info, true) << "FER Result" << std::endl;
+    for (auto item : fer_result) {
+        LOG(lab::logger::Info, true) << std::fixed << std::setprecision(3) << std::setfill('0')
+                                     << std::setw(3) << std::right
+                                     << item.first << ' '
+                                     << std::setprecision(14)
+                                     << item.second << std::endl;
+    }
 }

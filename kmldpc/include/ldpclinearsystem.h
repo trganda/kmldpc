@@ -28,7 +28,7 @@ class LDPCLinearSystem {
         lab::XORSegCodec codec_;
         lab::ModemLinearSystem modem_linear_system_;
 
-        // Simulation bound of snr
+        // Simulation range of snr
         double min_snr_;
         double max_snr_;
         // Step size for increase snr

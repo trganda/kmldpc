@@ -56,11 +56,11 @@ class CSourceSink {
         }
 
         void PrintResult(double snr) const {
-            LOG(logger::Info, true) << std::fixed << std::setprecision(0) << std::setfill('0')
+            LOG(logger::Info, true) << std::fixed << std::setprecision(3) << std::setfill('0')
                         << "SNR = "
                         << std::setw(3) << std::right << snr << ' '
                         << "Total blk = "
-                        << std::setw(7) << std::right << num_tot_blk_ << ' '
+                        << std::setw(7) << std::right << std::setprecision(0) << num_tot_blk_ << ' '
                         << "Error blk = "
                         << std::setw(7) << std::right << num_err_blk_ << ' '
                         << "Error bit = "
