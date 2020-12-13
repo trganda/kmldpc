@@ -11,7 +11,7 @@ KMeans::KMeans(std::vector<std::complex<double>> &data,
 
 KMeans::~KMeans() = default;
 
-void KMeans::run() {
+void KMeans::Run() {
     // Find the point far from the origin to be the outlier
     std::vector<double> absValues(data_.size());
     for (size_t i = 0; i < absValues.size(); i++) {
@@ -86,15 +86,15 @@ void KMeans::run() {
     }
 }
 
-std::vector<std::complex<double>> KMeans::getClusters() {
+std::vector<std::complex<double>> KMeans::GetClusters() {
     return this->clusters_;
 }
 
-std::vector<int> KMeans::getIdx() {
+std::vector<int> KMeans::GetIdx() {
     return this->idx_;
 }
 
-void KMeans::dumpToMat(std::string &filename, std::vector<std::complex<double>>& append) {
+void KMeans::DumpToMat(std::string &filename, std::vector<std::complex<double>>& append) {
     lab::Mat mat = lab::Mat(filename);
 
     mat.Open();

@@ -47,7 +47,7 @@ class LDPCLinearSystem {
         int* cc_hat_;
         int  cc_len_;
 
-        double* m_sym_prob;
+        double* sym_prob_;
 };
 
 #endif

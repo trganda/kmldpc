@@ -4,16 +4,16 @@ LDPCLinearSystem::LDPCLinearSystem()
     : source_sink_(lab::CSourceSink()),
       codec_(lab::XORSegCodec()), modem_linear_system_(lab::ModemLinearSystem()),
       min_snr_(0.0), max_snr_(0.0), step_snr_(0.0),
-      max_err_blk_(0), max_num_blk_(0), total_angle_(0),
+      max_err_blk_(0), max_num_blk_(0),
       uu_(nullptr), uu_hat_(nullptr), uu_len_(0),
-      cc_(nullptr), cc_hat_(nullptr), cc_len_(0), m_sym_prob(nullptr) {}
+      cc_(nullptr), cc_hat_(nullptr), cc_len_(0), sym_prob_(nullptr) {}
 
 LDPCLinearSystem::~LDPCLinearSystem() {
     delete[] uu_;
     delete[] uu_hat_;
     delete[] cc_;
     delete[] cc_hat_;
-    delete[] m_sym_prob;
+    delete[] sym_prob_;
 }
 
 void LDPCLinearSystem::StartSimulator()
@@ -69,8 +69,8 @@ void LDPCLinearSystem::StartSimulator()
     cc_ = new int[cc_len_];
     cc_hat_ = new int[cc_len_];
 
-	m_sym_prob = new double[cc_len_ / modem_linear_system_.GetModem().GetInputLen()
-                         * modem_linear_system_.GetModem().GetNumSymbol()];
+    sym_prob_ = new double[cc_len_ / modem_linear_system_.GetModem().GetInputLen()
+                           * modem_linear_system_.GetModem().GetNumSymbol()];
 
     LOG(lab::logger::Info, true) << '[' << std::fixed << std::setprecision(3)
                                  << min_snr_ << ','
@@ -118,12 +118,12 @@ void LDPCLinearSystem::Simulator()
             lab::CLCRandNum::Get().Normal(&real, 1);
             lab::CLCRandNum::Get().Normal(&imag, 1);
 
-            std::complex<double> trueH(real, imag);
-            trueH *= sqrt(0.5);
-            LOG(lab::logger::Info, false) << "Generated H = " << trueH << std::endl;
+            std::complex<double> true_h(real, imag);
+            true_h *= sqrt(0.5);
+            LOG(lab::logger::Info, false) << "Generated H = " << true_h << std::endl;
             std::vector<std::complex<double>> generated_h(1);
             for (auto & i : generated_h) {
-                i = trueH;
+                i = true_h;
             }
 
             // Modulation and pass through the channel
@@ -131,12 +131,12 @@ void LDPCLinearSystem::Simulator()
             // Get constellation
             auto constellations = modem_linear_system_.GetLinearSystem().GetMModem()->GetConstellations();
             // Get received symbols
-            auto receivedSymbols = modem_linear_system_.GetRSymbol();
+            auto received_symbols = modem_linear_system_.GetRSymbol();
             // KMeans
-            kmldpc::KMeans kmeans = kmldpc::KMeans(receivedSymbols, constellations, 20);
-            kmeans.run();
-            auto clusters = kmeans.getClusters();
-            auto idx = kmeans.getIdx();
+            kmldpc::KMeans kmeans = kmldpc::KMeans(received_symbols, constellations, 20);
+            kmeans.Run();
+            auto clusters = kmeans.GetClusters();
+            auto idx = kmeans.GetIdx();
 
             // Get H hat
             // std::complex<double> hHat = trueH;

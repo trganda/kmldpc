@@ -19,11 +19,11 @@ public:
     ~KMeans();
 
 public:
-    std::vector<std::complex<double>> getClusters();
-    std::vector<int> getIdx();
+    std::vector<std::complex<double>> GetClusters();
+    std::vector<int> GetIdx();
 
-    void run();
-    void dumpToMat(std::string& filename, std::vector<std::complex<double>>& append);
+    void Run();
+    void DumpToMat(std::string& filename, std::vector<std::complex<double>>& append);
 
 private:
     const std::vector<std::complex<double>> data_;
