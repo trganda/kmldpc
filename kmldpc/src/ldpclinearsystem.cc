@@ -58,7 +58,6 @@ void LDPCLinearSystem::StartSimulator()
 
 	codec_.Malloc(0, codec_file);
 
-    total_angle_ = 2;
     uu_len_ = codec_.GetUuLen();
     cc_len_ = codec_.GetCcLen();
 
@@ -91,15 +90,7 @@ void LDPCLinearSystem::Simulator()
 
 	StartSimulator();
 
-	std::vector<std::complex<double>> totalH;
-	std::vector<std::complex<double>> um;
-
-	for (int i = 0; i < total_angle_; i++) {
-		std::complex<double> H(0.0, ((lab::kPi / 2) / (total_angle_)) * (i));
-		H = exp(H);
-		totalH.push_back(H);
-	}
-
+    // Save simulation results
 	std::vector<std::pair<double, double>> ber_result;
 	std::vector<std::pair<double, double>> fer_result;
 
@@ -130,13 +121,13 @@ void LDPCLinearSystem::Simulator()
             std::complex<double> trueH(real, imag);
             trueH *= sqrt(0.5);
             LOG(lab::logger::Info, false) << "Generated H = " << trueH << std::endl;
-            std::vector<std::complex<double>> selecth(1);
-            for (auto & i : selecth) {
+            std::vector<std::complex<double>> generated_h(1);
+            for (auto & i : generated_h) {
                 i = trueH;
             }
 
             // Modulation and pass through the channel
-            modem_linear_system_.MLSystemPartition(cc_, selecth);
+            modem_linear_system_.MLSystemPartition(cc_, generated_h);
             // Get constellation
             auto constellations = modem_linear_system_.GetLinearSystem().GetMModem()->GetConstellations();
             // Get received symbols

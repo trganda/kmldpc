@@ -38,7 +38,6 @@ class LDPCLinearSystem {
         int max_err_blk_;
         // Maximum blocks for simulation
         int max_num_blk_;
-        int total_angle_;
         // Uncoded codeword
         int* uu_;
         int* uu_hat_;
