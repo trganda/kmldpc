@@ -16,21 +16,17 @@ LDPCLinearSystem::~LDPCLinearSystem() {
     delete[] sym_prob_;
 }
 
-void LDPCLinearSystem::StartSimulator()
+void LDPCLinearSystem::InitSimulator()
 {
-	int setup_no;
-	char file_name[80];
 	char codec_file[80];
 	char modem_file[80];
 	char temp_str[80];
 	FILE* fp;
 
-	setup_no = 0;
-	sprintf(file_name, "Setup_of_LDPC_Linear_System%d.txt", setup_no);
-
-	if ((fp = fopen(file_name, "r")) == nullptr)
+	std::string config_file = "Setup_of_LDPC_Linear_System0.txt";
+	if ((fp = fopen(config_file.c_str(), "r")) == nullptr)
 	{
-		fprintf(stderr, "\nCan't Open the %s file!\n", file_name);
+		fprintf(stderr, "\nCan't Open the %s file!\n", config_file.c_str());
 		exit(-1);
 	}
 
@@ -88,7 +84,7 @@ void LDPCLinearSystem::Simulator()
 	double sigma, var;
 	FILE* fp = nullptr;
 
-	StartSimulator();
+    InitSimulator();
 
     // Save simulation results
 	std::vector<std::pair<double, double>> ber_result;
@@ -140,10 +136,10 @@ void LDPCLinearSystem::Simulator()
 
             // Get H hat
             // std::complex<double> hHat = trueH;
-            std::complex<double> hHat = clusters[0] / constellations[0];
+            std::complex<double> h_hat = clusters[0] / constellations[0];
             std::vector<std::complex<double>> hHats(4);
             for (size_t i = 0; i < hHats.size(); i++) {
-                hHats[i] = hHat * exp(std::complex<double>(0, (lab::kPi / 2) * i));
+                hHats[i] = h_hat * exp(std::complex<double>(0, (lab::kPi / 2) * i));
             }
 
             LOG(lab::logger::Info, false) << std::fixed << std::setprecision(0) << std::setfill('0')

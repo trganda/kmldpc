@@ -20,7 +20,7 @@ class LDPCLinearSystem {
         explicit LDPCLinearSystem();
         virtual ~LDPCLinearSystem();
 
-        void StartSimulator();
+        void InitSimulator();
         void Simulator();
 
     private:

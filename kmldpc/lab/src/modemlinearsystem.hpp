@@ -42,21 +42,7 @@ class ModemLinearSystem {
                 fscanf(fp, "%s", temp_str);
 
             fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%s", &constellation_file_);
-            fclose(fp);
-
-            if ((fp = fopen("snrber.txt", "a+")) == nullptr){
-                fprintf(stderr, "\n Cannot Open the file!!!\n");
-                exit(1);
-            }
-            fprintf(fp, "\n The constellation: %s", constellation_file_);
-            fclose(fp);
-
-            if ((fp = fopen("snrresult.txt", "a+")) == nullptr){
-                fprintf(stderr, "\n Cannot Open the file!!!\n");
-                exit(1);
-            }
-            fprintf(fp, "\n The constellation: %s", constellation_file_);
+            fscanf(fp, "%s", constellation_file_);
             fclose(fp);
 
             modem_.Malloc(0, constellation_file_);

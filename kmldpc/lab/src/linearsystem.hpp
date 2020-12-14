@@ -25,15 +25,8 @@ class LinearSystem {
 
         void Malloc(Modem * modem, int len_xx,
                     int code_no, char *file_name) {
-            char temp_str[80] = {' '};
-            FILE *fp;
             modem_ = modem;
             xx_len_ = len_xx;
-
-            if ((fp = fopen(file_name, "r")) == nullptr){
-                fprintf(stderr, "\nCannot Open %s", file_name);
-                exit(3);
-            }
 
             noise_ = new double[xx_len_];
             yy_ = new double[2];
