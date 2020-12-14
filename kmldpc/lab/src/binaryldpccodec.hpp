@@ -580,13 +580,13 @@ class BinaryLDPCCodec {
         int code_dim_;           // Dimension of code
         int code_len_;           // Length of code
         int code_chk_;           // Number of Parity check
-        double coderate_;       // Code rate
-        int encoder_active_;    // 0： not use encoder  1： otherwise
+        double coderate_;        // Code rate
+        int encoder_active_;     // 0： not use encoder  1： otherwise
         // Parity-check matrix
-        int num_row_;           // Row of parity matrix
-        int num_col_;           // Column of parity matrix
-        char **dec_h_;          // Matrix used for decoding
-        char **enc_h_;          // Matrix used for encoding
+        int num_row_;            // Row of parity matrix
+        int num_col_;            // Column of parity matrix
+        char **dec_h_;           // Matrix used for decoding
+        char **enc_h_;           // Matrix used for encoding
         double *syndrom_soft_;
         Edge *row_head_;
         Edge *col_head_;

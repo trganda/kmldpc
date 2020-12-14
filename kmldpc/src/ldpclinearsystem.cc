@@ -82,7 +82,6 @@ void LDPCLinearSystem::InitSimulator()
 void LDPCLinearSystem::Simulator()
 {
 	double sigma, var;
-	FILE* fp = nullptr;
 
     InitSimulator();
 

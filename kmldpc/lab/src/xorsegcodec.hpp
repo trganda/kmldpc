@@ -88,47 +88,13 @@ class XORSegCodec {
         }
 
         void Decoder(ModemLinearSystem &modem_linear_system,
-                     std::vector<std::complex<double>> &hHats, int *uu_hat) {
-            std::vector<double> metricResults(hHats.size(), 0);
-            std::vector<std::vector<double>> softSyndromsData(hHats.size());
+                     const std::vector<std::complex<double>> &hHats, int *uu_hat) {
+            std::vector<double> metric_results;
             std::vector<std::pair<int, std::complex<double>>> temp;
-            for (size_t i = 0; i < metricResults.size(); i++)
-            {
-                temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
-                DeMapping(modem_linear_system, temp);
-                if (using_ldpc_5g_ == 1) {
-                    ldpc_codec_5g_.Decoder_5G(bit_l_out_, uu_hat, iter_cnt_);
-                    if (using_syndrom_metric_ == 1) {
-                        softSyndromsData[i] = std::vector<double> (ldpc_codec_5g_.GetSyndromSoft(),
-                                                                   ldpc_codec_5g_.GetSyndromSoft() + ldpc_codec_5g_.GetNumRow());
-                        for (auto j = 0; j < ldpc_codec_5g_.GetNumRow(); j++) {
-                            metricResults[i] += log(softSyndromsData[i][j]);
-                        }
-                    } else {
-                        metricResults[i] = GetParityCheckAfterDecoding();
-                    }
-                } else {
-                    if (using_syndrom_metric_ == 1) {
-                        ldpc_codec_.Decoder(bit_l_out_, uu_hat, iter_cnt_);
-                        softSyndromsData[i] = std::vector<double> (ldpc_codec_.GetSyndromSoft(),
-                                                                   ldpc_codec_.GetSyndromSoft() + ldpc_codec_.GetCodeDim());
-                        for (auto j = 0; j < ldpc_codec_.GetCodeDim(); j++) {
-                            metricResults[i] += log(softSyndromsData[i][j]);
-                        }
-                    } else {
-                        metricResults[i] = GetParityCheck();
-                    }
-                }
 
-                LOG(logger::Info, false) << std::fixed << std::setprecision(14)
-                                         << "Hhat = " << hHats[i]
-                                         << " Metric = "
-                                         << std::setw(5) << std::right
-                                         << metricResults[i] << std::endl;
-                metricResults[i] = abs(metricResults[i]);
-            }
+            metric_results = GetMetrics(modem_linear_system, hHats, uu_hat);
 
-            auto minIndex = std::distance(metricResults.begin(), min_element(metricResults.begin(), metricResults.end()));
+            auto minIndex = std::distance(metric_results.begin(), min_element(metric_results.begin(), metric_results.end()));
             LOG(logger::Info, false) << "hatIndex = " << minIndex << std::endl;
             temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
             DeMapping(modem_linear_system, temp);
@@ -139,6 +105,12 @@ class XORSegCodec {
                 ldpc_codec_.Decoder(bit_l_out_, uu_hat, ldpc_codec_.GetMaxIter());
             }
         }
+
+        std::vector<double> GetHistogramData(ModemLinearSystem &modem_linear_system,
+                         const std::vector<std::complex<double>> &hHats, int *uu_hat) {
+            return GetMetrics(modem_linear_system, hHats, uu_hat);
+        }
+
         // Getter
         int GetUuLen() const {
             return uu_len_;
@@ -179,6 +151,49 @@ class XORSegCodec {
 
         int GetParityCheckAfterDecoding() {
             return ldpc_codec_5g_.ParityCheck(ldpc_codec_5g_.GetCcHat());
+        }
+
+        std::vector<double> GetMetrics(ModemLinearSystem &modem_linear_system,
+                        const std::vector<std::complex<double>> &hHats, int *uu_hat) {
+            std::vector<double> metric_results(hHats.size(), 0);
+            std::vector<std::vector<double>> soft_syndroms(hHats.size());
+            std::vector<std::pair<int, std::complex<double>>> temp;
+            for (auto i = 0; i < metric_results.size(); i++) {
+                temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
+                DeMapping(modem_linear_system, temp);
+                if (using_ldpc_5g_ == 1) {
+                    ldpc_codec_5g_.Decoder_5G(bit_l_out_, uu_hat, iter_cnt_);
+                    if (using_syndrom_metric_ == 1) {
+                        soft_syndroms[i] = std::vector<double>(ldpc_codec_5g_.GetSyndromSoft(),
+                                                                  ldpc_codec_5g_.GetSyndromSoft() + ldpc_codec_5g_.GetNumRow());
+                        for (auto j = 0; j < ldpc_codec_5g_.GetNumRow(); j++) {
+                            metric_results[i] += log(soft_syndroms[i][j]);
+                        }
+                    } else {
+                        metric_results[i] = GetParityCheckAfterDecoding();
+                    }
+                } else {
+                    if (using_syndrom_metric_ == 1) {
+                        ldpc_codec_.Decoder(bit_l_out_, uu_hat, iter_cnt_);
+                        soft_syndroms[i] = std::vector<double>(ldpc_codec_.GetSyndromSoft(),
+                                                                  ldpc_codec_.GetSyndromSoft() + ldpc_codec_.GetNumRow());
+                        for (auto j = 0; j < ldpc_codec_.GetNumRow(); j++) {
+                            metric_results[i] += log(soft_syndroms[i][j]);
+                        }
+                    } else {
+                        metric_results[i] = GetParityCheck();
+                    }
+                }
+
+                LOG(lab::logger::Info, false) << std::fixed << std::setprecision(14)
+                                              << "Hhat = " << hHats[i]
+                                              << " Metric = "
+                                              << std::setw(5) << std::right
+                                              << metric_results[i] << std::endl;
+
+                metric_results[i] = abs(metric_results[i]);
+            }
+            return metric_results;
         }
 
     private:
