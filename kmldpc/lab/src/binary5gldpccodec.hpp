@@ -152,7 +152,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             cc_hat_ = new int[code_len_no_puncture_];
         }
 
-        void Encoder_5G(int *uu, int *cc) {
+        void Encoder(int *uu, int *cc) const override {
             int i, j, t;
 
             for (i = 0; i < code_len_puncture_; i++)
@@ -183,7 +183,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             }
         }
 
-        int Decoder_5G(const double *M2V, int *uu_hat, int iter_cnt) {
+        int Decoder(const double *M2V, int *uu_hat, int iter_cnt) override {
             int i;
             int iter;
             int parity_check;

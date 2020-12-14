@@ -81,7 +81,7 @@ class XORSegCodec {
 
         void Encoder(int *uu, int *cc) {
             if (using_ldpc_5g_ == 1) {
-                ldpc_codec_5g_.Encoder_5G(uu, cc);
+                ldpc_codec_5g_.Encoder(uu, cc);
             } else {
                 ldpc_codec_.Encoder(uu, cc);
             }
@@ -100,7 +100,7 @@ class XORSegCodec {
             DeMapping(modem_linear_system, temp);
 
             if (using_ldpc_5g_ == 1) {
-                ldpc_codec_5g_.Decoder_5G(bit_l_out_, uu_hat, ldpc_codec_5g_.GetMaxIter());
+                ldpc_codec_5g_.Decoder(bit_l_out_, uu_hat, ldpc_codec_5g_.GetMaxIter());
             } else {
                 ldpc_codec_.Decoder(bit_l_out_, uu_hat, ldpc_codec_.GetMaxIter());
             }
@@ -137,52 +137,33 @@ class XORSegCodec {
         }
 
         int GetParityCheck() const {
-            // hard decision
-            for (int i = 0; i < cc_len_; i++) {
-                if (bit_l_out_[i] > 0.5) {
-                    rr_[i] = 1;
-                } else {
-                    rr_[i] = 0;
+            if (using_ldpc_5g_ == 1) {
+                return ldpc_codec_5g_.ParityCheck(ldpc_codec_5g_.GetCcHat());
+            } else {
+                // hard decision without decoding
+                for (int i = 0; i < cc_len_; i++) {
+                    if (bit_l_out_[i] > 0.5) {
+                        rr_[i] = 1;
+                    } else {
+                        rr_[i] = 0;
+                    }
                 }
+
+                return ldpc_codec_.ParityCheck(rr_);
             }
-
-            return ldpc_codec_.ParityCheck(rr_);
-        }
-
-        int GetParityCheckAfterDecoding() {
-            return ldpc_codec_5g_.ParityCheck(ldpc_codec_5g_.GetCcHat());
         }
 
         std::vector<double> GetMetrics(ModemLinearSystem &modem_linear_system,
                         const std::vector<std::complex<double>> &hHats, int *uu_hat) {
             std::vector<double> metric_results(hHats.size(), 0);
-            std::vector<std::vector<double>> soft_syndroms(hHats.size());
             std::vector<std::pair<int, std::complex<double>>> temp;
             for (auto i = 0; i < metric_results.size(); i++) {
                 temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
                 DeMapping(modem_linear_system, temp);
                 if (using_ldpc_5g_ == 1) {
-                    ldpc_codec_5g_.Decoder_5G(bit_l_out_, uu_hat, iter_cnt_);
-                    if (using_syndrom_metric_ == 1) {
-                        soft_syndroms[i] = std::vector<double>(ldpc_codec_5g_.GetSyndromSoft(),
-                                                                  ldpc_codec_5g_.GetSyndromSoft() + ldpc_codec_5g_.GetNumRow());
-                        for (auto j = 0; j < ldpc_codec_5g_.GetNumRow(); j++) {
-                            metric_results[i] += log(soft_syndroms[i][j]);
-                        }
-                    } else {
-                        metric_results[i] = GetParityCheckAfterDecoding();
-                    }
+                    metric_results[i] = Metric(ldpc_codec_5g_, uu_hat);
                 } else {
-                    if (using_syndrom_metric_ == 1) {
-                        ldpc_codec_.Decoder(bit_l_out_, uu_hat, iter_cnt_);
-                        soft_syndroms[i] = std::vector<double>(ldpc_codec_.GetSyndromSoft(),
-                                                                  ldpc_codec_.GetSyndromSoft() + ldpc_codec_.GetNumRow());
-                        for (auto j = 0; j < ldpc_codec_.GetNumRow(); j++) {
-                            metric_results[i] += log(soft_syndroms[i][j]);
-                        }
-                    } else {
-                        metric_results[i] = GetParityCheck();
-                    }
+                    metric_results[i] = Metric(ldpc_codec_, uu_hat);
                 }
 
                 LOG(lab::logger::Info, false) << std::fixed << std::setprecision(14)
@@ -194,6 +175,23 @@ class XORSegCodec {
                 metric_results[i] = abs(metric_results[i]);
             }
             return metric_results;
+        }
+
+        double Metric(BinaryLDPCCodec& codec, int* uu_hat) {
+            double metric_result;
+
+            codec.Decoder(bit_l_out_, uu_hat, iter_cnt_);
+            if (using_syndrom_metric_ == 1) {
+                std::vector<double> soft_syndroms;
+                soft_syndroms = std::vector<double>(codec.GetSyndromSoft(),
+                                                    codec.GetSyndromSoft() + codec.GetNumRow());
+                for (auto j = 0; j < codec.GetNumRow(); j++) {
+                    metric_result += log(soft_syndroms[j]);
+                }
+            } else {
+                metric_result = GetParityCheck();
+            }
+            return metric_result;
         }
 
     private:

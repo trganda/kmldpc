@@ -152,7 +152,7 @@ class BinaryLDPCCodec {
             cc_hat_ = new int[code_len_];
         }
 
-        void Encoder(int *uu, int *cc) const {
+        virtual void Encoder(int *uu, int *cc) const {
             int i, j, t;
 
     //codeword = [parity_check_bits information_bits]
@@ -178,7 +178,7 @@ class BinaryLDPCCodec {
             }
         }
 
-        int Decoder(const double *M2V, int *uu_hat, int iter_count) {
+        virtual int Decoder(const double *M2V, int *uu_hat, int iter_count) {
             int i;
             int iter;
             int parity_check;
