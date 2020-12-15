@@ -126,8 +126,7 @@ class XORSegCodec {
             modem_linear_system.SoftDemodulation(thetaList);
 
             // demapping to Get soft information
-            for (int i = 0; i < cc_len_; i++)
-            {
+            for (int i = 0; i < cc_len_; i++) {
                 bit_l_in_[i] = 0.5;
             }
 
@@ -180,8 +179,8 @@ class XORSegCodec {
         double Metric(BinaryLDPCCodec& codec, int* uu_hat) {
             double metric_result;
 
-            codec.Decoder(bit_l_out_, uu_hat, iter_cnt_);
             if (using_syndrom_metric_ == 1) {
+                codec.Decoder(bit_l_out_, uu_hat, iter_cnt_);
                 std::vector<double> soft_syndroms;
                 soft_syndroms = std::vector<double>(codec.GetSyndromSoft(),
                                                     codec.GetSyndromSoft() + codec.GetNumRow());
@@ -189,6 +188,9 @@ class XORSegCodec {
                     metric_result += log(soft_syndroms[j]);
                 }
             } else {
+                if (using_ldpc_5g_ == 1) {
+                    codec.Decoder(bit_l_out_, uu_hat, iter_cnt_);
+                }
                 metric_result = GetParityCheck();
             }
             return metric_result;
