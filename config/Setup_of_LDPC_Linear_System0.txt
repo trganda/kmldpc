@@ -5,9 +5,9 @@ maximum_snr
 increment_snr
 1
 maximum_error_number
-50
+50000
 maximum_block_number
-1
+50000
 
 CodesetupFile
 Setup_of_Codec.txt

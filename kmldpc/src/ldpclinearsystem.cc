@@ -101,8 +101,8 @@ void LDPCLinearSystem::Simulator()
 
         source_sink_.ClrCnt();
 
-        std::string histfilename = "histogram_" + std::to_string(snr) + ".txt";
-        std::fstream out(histfilename, std::ios::out);
+//        std::string histfilename = "histogram_" + std::to_string(snr) + ".txt";
+//        std::fstream out(histfilename, std::ios::out);
 
         while ((source_sink_.GetNumTotBlk() < max_num_blk_
                 && source_sink_.GetNumErrBlk() < max_err_blk_)) {
@@ -113,11 +113,11 @@ void LDPCLinearSystem::Simulator()
             // Generate H
             double real;
             double imag;
-            lab::CLCRandNum::Get().Normal(&real, 1);
-            lab::CLCRandNum::Get().Normal(&imag, 1);
+            lab::CWHRandNum::Get().Normal(&real, 1);
+            lab::CWHRandNum::Get().Normal(&imag, 1);
 
-            std::complex<double> true_h(real, imag);
-            true_h *= sqrt(0.5);
+            std::complex<double> true_h(real * sqrt(0.5), imag * sqrt(0.5));
+            true_h /= abs(true_h);
             LOG(lab::logger::Info, false) << "Generated H = " << true_h << std::endl;
             std::vector<std::complex<double>> generated_h(1);
             for (auto & i : generated_h) {
@@ -157,7 +157,7 @@ void LDPCLinearSystem::Simulator()
                 source_sink_.PrintResult(snr);
             }
         }
-        out.close();
+//        out.close();
         source_sink_.PrintResult(snr);
 
         // BER
