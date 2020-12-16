@@ -4,4 +4,4 @@ max_iteration
 encoder_active
 1
 file_name_of_the_H
-PEG2304regular0.5.txt
+5GLDPCBG2a3_R12_K960.txt
