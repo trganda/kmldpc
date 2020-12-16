@@ -85,11 +85,11 @@ class ModemLinearSystem {
             std::vector<std::complex<double>> tum(um.size());
             for (size_t i = 0; i < thetaList.size(); i++) {
                 for (int j = 0; j < symbolPerPart; j++) {
-                    tum[j + i * symbolPerPart] = um[j + i * symbolPerPart] / thetaList[i].second;
+                    tum[j + i * symbolPerPart] = um[j + i * symbolPerPart];
                     linsym_.GetYy()[0] = tum[j + i * symbolPerPart].real();
                     linsym_.GetYy()[1] = tum[j + i * symbolPerPart].imag();
                     int temp = (j + i * symbolPerPart) * linsym_.GetMModem()->GetNumSymbol();
-                    linsym_.SoftAWGNDemodulation(linsym_.GetYy(), (sym_prob_ + temp));
+                    linsym_.SoftAWGNDemodulation(linsym_.GetYy(), (sym_prob_ + temp),  thetaList[i].second);
                 }
             }
         }

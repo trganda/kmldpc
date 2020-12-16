@@ -137,7 +137,7 @@ void LDPCLinearSystem::Simulator()
             auto idx = kmeans.GetIdx();
 
             // Get H hat
-            // std::complex<double> h_hat = true_h;
+//            std::complex<double> h_hat = true_h;
             std::complex<double> h_hat = clusters[0] / constellations[0];
             std::vector<std::complex<double>> h_hats(4);
             for (size_t i = 0; i < h_hats.size(); i++) {
@@ -149,7 +149,12 @@ void LDPCLinearSystem::Simulator()
                                           << std::setw(7) << std::right << (source_sink_.GetNumTotBlk() + 1)
                                           << std::endl;
 
-            codec_.Decoder(modem_linear_system_, h_hats, uu_hat_);
+            auto metrics = codec_.GetHistogramData(modem_linear_system_, h_hats, uu_hat_);
+            for (auto item : metrics) {
+                out << item << ' ';
+            }
+            out << std::endl;
+            // codec_.Decoder(modem_linear_system_, h_hats, uu_hat_);
 
             source_sink_.CntErr(uu_, uu_hat_, codec_.GetUuLen(), 1);
 

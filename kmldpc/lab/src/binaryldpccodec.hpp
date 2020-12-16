@@ -315,8 +315,9 @@ class BinaryLDPCCodec {
                 parity_check = 0;
                 p_edge = (row_head_ + i)->right;
                 while (p_edge->m_col_no != -1) {
-//                    if (p_edge->m_col_no < m_num_col)
-                    parity_check = parity_check ^ rr[p_edge->m_col_no];
+                    if (p_edge->m_col_no < num_col_) {
+                        parity_check = parity_check ^ rr[p_edge->m_col_no];
+                    }
                     p_edge = p_edge->right;
                 }
                 if (parity_check != 0) {

@@ -37,7 +37,8 @@ class LinearSystem {
             num_symbol_ = modem_->GetNumSymbol();
         }
 
-        void SoftAWGNDemodulation(const double *yy, double *sym_prob) const {
+        void SoftAWGNDemodulation(const double *yy, double *sym_prob,
+                                  std::complex<double>& theta) const {
             int i, q;
             double sqr_norm, sum;
             double temp;
@@ -47,8 +48,11 @@ class LinearSystem {
             {
                 sqr_norm = 0.0;
 
-                double x_real = modem_->GetOutputSymbol()[i][0];
-                double x_imag = modem_->GetOutputSymbol()[i][1];
+                double symbol_x = modem_->GetOutputSymbol()[i][0];
+                double symbol_y = modem_->GetOutputSymbol()[i][1];
+                double x_real = symbol_x * theta.real() - symbol_y * theta.imag();
+                double x_imag = symbol_y * theta.real() + symbol_x * theta.imag();
+
 
                 sqr_norm += ((yy[0] - x_real) * (yy[0] - x_real)
                              + (yy[1] - x_imag) * (yy[1] - x_imag)) / var_;
@@ -105,7 +109,8 @@ class LinearSystem {
                 nnidx += 2;
 
                 temp = i * modem_->GetNumSymbol();
-                SoftAWGNDemodulation(yy_, (sym_prob + temp));
+                std::complex<double> h(1, 0);
+                SoftAWGNDemodulation(yy_, (sym_prob + temp), h);
             } //end of for (i = 0; i < num_sym_in_blk; i++)
         }
 

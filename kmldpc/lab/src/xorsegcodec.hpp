@@ -147,6 +147,8 @@ class XORSegCodec {
                         rr_[i] = 0;
                     }
                 }
+                // For Debug
+                std::vector<int> rr_debug(rr_, rr_+cc_len_);
 
                 return ldpc_codec_.ParityCheck(rr_);
             }
