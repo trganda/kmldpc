@@ -101,9 +101,6 @@ void LDPCLinearSystem::Simulator()
 
         source_sink_.ClrCnt();
 
-        std::string histfilename = "histogram_" + std::to_string(snr) + ".txt";
-        std::fstream out(histfilename, std::ios::out);
-
         while ((source_sink_.GetNumTotBlk() < max_num_blk_
                 && source_sink_.GetNumErrBlk() < max_err_blk_)) {
 
@@ -137,7 +134,6 @@ void LDPCLinearSystem::Simulator()
             auto idx = kmeans.GetIdx();
 
             // Get H hat
-//            std::complex<double> h_hat = true_h;
             std::complex<double> h_hat = clusters[0] / constellations[0];
             std::vector<std::complex<double>> h_hats(4);
             for (size_t i = 0; i < h_hats.size(); i++) {
@@ -149,12 +145,7 @@ void LDPCLinearSystem::Simulator()
                                           << std::setw(7) << std::right << (source_sink_.GetNumTotBlk() + 1)
                                           << std::endl;
 
-            auto metrics = codec_.GetHistogramData(modem_linear_system_, h_hats, uu_hat_);
-            for (auto item : metrics) {
-                out << item << ' ';
-            }
-            out << std::endl;
-            // codec_.Decoder(modem_linear_system_, h_hats, uu_hat_);
+            codec_.Decoder(modem_linear_system_, h_hats, uu_hat_);
 
             source_sink_.CntErr(uu_, uu_hat_, codec_.GetUuLen(), 1);
 
@@ -162,7 +153,6 @@ void LDPCLinearSystem::Simulator()
                 source_sink_.PrintResult(snr);
             }
         }
-        out.close();
         source_sink_.PrintResult(snr);
 
         // BER
