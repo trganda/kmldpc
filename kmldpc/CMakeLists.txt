@@ -57,11 +57,12 @@ add_subdirectory("lib")
 
 # Add source to this project's executable.
 add_executable (kmldpc "kmldpc.cpp" ${SRC})
-target_link_libraries(kmldpc ${MATIO_LIBRARY} lab)
+target_link_libraries(kmldpc ${MATIO_LIBRARY} lab toml11)
 
 # add the binary tree to the search path for include files
 target_include_directories(kmldpc PUBLIC
         "${PROJECT_SOURCE_DIR}/kmldpc/lib/lab"
+        "${PROJECT_SOURCE_DIR}/kmldpc/lib/toml11"
         )
 
 define_file_basename_for_sources(kmldpc)
