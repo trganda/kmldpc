@@ -1,5 +1,5 @@
 # include src
-set(SUR_DIR lab)
+set(SUR_DIR src)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/${SUR_DIR})
 
 # using set to include the source code since the aux_source_directory
