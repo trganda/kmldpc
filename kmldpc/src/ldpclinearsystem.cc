@@ -1,12 +1,12 @@
 ﻿#include "ldpclinearsystem.h"
 
 LDPCLinearSystem::LDPCLinearSystem()
-    : source_sink_(lab::CSourceSink()),
-      codec_(lab::XORSegCodec()), modem_linear_system_(lab::ModemLinearSystem()),
-      min_snr_(0.0), max_snr_(0.0), step_snr_(0.0),
-      max_err_blk_(0), max_num_blk_(0),
-      uu_(nullptr), uu_hat_(nullptr), uu_len_(0),
-      cc_(nullptr), cc_hat_(nullptr), cc_len_(0), sym_prob_(nullptr) {}
+        : source_sink_(lab::CSourceSink()),
+          codec_(lab::XORSegCodec()), modem_linear_system_(lab::ModemLinearSystem()),
+          min_snr_(0.0), max_snr_(0.0), step_snr_(0.0),
+          max_err_blk_(0), max_num_blk_(0),
+          uu_(nullptr), uu_hat_(nullptr), uu_len_(0),
+          cc_(nullptr), cc_hat_(nullptr), cc_len_(0), sym_prob_(nullptr) {}
 
 LDPCLinearSystem::~LDPCLinearSystem() {
     delete[] uu_;
@@ -16,48 +16,46 @@ LDPCLinearSystem::~LDPCLinearSystem() {
     delete[] sym_prob_;
 }
 
-void LDPCLinearSystem::InitSimulator()
-{
-	char codec_file[80];
-	char modem_file[80];
-	char temp_str[80];
-	FILE* fp;
+void LDPCLinearSystem::InitSimulator() {
+    char codec_file[80];
+    char modem_file[80];
+    char temp_str[80];
+    FILE *fp;
 
-	std::string config_file = "Setup_of_LDPC_Linear_System0.txt";
-	if ((fp = fopen(config_file.c_str(), "r")) == nullptr)
-	{
-		fprintf(stderr, "\nCan't Open the %s file!\n", config_file.c_str());
-		exit(-1);
-	}
+    std::string config_file = "Setup_of_LDPC_Linear_System0.txt";
+    if ((fp = fopen(config_file.c_str(), "r")) == nullptr) {
+        fprintf(stderr, "\nCan't Open the %s file!\n", config_file.c_str());
+        exit(-1);
+    }
 
-	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%lf", &min_snr_);
+    fscanf(fp, "%s", temp_str);
+    fscanf(fp, "%lf", &min_snr_);
 
-	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%lf", &max_snr_);
+    fscanf(fp, "%s", temp_str);
+    fscanf(fp, "%lf", &max_snr_);
 
-	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%lf", &step_snr_);
+    fscanf(fp, "%s", temp_str);
+    fscanf(fp, "%lf", &step_snr_);
 
-	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%d", &max_err_blk_);
+    fscanf(fp, "%s", temp_str);
+    fscanf(fp, "%d", &max_err_blk_);
 
-	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%d", &max_num_blk_);
+    fscanf(fp, "%s", temp_str);
+    fscanf(fp, "%d", &max_num_blk_);
 
-	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%s", codec_file);
+    fscanf(fp, "%s", temp_str);
+    fscanf(fp, "%s", codec_file);
 
-	fscanf(fp, "%s", temp_str);
-	fscanf(fp, "%s", modem_file);
-	fclose(fp);
+    fscanf(fp, "%s", temp_str);
+    fscanf(fp, "%s", modem_file);
+    fclose(fp);
 
-	codec_.Malloc(0, codec_file);
+    codec_.Malloc(0, codec_file);
 
     uu_len_ = codec_.GetUuLen();
     cc_len_ = codec_.GetCcLen();
 
-	modem_linear_system_.Malloc(cc_len_, 0, modem_file);
+    modem_linear_system_.Malloc(cc_len_, 0, modem_file);
 
     uu_ = new int[uu_len_];
     uu_hat_ = new int[uu_len_];
@@ -79,18 +77,17 @@ void LDPCLinearSystem::InitSimulator()
                                  << std::endl;
 }
 
-void LDPCLinearSystem::Simulator()
-{
-	double sigma, var;
+void LDPCLinearSystem::Simulator() {
+    double sigma, var;
 
     InitSimulator();
 
     // Save simulation results
-	std::vector<std::pair<double, double>> ber_result;
-	std::vector<std::pair<double, double>> fer_result;
+    std::vector<std::pair<double, double>> ber_result;
+    std::vector<std::pair<double, double>> fer_result;
 
-	double snr = min_snr_;
-	while (snr <= max_snr_) {
+    double snr = min_snr_;
+    while (snr <= max_snr_) {
         //var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
         var = pow(10.0, -0.1 * (snr));
 
@@ -117,7 +114,7 @@ void LDPCLinearSystem::Simulator()
             true_h *= sqrt(0.5);
             LOG(lab::logger::Info, false) << "Generated H = " << true_h << std::endl;
             std::vector<std::complex<double>> generated_h(1);
-            for (auto & i : generated_h) {
+            for (auto &i : generated_h) {
                 i = true_h;
             }
 
@@ -162,16 +159,16 @@ void LDPCLinearSystem::Simulator()
         fer_result.emplace_back(snr, source_sink_.GetFer());
 
         snr += step_snr_;
-	}
+    }
 
-	LOG(lab::logger::Info, true) << "BER Result" << std::endl;
-	for (auto item : ber_result) {
-	    LOG(lab::logger::Info, true) << std::fixed << std::setprecision(3) << std::setfill('0')
-	                                           << std::setw(3) << std::right
-	                                           << item.first << ' '
-	                                           << std::setprecision(14)
-	                                           << item.second << std::endl;
-	}
+    LOG(lab::logger::Info, true) << "BER Result" << std::endl;
+    for (auto item : ber_result) {
+        LOG(lab::logger::Info, true) << std::fixed << std::setprecision(3) << std::setfill('0')
+                                     << std::setw(3) << std::right
+                                     << item.first << ' '
+                                     << std::setprecision(14)
+                                     << item.second << std::endl;
+    }
 
     LOG(lab::logger::Info, true) << "FER Result" << std::endl;
     for (auto item : fer_result) {
