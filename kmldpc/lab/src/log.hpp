@@ -29,7 +29,7 @@ namespace lab {
             InforVerbose,
         };
 
-//Courtesy of http://wordaligned.org/articles/cpp-streambufs#toctee-streams
+        //Courtesy of http://wordaligned.org/articles/cpp-streambufs#toctee-streams
         class TeeBuf : public std::streambuf {
         public:
             // Construct a streambuf which tees output to both input

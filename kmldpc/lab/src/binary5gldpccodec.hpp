@@ -9,11 +9,6 @@
 
 namespace lab {
 
-/************************************************************
-类名：CBinaryLDPCCodec
-功能 ：二进制LDPC码编译码
-*************************************************************/
-
     class Binary5GLDPCCodec : public BinaryLDPCCodec {
     public:
         explicit Binary5GLDPCCodec()

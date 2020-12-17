@@ -11,7 +11,7 @@
 
 namespace lab {
 
-// Encapsulation of matio https://github.com/tbeu/matio
+    // Encapsulation of matio https://github.com/tbeu/matio
     class Mat {
     public:
         explicit Mat(std::string &filename)

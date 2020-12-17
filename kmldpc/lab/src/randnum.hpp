@@ -24,12 +24,12 @@ namespace lab {
         virtual void Normal(double *, int) = 0;
     };
 
-/*
- * The following generator employs the linear-congruential method,
- * and specifically uses a choice of multiplier that was proposed
- * as a standard by Stephen K. Park et al. in "Technical correspondence,"
- * Communications of the ACM36(1993), number 7, 108-110
- */
+    /*
+     * The following generator employs the linear-congruential method,
+     * and specifically uses a choice of multiplier that was proposed
+     * as a standard by Stephen K. Park et al. in "Technical correspondence,"
+     * Communications of the ACM36(1993), number 7, 108-110
+     */
 
     class CLCRandNum : public RandNum {
     public:
@@ -120,9 +120,9 @@ namespace lab {
         int R;
     };
 
-/*
- *The following generator employs the Wichman-Hill algorithm
- */
+    /*
+     *The following generator employs the Wichman-Hill algorithm
+     */
     class CWHRandNum : public RandNum {
     public:
         explicit CWHRandNum()
