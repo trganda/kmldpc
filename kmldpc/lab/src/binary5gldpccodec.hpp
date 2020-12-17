@@ -14,7 +14,7 @@ namespace lab {
 功能 ：二进制LDPC码编译码
 *************************************************************/
 
-class Binary5GLDPCCodec : public BinaryLDPCCodec {
+    class Binary5GLDPCCodec : public BinaryLDPCCodec {
     public:
         explicit Binary5GLDPCCodec()
                 : code_len_no_puncture_(0), code_len_puncture_(0), lifting_factor_(0),
@@ -36,9 +36,9 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             char mark[80];
             FILE *fp;
 
-            sprintf(mark, "LDPC***%d***PARAMETERS",code_no);
+            sprintf(mark, "LDPC***%d***PARAMETERS", code_no);
 
-            if ((fp = fopen(file_name, "r")) == nullptr){
+            if ((fp = fopen(file_name, "r")) == nullptr) {
                 fprintf(stderr, "\nCannot Open %s", file_name);
                 exit(3);
             }
@@ -60,7 +60,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             fclose(fp);
 
             //Read H from file temp_str
-            if ((fp = fopen(matrix_filename, "r")) == nullptr){
+            if ((fp = fopen(matrix_filename, "r")) == nullptr) {
                 fprintf(stderr, "\nCannot Open %s", matrix_filename);
                 exit(0);
             }
@@ -70,7 +70,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             code_len_no_puncture_ = num_col_;
             code_len_puncture_ = num_col_ - lifting_factor_ * 2;
             code_dim_ = code_len_no_puncture_ - code_chk_;
-            coderate_ = (double)code_dim_ / code_len_puncture_;
+            coderate_ = (double) code_dim_ / code_len_puncture_;
 
             cc_no_puncture_ = new int[code_len_no_puncture_];
 
@@ -81,7 +81,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
 
             syndrom_soft_ = new double[num_row_];
 
-            for (i = 0; i < num_row_; i++){
+            for (i = 0; i < num_row_; i++) {
                 (row_head_ + i)->m_row_no = i;
                 (row_head_ + i)->m_col_no = -1;
                 (row_head_ + i)->left = row_head_ + i;
@@ -90,7 +90,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
                 (row_head_ + i)->down = row_head_ + i;
             }
 
-            for (i = 0; i < num_col_; i++){
+            for (i = 0; i < num_col_; i++) {
                 (col_head_ + i)->m_row_no = -1;
                 (col_head_ + i)->m_col_no = i;
                 (col_head_ + i)->left = col_head_ + i;
@@ -100,9 +100,9 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             }
 
             fscanf(fp, "%s", temp_str);
-            for (i = 0; i < num_row_; i++){
+            for (i = 0; i < num_row_; i++) {
                 fscanf(fp, "%d %d", &row_no, &row_deg);
-                for (j = 0; j < row_deg; j++){
+                for (j = 0; j < row_deg; j++) {
                     temp_edge = new Edge;
                     temp_edge->m_row_no = row_no;
                     fscanf(fp, "%d", &col_no);
@@ -121,7 +121,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             }
 
             fclose(fp);
-    #ifdef _DEBUG
+#ifdef _DEBUG
             if ((fq = fopen("a.txt", "a+")) == NULL){
                 fprintf(stderr, "\nCannot open %s", "a.txt");
                 exit(0);
@@ -145,7 +145,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
                              (m_col_head + i) -> down -> m_row_no,(m_col_head + i) -> down -> m_col_no);
             }
             fclose(fq);
-    #endif
+#endif
             if (encoder_active_ == 1)
                 SystH_5G();
 
@@ -202,8 +202,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
                         p_edge = (col_head_ + i)->down;
                         p_edge->m_alpha[0] = 0.5;
                         p_edge->m_alpha[1] = 1.0 - 0.5;
-                    }
-                    else {
+                    } else {
                         p_edge = (col_head_ + i)->down;
                         p_edge->m_alpha[0] = M2V[i - lifting_factor_ * 2];
                         p_edge->m_alpha[1] = 1.0 - M2V[i - lifting_factor_ * 2];
@@ -247,8 +246,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
                     }
                 }
 
-                for (i = 0; i < code_dim_; i++)
-                {
+                for (i = 0; i < code_dim_; i++) {
                     //			uu_hat[i] = cc_hat_[i+m_codechk];
                     uu_hat[i] = cc_hat_[i];//kite使用
                 }
@@ -277,8 +275,10 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
                     p_edge->m_alpha[0] = 1.0;
                     p_edge->m_alpha[1] = 0.0;
                     while (p_edge->m_col_no != -1) {//over trellis with two states
-                        p_edge->right->m_alpha[0] = p_edge->m_alpha[0] * p_edge->m_v2c[0] + p_edge->m_alpha[1] * p_edge->m_v2c[1];
-                        p_edge->right->m_alpha[1] = p_edge->m_alpha[0] * p_edge->m_v2c[1] + p_edge->m_alpha[1] * p_edge->m_v2c[0];
+                        p_edge->right->m_alpha[0] =
+                                p_edge->m_alpha[0] * p_edge->m_v2c[0] + p_edge->m_alpha[1] * p_edge->m_v2c[1];
+                        p_edge->right->m_alpha[1] =
+                                p_edge->m_alpha[0] * p_edge->m_v2c[1] + p_edge->m_alpha[1] * p_edge->m_v2c[0];
                         temp_sum = p_edge->right->m_alpha[0] + p_edge->right->m_alpha[1];
                         p_edge->right->m_alpha[0] /= temp_sum;
                         p_edge->right->m_alpha[1] /= temp_sum;
@@ -303,8 +303,10 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
 
                         p_edge->m_c2v[1] = 1.0 - p_edge->m_c2v[0];
 
-                        p_edge->left->m_beta[0] = p_edge->m_beta[0] * p_edge->m_v2c[0] + p_edge->m_beta[1] * p_edge->m_v2c[1];
-                        p_edge->left->m_beta[1] = p_edge->m_beta[0] * p_edge->m_v2c[1] + p_edge->m_beta[1] * p_edge->m_v2c[0];
+                        p_edge->left->m_beta[0] =
+                                p_edge->m_beta[0] * p_edge->m_v2c[0] + p_edge->m_beta[1] * p_edge->m_v2c[1];
+                        p_edge->left->m_beta[1] =
+                                p_edge->m_beta[0] * p_edge->m_v2c[1] + p_edge->m_beta[1] * p_edge->m_v2c[0];
 
                         temp_sum = p_edge->left->m_beta[0] + p_edge->left->m_beta[1];
                         p_edge->left->m_beta[0] /= temp_sum;
@@ -333,7 +335,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             char **tempH;
             Edge *p_edge;
 
-            dec_h_ = new char*[num_row_];
+            dec_h_ = new char *[num_row_];
             for (i = 0; i < num_row_; i++)
                 dec_h_[i] = new char[num_col_];
 
@@ -353,7 +355,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             tempP = new int[num_col_];
             for (j = 0; j < num_col_; j++)
                 tempP[j] = j;
-            tempH = new char*[num_row_];
+            tempH = new char *[num_row_];
             for (i = 0; i < num_row_; i++)
                 tempH[i] = new char[num_col_];
 
@@ -362,36 +364,28 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
                     tempH[i][j] = dec_h_[i][j];
             }
 
-            enc_h_ = new char*[num_row_];
-            for (i = 0; i < num_row_; i++)
-            {
+            enc_h_ = new char *[num_row_];
+            for (i = 0; i < num_row_; i++) {
                 enc_h_[i] = new char[num_col_];
             }
-            for (i = 0; i < num_row_; i++)
-            {
-                for (j = 0; j < num_col_; j++)
-                {
+            for (i = 0; i < num_row_; i++) {
+                for (j = 0; j < num_col_; j++) {
                     enc_h_[i][j] = dec_h_[i][j];
                 }
             }
 
             code_chk_ = 0;
 
-            for (i = num_row_ - 1; i >= 0; --i)
-            {
+            for (i = num_row_ - 1; i >= 0; --i) {
                 flag = 0;
-                for (jj = i + num_col_ - num_row_; jj >= 0; --jj)
-                {
-                    for (ii = i; ii >= 0; --ii)
-                    {
-                        if (enc_h_[ii][jj] != 0)
-                        {
+                for (jj = i + num_col_ - num_row_; jj >= 0; --jj) {
+                    for (ii = i; ii >= 0; --ii) {
+                        if (enc_h_[ii][jj] != 0) {
                             flag = 1;
                             break;
                         }
                     }
-                    if (flag == 1)
-                    {
+                    if (flag == 1) {
                         code_chk_++;
                         break;
                     }
@@ -399,37 +393,30 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
 
                 if (flag == 0)
                     break;
-                else
-                {
+                else {
                     //swap i and ii row
-                    if (ii != i)
-                    {
-                        for (n = 0; n < num_col_; n++)
-                        {
+                    if (ii != i) {
+                        for (n = 0; n < num_col_; n++) {
                             temp = enc_h_[i][n];
                             enc_h_[i][n] = enc_h_[ii][n];
                             enc_h_[ii][n] = temp;
                         }
                     }
                     //swap (i + m_num_col - m_num_row) and jj col
-                    if (jj != i + num_col_ - num_row_)
-                    {
+                    if (jj != i + num_col_ - num_row_) {
                         temp = tempP[i + num_col_ - num_row_];
                         tempP[i + num_col_ - num_row_] = tempP[jj];
                         tempP[jj] = temp;
 
-                        for (m = 0; m < num_row_; m++)
-                        {
+                        for (m = 0; m < num_row_; m++) {
                             temp = enc_h_[m][i + num_col_ - num_row_];
                             enc_h_[m][i + num_col_ - num_row_] = enc_h_[m][jj];
                             enc_h_[m][jj] = temp;
                         }
                     }
                     //elimination
-                    for (m = num_row_ - 1; m >= 0; --m)
-                    {
-                        if (m != i && enc_h_[m][i + num_col_ - num_row_] == 1)
-                        {
+                    for (m = num_row_ - 1; m >= 0; --m) {
+                        if (m != i && enc_h_[m][i + num_col_ - num_row_] == 1) {
                             for (n = 0; n < num_col_; n++)
                                 enc_h_[m][n] ^= enc_h_[i][n];
                         }
@@ -446,10 +433,8 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             //}
 
 
-            for (j = 0; j < num_col_; j++)
-            {
-                for (i = 0; i < num_row_; i++)
-                {
+            for (j = 0; j < num_col_; j++) {
+                for (i = 0; i < num_row_; i++) {
                     dec_h_[i][j] = tempH[i][tempP[j]];
                 }
             }
@@ -463,8 +448,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
             row_head_ = new Edge[num_row_];
             col_head_ = new Edge[num_col_];
 
-            for (i = 0; i < num_row_; i++)
-            {
+            for (i = 0; i < num_row_; i++) {
                 (row_head_ + i)->m_row_no = i;
                 (row_head_ + i)->m_col_no = -1;
                 (row_head_ + i)->left = row_head_ + i;
@@ -473,8 +457,7 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
                 (row_head_ + i)->down = row_head_ + i;
             }
 
-            for (i = 0; i < num_col_; i++)
-            {
+            for (i = 0; i < num_col_; i++) {
                 (col_head_ + i)->m_row_no = -1;
                 (col_head_ + i)->m_col_no = i;
                 (col_head_ + i)->left = col_head_ + i;
@@ -483,12 +466,9 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
                 (col_head_ + i)->down = col_head_ + i;
             }
 
-            for (i = 0; i < num_row_; i++)
-            {
-                for (j = 0; j < num_col_; j++)
-                {
-                    if (dec_h_[i][j] != 0)
-                    {
+            for (i = 0; i < num_row_; i++) {
+                for (j = 0; j < num_col_; j++) {
+                    if (dec_h_[i][j] != 0) {
                         p_edge = new Edge;
                         p_edge->m_row_no = i;
                         p_edge->m_col_no = j;
@@ -508,11 +488,10 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
 
             code_len_no_puncture_ = num_col_;
             code_dim_ = code_len_no_puncture_ - code_chk_;
-            coderate_ = (double)code_dim_ / code_len_puncture_;
+            coderate_ = (double) code_dim_ / code_len_puncture_;
 
             delete[]tempP;
-            for (i = 0; i < num_row_; i++)
-            {
+            for (i = 0; i < num_row_; i++) {
                 delete[]tempH[i];
                 delete[]dec_h_[i];
             }
@@ -524,9 +503,9 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
         int code_len_no_puncture_;  // Code length before puncture
         int code_len_puncture_;     // Code length after puncture
         int lifting_factor_;
-        int* cc_no_puncture_;
+        int *cc_no_puncture_;
         double *cc_soft_no_puncture_;
-};
+    };
 
 }
 

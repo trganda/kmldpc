@@ -8,27 +8,27 @@
 
 namespace lab {
 
-class BinaryLDPCCodec {
+    class BinaryLDPCCodec {
     public:
         explicit BinaryLDPCCodec()
-            : code_dim_(0), code_len_(0), code_chk_(0),
-              coderate_(0.0), encoder_active_(0),
-              num_row_(0), num_col_(0), dec_h_(nullptr), enc_h_(nullptr),
-              syndrom_soft_(nullptr), row_head_(nullptr), col_head_(nullptr),
-              cc_hat_(nullptr), max_iter_(0), success_(0) {}
+                : code_dim_(0), code_len_(0), code_chk_(0),
+                  coderate_(0.0), encoder_active_(0),
+                  num_row_(0), num_col_(0), dec_h_(nullptr), enc_h_(nullptr),
+                  syndrom_soft_(nullptr), row_head_(nullptr), col_head_(nullptr),
+                  cc_hat_(nullptr), max_iter_(0), success_(0) {}
 
         virtual ~BinaryLDPCCodec() {
             FreeTannerGraph();
 
             if (encoder_active_ != 0) {
                 for (int i = 0; i < num_row_; i++) {
-                    delete []enc_h_[i];
+                    delete[]enc_h_[i];
                 }
-                delete []enc_h_;
+                delete[]enc_h_;
             }
 
-            delete []cc_hat_;
-            delete []syndrom_soft_;
+            delete[]cc_hat_;
+            delete[]syndrom_soft_;
         }
 
         virtual void Malloc(int code_no, char *file_name) {
@@ -41,9 +41,9 @@ class BinaryLDPCCodec {
             char mark[80];
             FILE *fp = nullptr;
 
-            sprintf(mark, "LDPC***%d***PARAMETERS",code_no);
+            sprintf(mark, "LDPC***%d***PARAMETERS", code_no);
 
-            if ((fp = fopen(file_name, "r")) == nullptr){
+            if ((fp = fopen(file_name, "r")) == nullptr) {
                 fprintf(stderr, "\nCannot Open %s", file_name);
                 exit(3);
             }
@@ -65,7 +65,7 @@ class BinaryLDPCCodec {
             fclose(fp);
 
             //Read H from file temp_str
-            if ((fp = fopen(matrix_filename, "r")) == nullptr){
+            if ((fp = fopen(matrix_filename, "r")) == nullptr) {
                 fprintf(stderr, "\nCannot Open %s", matrix_filename);
                 exit(0);
             }
@@ -74,14 +74,14 @@ class BinaryLDPCCodec {
             fscanf(fp, "%d %d %d", &num_row_, &num_col_, &code_chk_);
             code_len_ = num_col_;
             code_dim_ = code_len_ - code_chk_;
-            coderate_ = (double)code_dim_ / code_len_;
+            coderate_ = (double) code_dim_ / code_len_;
 
             row_head_ = new Edge[num_row_];
             col_head_ = new Edge[num_col_];
 
             syndrom_soft_ = new double[code_dim_];
 
-            for (i = 0; i < num_row_; i++){
+            for (i = 0; i < num_row_; i++) {
                 (row_head_ + i)->m_row_no = i;
                 (row_head_ + i)->m_col_no = -1;
                 (row_head_ + i)->left = row_head_ + i;
@@ -90,7 +90,7 @@ class BinaryLDPCCodec {
                 (row_head_ + i)->down = row_head_ + i;
             }
 
-            for (i = 0; i < num_col_; i++){
+            for (i = 0; i < num_col_; i++) {
                 (col_head_ + i)->m_row_no = -1;
                 (col_head_ + i)->m_col_no = i;
                 (col_head_ + i)->left = col_head_ + i;
@@ -100,9 +100,9 @@ class BinaryLDPCCodec {
             }
 
             fscanf(fp, "%s", temp_str);
-            for (i = 0; i < num_row_; i++){
+            for (i = 0; i < num_row_; i++) {
                 fscanf(fp, "%d %d", &row_no, &row_deg);
-                for (j = 0; j < row_deg; j++){
+                for (j = 0; j < row_deg; j++) {
                     temp_edge = new Edge;
                     temp_edge->m_row_no = row_no;
                     fscanf(fp, "%d", &col_no);
@@ -121,7 +121,7 @@ class BinaryLDPCCodec {
             }
 
             fclose(fp);
-    #ifdef _DEBUG
+#ifdef _DEBUG
             if ((fq = fopen("a.txt", "a+")) == NULL){
             fprintf(stderr, "\nCannot open %s", "a.txt");
             exit(0);
@@ -145,7 +145,7 @@ class BinaryLDPCCodec {
                          (m_col_head + i) -> down -> m_row_no,(m_col_head + i) -> down -> m_col_no);
         }
         fclose(fq);
-    #endif
+#endif
             if (encoder_active_ == 1)
                 SystemMatrixH();
 
@@ -155,8 +155,8 @@ class BinaryLDPCCodec {
         virtual void Encoder(int *uu, int *cc) const {
             int i, j, t;
 
-    //codeword = [parity_check_bits information_bits]
-            switch (encoder_active_){
+            //codeword = [parity_check_bits information_bits]
+            switch (encoder_active_) {
                 case 0:
                     for (i = 0; i < code_dim_; i++)
                         uu[i] = 0;
@@ -167,7 +167,7 @@ class BinaryLDPCCodec {
                     for (t = code_chk_; t < code_len_; t++)
                         cc[t] = uu[t - code_chk_];
 
-                    for (t = 0; t < code_chk_; t++){
+                    for (t = 0; t < code_chk_; t++) {
                         cc[t] = 0;
                         for (j = code_chk_; j < code_len_; j++)
                             cc[t] ^= (cc[j] & enc_h_[t][j]);
@@ -189,15 +189,15 @@ class BinaryLDPCCodec {
             //initialization
             InitMsg();
             //iteration
-            for (iter = 0; iter < iter_count; iter++){
+            for (iter = 0; iter < iter_count; iter++) {
                 //from vnode to cnode
-                for (i = 0; i < num_col_; i++){
+                for (i = 0; i < num_col_; i++) {
                     //forward
                     p_edge = (col_head_ + i)->down;
                     p_edge->m_alpha[0] = M2V[i];
                     p_edge->m_alpha[1] = 1.0 - M2V[i];
 
-                    while (p_edge->m_row_no != -1){
+                    while (p_edge->m_row_no != -1) {
                         p_edge->down->m_alpha[0] = p_edge->m_alpha[0] * p_edge->m_c2v[0];
                         p_edge->down->m_alpha[1] = p_edge->m_alpha[1] * p_edge->m_c2v[1];
                         temp_sum = p_edge->down->m_alpha[0] + p_edge->down->m_alpha[1];
@@ -215,7 +215,7 @@ class BinaryLDPCCodec {
                     p_edge = (col_head_ + i)->up;
                     p_edge->m_beta[0] = 1.0;
                     p_edge->m_beta[1] = 1.0;
-                    while (p_edge->m_row_no != -1){
+                    while (p_edge->m_row_no != -1) {
                         temp0 = p_edge->m_alpha[0] * p_edge->m_beta[0];
                         temp1 = p_edge->m_alpha[1] * p_edge->m_beta[1];
                         temp_sum = temp0 + temp1;
@@ -235,20 +235,19 @@ class BinaryLDPCCodec {
                     }
                 }
 
-                for (i = 0; i < code_dim_; i++)
-                {
+                for (i = 0; i < code_dim_; i++) {
                     uu_hat[i] = cc_hat_[i + code_chk_];
                 }
                 //parity checking
                 success_ = 1;
-                for (i = 0; i < num_row_; i++){
+                for (i = 0; i < num_row_; i++) {
                     parity_check = 0;
                     p_edge = (row_head_ + i)->right;
-                    while (p_edge->m_col_no != -1){
+                    while (p_edge->m_col_no != -1) {
                         parity_check = parity_check ^ cc_hat_[p_edge->m_col_no];
                         p_edge = p_edge->right;
                     }
-                    if (parity_check != 0){
+                    if (parity_check != 0) {
                         success_ = 0;
                         break;
                     }
@@ -258,14 +257,16 @@ class BinaryLDPCCodec {
                     break;
 
                 //from c node to v node
-                for (i = 0; i < num_row_; i++){
+                for (i = 0; i < num_row_; i++) {
                     //forward
                     p_edge = (row_head_ + i)->right;
                     p_edge->m_alpha[0] = 1.0;
                     p_edge->m_alpha[1] = 0.0;
-                    while (p_edge->m_col_no != -1){//over trellis with two states
-                        p_edge->right->m_alpha[0] = p_edge->m_alpha[0] * p_edge->m_v2c[0] + p_edge->m_alpha[1] * p_edge->m_v2c[1];
-                        p_edge->right->m_alpha[1] = p_edge->m_alpha[0] * p_edge->m_v2c[1] + p_edge->m_alpha[1] * p_edge->m_v2c[0];
+                    while (p_edge->m_col_no != -1) {//over trellis with two states
+                        p_edge->right->m_alpha[0] =
+                                p_edge->m_alpha[0] * p_edge->m_v2c[0] + p_edge->m_alpha[1] * p_edge->m_v2c[1];
+                        p_edge->right->m_alpha[1] =
+                                p_edge->m_alpha[0] * p_edge->m_v2c[1] + p_edge->m_alpha[1] * p_edge->m_v2c[0];
                         temp_sum = p_edge->right->m_alpha[0] + p_edge->right->m_alpha[1];
                         p_edge->right->m_alpha[0] /= temp_sum;
                         p_edge->right->m_alpha[1] /= temp_sum;
@@ -276,7 +277,7 @@ class BinaryLDPCCodec {
                     p_edge = (row_head_ + i)->left;
                     p_edge->m_beta[0] = 1.0;
                     p_edge->m_beta[1] = 0.0;
-                    while (p_edge->m_col_no != -1){
+                    while (p_edge->m_col_no != -1) {
                         temp0 = p_edge->m_alpha[0] * p_edge->m_beta[0] + p_edge->m_alpha[1] * p_edge->m_beta[1];
                         temp1 = p_edge->m_alpha[0] * p_edge->m_beta[1] + p_edge->m_alpha[1] * p_edge->m_beta[0];
                         temp_sum = temp0 + temp1;
@@ -290,8 +291,10 @@ class BinaryLDPCCodec {
 
                         p_edge->m_c2v[1] = 1.0 - p_edge->m_c2v[0];
 
-                        p_edge->left->m_beta[0] = p_edge->m_beta[0] * p_edge->m_v2c[0] + p_edge->m_beta[1] * p_edge->m_v2c[1];
-                        p_edge->left->m_beta[1] = p_edge->m_beta[0] * p_edge->m_v2c[1] + p_edge->m_beta[1] * p_edge->m_v2c[0];
+                        p_edge->left->m_beta[0] =
+                                p_edge->m_beta[0] * p_edge->m_v2c[0] + p_edge->m_beta[1] * p_edge->m_v2c[1];
+                        p_edge->left->m_beta[1] =
+                                p_edge->m_beta[0] * p_edge->m_v2c[1] + p_edge->m_beta[1] * p_edge->m_v2c[0];
 
                         temp_sum = p_edge->left->m_beta[0] + p_edge->left->m_beta[1];
                         p_edge->left->m_beta[0] /= temp_sum;
@@ -307,9 +310,9 @@ class BinaryLDPCCodec {
             return iter + (iter < max_iter_);
         }
 
-        int ParityCheck(const int* rr) const {
+        int ParityCheck(const int *rr) const {
             int parity_check, count, i;
-            Edge* p_edge;
+            Edge *p_edge;
             count = 0;
             for (i = 0; i < num_row_; i++) {
                 parity_check = 0;
@@ -331,9 +334,9 @@ class BinaryLDPCCodec {
             int i;
             Edge *p_edge;
 
-            for (i = 0; i < num_col_; i++){
+            for (i = 0; i < num_col_; i++) {
                 p_edge = (col_head_ + i)->down;
-                while (p_edge->m_row_no != -1){
+                while (p_edge->m_row_no != -1) {
                     p_edge->m_c2v[0] = 0.5;
                     p_edge->m_c2v[1] = 0.5;
                     p_edge = p_edge->down;
@@ -353,11 +356,11 @@ class BinaryLDPCCodec {
             return num_row_;
         }
 
-        double* GetSyndromSoft() const {
+        double *GetSyndromSoft() const {
             return syndrom_soft_;
         }
 
-        int* GetCcHat() const {
+        int *GetCcHat() const {
             return cc_hat_;
         }
 
@@ -374,18 +377,18 @@ class BinaryLDPCCodec {
             char **tempH;
             Edge *p_edge;
 
-            dec_h_ = new char*[num_row_];
+            dec_h_ = new char *[num_row_];
             for (i = 0; i < num_row_; i++)
                 dec_h_[i] = new char[num_col_];
 
-            for (i = 0; i < num_row_; i++){
+            for (i = 0; i < num_row_; i++) {
                 for (j = 0; j < num_col_; j++)
                     dec_h_[i][j] = 0;
             }
 
-            for (i = 0; i < num_row_; i++){
+            for (i = 0; i < num_row_; i++) {
                 p_edge = (row_head_ + i)->right;
-                while (p_edge->m_col_no != -1){
+                while (p_edge->m_col_no != -1) {
                     dec_h_[i][p_edge->m_col_no] = 1;
                     p_edge = p_edge->right;
                 }
@@ -394,45 +397,37 @@ class BinaryLDPCCodec {
             tempP = new int[num_col_];
             for (j = 0; j < num_col_; j++)
                 tempP[j] = j;
-            tempH = new char*[num_row_];
+            tempH = new char *[num_row_];
             for (i = 0; i < num_row_; i++)
                 tempH[i] = new char[num_col_];
 
-            for (i = 0; i < num_row_; i++){
+            for (i = 0; i < num_row_; i++) {
                 for (j = 0; j < num_col_; j++)
                     tempH[i][j] = dec_h_[i][j];
             }
 
-            enc_h_ = new char*[num_row_];
-            for (i = 0; i < num_row_; i++)
-            {
+            enc_h_ = new char *[num_row_];
+            for (i = 0; i < num_row_; i++) {
                 enc_h_[i] = new char[num_col_];
             }
-            for (i = 0; i < num_row_; i++)
-            {
-                for (j = 0; j < num_col_; j++)
-                {
+            for (i = 0; i < num_row_; i++) {
+                for (j = 0; j < num_col_; j++) {
                     enc_h_[i][j] = dec_h_[i][j];
                 }
             }
 
             code_chk_ = 0;
 
-            for (i = 0; i < num_row_; i++)
-            {
+            for (i = 0; i < num_row_; i++) {
                 flag = 0;
-                for (jj = i; jj < num_col_; jj++)
-                {
-                    for (ii = i; ii < num_row_; ii++)
-                    {
-                        if (enc_h_[ii][jj] != 0)
-                        {
+                for (jj = i; jj < num_col_; jj++) {
+                    for (ii = i; ii < num_row_; ii++) {
+                        if (enc_h_[ii][jj] != 0) {
                             flag = 1;
                             break;
                         }
                     }
-                    if (flag == 1)
-                    {
+                    if (flag == 1) {
                         code_chk_++;
                         break;
                     }
@@ -440,37 +435,30 @@ class BinaryLDPCCodec {
 
                 if (flag == 0)
                     break;
-                else
-                {
-    //swap i and ii row
-                    if (ii != i)
-                    {
-                        for (n = 0; n < num_col_; n++)
-                        {
+                else {
+                    //swap i and ii row
+                    if (ii != i) {
+                        for (n = 0; n < num_col_; n++) {
                             temp = enc_h_[i][n];
                             enc_h_[i][n] = enc_h_[ii][n];
                             enc_h_[ii][n] = temp;
                         }
                     }
                     //swap i and jj col
-                    if (jj != i)
-                    {
+                    if (jj != i) {
                         temp = tempP[i];
                         tempP[i] = tempP[jj];
                         tempP[jj] = temp;
 
-                        for (m = 0; m < num_row_; m++)
-                        {
+                        for (m = 0; m < num_row_; m++) {
                             temp = enc_h_[m][i];
                             enc_h_[m][i] = enc_h_[m][jj];
                             enc_h_[m][jj] = temp;
                         }
                     }
                     //elimination
-                    for (m = 0; m < num_row_; m++)
-                    {
-                        if (m != i && enc_h_[m][i] == 1)
-                        {
+                    for (m = 0; m < num_row_; m++) {
+                        if (m != i && enc_h_[m][i] == 1) {
                             for (n = 0; n < num_col_; n++)
                                 enc_h_[m][n] ^= enc_h_[i][n];
                         }
@@ -487,10 +475,8 @@ class BinaryLDPCCodec {
             //}
 
 
-            for (j = 0; j < num_col_; j++)
-            {
-                for (i = 0; i < num_row_; i++)
-                {
+            for (j = 0; j < num_col_; j++) {
+                for (i = 0; i < num_row_; i++) {
                     dec_h_[i][j] = tempH[i][tempP[j]];
                 }
             }
@@ -500,8 +486,7 @@ class BinaryLDPCCodec {
             row_head_ = new Edge[num_row_];
             col_head_ = new Edge[num_col_];
 
-            for (i = 0; i < num_row_; i++)
-            {
+            for (i = 0; i < num_row_; i++) {
                 (row_head_ + i)->m_row_no = i;
                 (row_head_ + i)->m_col_no = -1;
                 (row_head_ + i)->left = row_head_ + i;
@@ -510,8 +495,7 @@ class BinaryLDPCCodec {
                 (row_head_ + i)->down = row_head_ + i;
             }
 
-            for (i = 0; i < num_col_; i++)
-            {
+            for (i = 0; i < num_col_; i++) {
                 (col_head_ + i)->m_row_no = -1;
                 (col_head_ + i)->m_col_no = i;
                 (col_head_ + i)->left = col_head_ + i;
@@ -520,12 +504,9 @@ class BinaryLDPCCodec {
                 (col_head_ + i)->down = col_head_ + i;
             }
 
-            for (i = 0; i < num_row_; i++)
-            {
-                for (j = 0; j < num_col_; j++)
-                {
-                    if (dec_h_[i][j] != 0)
-                    {
+            for (i = 0; i < num_row_; i++) {
+                for (j = 0; j < num_col_; j++) {
+                    if (dec_h_[i][j] != 0) {
                         p_edge = new Edge;
                         p_edge->m_row_no = i;
                         p_edge->m_col_no = j;
@@ -545,16 +526,15 @@ class BinaryLDPCCodec {
 
             code_len_ = num_col_;
             code_dim_ = code_len_ - code_chk_;
-            coderate_ = (double)code_dim_ / code_len_;
+            coderate_ = (double) code_dim_ / code_len_;
 
-            delete []tempP;
-            for (i = 0; i < num_row_; i++)
-            {
+            delete[]tempP;
+            for (i = 0; i < num_row_; i++) {
                 delete[]tempH[i];
                 delete[]dec_h_[i];
             }
-            delete []tempH;
-            delete []dec_h_;
+            delete[]tempH;
+            delete[]dec_h_;
         }
 
     protected:
@@ -562,18 +542,16 @@ class BinaryLDPCCodec {
             int i;
             Edge *temp_edge;
 
-            for (i = 0; i < num_row_; i++)
-            {
-                while ((row_head_ + i)->right->m_col_no != -1)
-                {
+            for (i = 0; i < num_row_; i++) {
+                while ((row_head_ + i)->right->m_col_no != -1) {
                     temp_edge = (row_head_ + i)->right;
                     (row_head_ + i)->right = temp_edge->right;
                     delete temp_edge;
                 }
             }
 
-            delete []row_head_;
-            delete []col_head_;
+            delete[]row_head_;
+            delete[]col_head_;
         }
 
     protected:
@@ -595,7 +573,7 @@ class BinaryLDPCCodec {
         int *cc_hat_;
         int max_iter_;
         int success_;
-};
+    };
 
 }
 

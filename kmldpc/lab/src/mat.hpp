@@ -12,10 +12,11 @@
 namespace lab {
 
 // Encapsulation of matio https://github.com/tbeu/matio
-class Mat {
+    class Mat {
     public:
-        explicit Mat(std::string& filename)
-            : filename_(filename), matfp_(nullptr) {}
+        explicit Mat(std::string &filename)
+                : filename_(filename), matfp_(nullptr) {}
+
         ~Mat() {
             if (nullptr != matfp_) {
                 Mat_Close(matfp_);
@@ -33,13 +34,15 @@ class Mat {
                 exit(-1);
             }
         }
+
         void Close() {
             if (nullptr != matfp_) {
                 Mat_Close(matfp_);
                 matfp_ = nullptr;
             }
         }
-        void WriteInt(const std::string& varname,
+
+        void WriteInt(const std::string &varname,
                       int32_t data) {
             if (nullptr == matfp_) {
                 logger::Log::Get().SetLevel(logger::Error);
@@ -65,7 +68,8 @@ class Mat {
             LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
 
         }
-        void WriteDouble(const std::string& varname, double data) {
+
+        void WriteDouble(const std::string &varname, double data) {
             if (nullptr == matfp_) {
                 logger::Log::Get().SetLevel(logger::Error);
                 LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
@@ -88,7 +92,8 @@ class Mat {
             logger::Log::Get().SetLevel(logger::Info);
             LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
         }
-        void WriteComplex(const std::string& varname, std::complex<double> data) {
+
+        void WriteComplex(const std::string &varname, std::complex<double> data) {
             if (nullptr == matfp_) {
                 logger::Log::Get().SetLevel(logger::Error);
                 LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
@@ -115,15 +120,16 @@ class Mat {
             logger::Log::Get().SetLevel(logger::Info);
             LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
         }
-        void WriteVector(const std::string& varname, const std::vector<int32_t>& data) {
+
+        void WriteVector(const std::string &varname, const std::vector<int32_t> &data) {
             if (nullptr == matfp_) {
                 logger::Log::Get().SetLevel(logger::Error);
                 LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
                 exit(-1);
             }
             size_t dims[2] = {data.size(), 1};
-            int32_t* data_wrap = new int32_t[data.size()];
-            for (size_t i=0; i<data.size(); i++) {
+            int32_t *data_wrap = new int32_t[data.size()];
+            for (size_t i = 0; i < data.size(); i++) {
                 data_wrap[i] = data[i];
             }
 
@@ -142,14 +148,15 @@ class Mat {
             logger::Log::Get().SetLevel(logger::Info);
             LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
         }
-        void WriteVector(const std::string& varname, const std::vector<double>& data) {
+
+        void WriteVector(const std::string &varname, const std::vector<double> &data) {
             if (nullptr == matfp_) {
                 logger::Log::Get().SetLevel(logger::Error);
                 LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
                 exit(-1);
             }
             size_t dims[2] = {data.size(), 1};
-            int32_t* data_wrap = new int32_t[data.size()];
+            int32_t *data_wrap = new int32_t[data.size()];
             for (size_t i = 0; i < data.size(); i++) {
                 data_wrap[i] = data[i];
             }
@@ -169,7 +176,8 @@ class Mat {
             logger::Log::Get().SetLevel(logger::Info);
             LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
         }
-        void WriteVector(const std::string& varname, const std::vector<std::complex<double>>& data) {
+
+        void WriteVector(const std::string &varname, const std::vector<std::complex<double>> &data) {
             if (nullptr == matfp_) {
                 logger::Log::Get().SetLevel(logger::Error);
                 LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
@@ -184,7 +192,8 @@ class Mat {
             }
 
             struct mat_complex_split_t datas = {x, y};
-            matvar_t* mat_var = Mat_VarCreate(varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &datas, MAT_F_COMPLEX);
+            matvar_t *mat_var = Mat_VarCreate(varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &datas,
+                                              MAT_F_COMPLEX);
             if (nullptr == mat_var) {
                 logger::Log::Get().SetLevel(logger::Error);
                 LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
@@ -200,8 +209,8 @@ class Mat {
 
     private:
         std::string filename_;
-        mat_t* matfp_;
-};
+        mat_t *matfp_;
+    };
 
 }   // namespace
 

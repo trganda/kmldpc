@@ -10,7 +10,7 @@
 
 namespace lab {
 
-class CSourceSink {
+    class CSourceSink {
     public:
         void GetBitStr(int *uu, int len) {
             for (int t = 0; t < len; t++) {
@@ -22,7 +22,7 @@ class CSourceSink {
             for (int t = 0; t < len; t++) {
                 uu[t] = qary;
                 while (uu[t] == qary)
-                    uu[t] = (int)(qary * CLCRandNum::Get().Uniform());
+                    uu[t] = (int) (qary * CLCRandNum::Get().Uniform());
             }
         }
 
@@ -36,13 +36,13 @@ class CSourceSink {
         void CntErr(const int *uu, const int *uu_hat,
                     int len, int accumulator) {
             temp_err_ = 0;
-            for (int t = 0; t < len; t++){
+            for (int t = 0; t < len; t++) {
                 if (uu_hat[t] != uu[t])
                     temp_err_++;
             }
 
-            if (accumulator == 1){
-                if (temp_err_ > 0){
+            if (accumulator == 1) {
+                if (temp_err_ > 0) {
                     num_err_bit_ += temp_err_;
                     num_err_blk_ += 1;
                 }
@@ -57,24 +57,25 @@ class CSourceSink {
 
         void PrintResult(double snr) const {
             LOG(logger::Info, true) << std::fixed << std::setprecision(3) << std::setfill('0')
-                        << "SNR = "
-                        << std::setw(3) << std::right << snr << ' '
-                        << "Total blk = "
-                        << std::setw(7) << std::right << std::setprecision(0) << num_tot_blk_ << ' '
-                        << "Error blk = "
-                        << std::setw(7) << std::right << num_err_blk_ << ' '
-                        << "Error bit = "
-                        << std::setw(7) << std::right << num_err_bit_ << ' '
-                        << std::fixed << std::setprecision(14)
-                        << "BER = " << ber_ << ' '
-                        << "FER = " << fer_
+                                    << "SNR = "
+                                    << std::setw(3) << std::right << snr << ' '
+                                    << "Total blk = "
+                                    << std::setw(7) << std::right << std::setprecision(0) << num_tot_blk_ << ' '
+                                    << "Error blk = "
+                                    << std::setw(7) << std::right << num_err_blk_ << ' '
+                                    << "Error bit = "
+                                    << std::setw(7) << std::right << num_err_bit_ << ' '
+                                    << std::fixed << std::setprecision(14)
+                                    << "BER = " << ber_ << ' '
+                                    << "FER = " << fer_
                                     << std::endl;
         }
 
         void PrintResult(FILE *fp) const {
             fprintf(fp, "tot_blk = %d: err_blk = %d: err_bit = %d: ber = %12.10lf: fer = %12.10lf\n",
-                    (int)num_tot_blk_, num_err_blk_, num_err_bit_, ber_, fer_);
+                    (int) num_tot_blk_, num_err_blk_, num_err_bit_, ber_, fer_);
         }
+
         // Getter
         double GetNumTotBlk() const {
             return num_tot_blk_;
@@ -100,7 +101,7 @@ class CSourceSink {
         int temp_err_;
         double ber_;
         double fer_;
-};
+    };
 
 }
 

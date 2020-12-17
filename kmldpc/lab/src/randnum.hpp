@@ -9,7 +9,7 @@
 
 namespace lab {
 
-class RandNum {
+    class RandNum {
     public:
         explicit RandNum() = default;
 
@@ -22,7 +22,7 @@ class RandNum {
         virtual double Uniform() = 0;
 
         virtual void Normal(double *, int) = 0;
-};
+    };
 
 /*
  * The following generator employs the linear-congruential method,
@@ -31,11 +31,12 @@ class RandNum {
  * Communications of the ACM36(1993), number 7, 108-110
  */
 
-class CLCRandNum : public RandNum {
+    class CLCRandNum : public RandNum {
     public:
         explicit CLCRandNum()
                 : state(0), A(48271),
                   M(2147483647), Q(M / A), R(M % A) {}
+
         ~CLCRandNum() override = default;
 
         void SetSeed(int flag) final {
@@ -104,8 +105,9 @@ class CLCRandNum : public RandNum {
                 nn[len_nn - 1] = x1 * w;
             }
         };
+
         // Singleton pattern
-        static CLCRandNum& Get() {
+        static CLCRandNum &Get() {
             static CLCRandNum instance;
             return instance;
         }
@@ -116,38 +118,34 @@ class CLCRandNum : public RandNum {
         long M;
         int Q;
         int R;
-};
+    };
+
 /*
  *The following generator employs the Wichman-Hill algorithm
  */
-class CWHRandNum : public RandNum {
+    class CWHRandNum : public RandNum {
     public:
         explicit CWHRandNum()
                 : X(0), Y(0), Z(0) {}
+
         ~CWHRandNum() override = default;
 
         void SetSeed(int flag) final {
-            if (flag < 0)
-            {
+            if (flag < 0) {
                 X = 13;
                 Y = 37;
                 Z = 91;
-            }
-            else if (flag == 0)
-            {
+            } else if (flag == 0) {
                 X = 0;
                 Y = 0;
                 Z = 0;
-                while (X == 0 || Y == 0 || Z == 0)
-                {
-                    srand((unsigned)time(nullptr));
+                while (X == 0 || Y == 0 || Z == 0) {
+                    srand((unsigned) time(nullptr));
                     X = rand();
                     Y = rand();
                     Z = rand();
                 }
-            }
-            else
-            {
+            } else {
                 fprintf(stdout, "\nEnter the initial state (X Y Z): ");
                 fscanf(stdin, "%d %d %d", &X, &Y, &Z);
             }
@@ -174,11 +172,9 @@ class CWHRandNum : public RandNum {
             double x1, x2, w;
             int t;
 
-            for (t = 0; 2 * t + 1 < len_nn; t++)
-            {
+            for (t = 0; 2 * t + 1 < len_nn; t++) {
                 w = 2.0;
-                while (w > 1.0)
-                {
+                while (w > 1.0) {
                     x1 = 2.0 * Uniform() - 1.0;
                     x2 = 2.0 * Uniform() - 1.0;
 
@@ -191,11 +187,9 @@ class CWHRandNum : public RandNum {
                 nn[2 * t + 1] = x2 * w;
             }
 
-            if (len_nn % 2 == 1)
-            {
+            if (len_nn % 2 == 1) {
                 w = 2.0;
-                while (w > 1.0)
-                {
+                while (w > 1.0) {
                     x1 = 2.0 * Uniform() - 1.0;
                     x2 = 2.0 * Uniform() - 1.0;
 
@@ -208,7 +202,7 @@ class CWHRandNum : public RandNum {
             }
         }
 
-        static CWHRandNum& Get() {
+        static CWHRandNum &Get() {
             static CWHRandNum instance;
             return instance;
         }
@@ -217,7 +211,7 @@ class CWHRandNum : public RandNum {
         int X;
         int Y;
         int Z;
-};
+    };
 
 }
 

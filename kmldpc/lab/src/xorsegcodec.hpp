@@ -16,13 +16,13 @@
 
 namespace lab {
 
-class XORSegCodec {
+    class XORSegCodec {
     public:
         explicit XORSegCodec()
-            : ldpc_codec_5g_(Binary5GLDPCCodec()), ldpc_codec_(BinaryLDPCCodec()),
-              iter_cnt_(0), using_ldpc_5g_(0), using_syndrom_metric_(0),
-              uu_len_(0), cc_len_(0),
-              rr_(nullptr), bit_l_in_(nullptr), bit_l_out_(nullptr) {}
+                : ldpc_codec_5g_(Binary5GLDPCCodec()), ldpc_codec_(BinaryLDPCCodec()),
+                  iter_cnt_(0), using_ldpc_5g_(0), using_syndrom_metric_(0),
+                  uu_len_(0), cc_len_(0),
+                  rr_(nullptr), bit_l_in_(nullptr), bit_l_out_(nullptr) {}
 
         virtual ~XORSegCodec() {
             delete[] rr_;
@@ -36,15 +36,13 @@ class XORSegCodec {
             char mark[80];
 
             FILE *fp = fopen(file_name, "r");
-            if (nullptr == fp)
-            {
+            if (nullptr == fp) {
                 fprintf(stderr, "\nCannot Open %s", file_name);
                 exit(-1);
             }
 
             sprintf(mark, "RanXORLDPC***%d***PARAMETERS", code_no);
-            while (strcmp(temp_str, mark))
-            {
+            while (strcmp(temp_str, mark)) {
                 fscanf(fp, "%s", temp_str);
             }
 
@@ -94,7 +92,8 @@ class XORSegCodec {
 
             metric_results = GetMetrics(modem_linear_system, hHats, uu_hat);
 
-            auto minIndex = std::distance(metric_results.begin(), min_element(metric_results.begin(), metric_results.end()));
+            auto minIndex = std::distance(metric_results.begin(),
+                                          min_element(metric_results.begin(), metric_results.end()));
             LOG(logger::Info, false) << "hatIndex = " << minIndex << std::endl;
             temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
             DeMapping(modem_linear_system, temp);
@@ -107,7 +106,7 @@ class XORSegCodec {
         }
 
         std::vector<double> GetHistogramData(ModemLinearSystem &modem_linear_system,
-                         const std::vector<std::complex<double>> &hHats, int *uu_hat) {
+                                             const std::vector<std::complex<double>> &hHats, int *uu_hat) {
             return GetMetrics(modem_linear_system, hHats, uu_hat);
         }
 
@@ -148,14 +147,14 @@ class XORSegCodec {
                     }
                 }
                 // For Debug
-                std::vector<int> rr_debug(rr_, rr_+cc_len_);
+                std::vector<int> rr_debug(rr_, rr_ + cc_len_);
 
                 return ldpc_codec_.ParityCheck(rr_);
             }
         }
 
         std::vector<double> GetMetrics(ModemLinearSystem &modem_linear_system,
-                        const std::vector<std::complex<double>> &hHats, int *uu_hat) {
+                                       const std::vector<std::complex<double>> &hHats, int *uu_hat) {
             std::vector<double> metric_results(hHats.size(), 0);
             std::vector<std::pair<int, std::complex<double>>> temp;
             for (auto i = 0; i < metric_results.size(); i++) {
@@ -178,7 +177,7 @@ class XORSegCodec {
             return metric_results;
         }
 
-        double Metric(BinaryLDPCCodec& codec, int* uu_hat) {
+        double Metric(BinaryLDPCCodec &codec, int *uu_hat) {
             double metric_result;
 
             if (using_syndrom_metric_ == 1) {
@@ -206,11 +205,11 @@ class XORSegCodec {
         unsigned int using_ldpc_5g_;
         unsigned int using_syndrom_metric_;
         int uu_len_;         // length of uu for LDPC
-        int cc_len_;	     // length of cc for LDPC
-        int *rr_;			 // hard decision
-        double *bit_l_in_;	 // bit input probability
+        int cc_len_;         // length of cc for LDPC
+        int *rr_;             // hard decision
+        double *bit_l_in_;     // bit input probability
         double *bit_l_out_;  // bit out probability
-};
+    };
 
 }
 

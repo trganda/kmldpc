@@ -11,16 +11,16 @@
 
 namespace lab {
 
-class ModemLinearSystem {
+    class ModemLinearSystem {
     public:
         explicit ModemLinearSystem()
-            : cc_len_(0), xx_len_(0),
-              xx_(nullptr), sym_prob_(nullptr),
-              modem_(Modem()), linsym_(LinearSystem()) {}
+                : cc_len_(0), xx_len_(0),
+                  xx_(nullptr), sym_prob_(nullptr),
+                  modem_(Modem()), linsym_(LinearSystem()) {}
 
         virtual ~ModemLinearSystem() {
-            delete []xx_;
-            delete []sym_prob_;
+            delete[]xx_;
+            delete[]sym_prob_;
         }
 
         void Malloc(int len_cc, int code_no, char *file_name) {
@@ -32,7 +32,7 @@ class ModemLinearSystem {
 
             cc_len_ = len_cc;
 
-            if ((fp = fopen(file_name, "r")) == nullptr){
+            if ((fp = fopen(file_name, "r")) == nullptr) {
                 fprintf(stderr, "\nCannot Open %s", file_name);
                 exit(3);
             }
@@ -48,8 +48,7 @@ class ModemLinearSystem {
             modem_.Malloc(0, constellation_file_);
 
             temp0 = cc_len_ / modem_.GetInputLen();
-            if (cc_len_ % modem_.GetInputLen() != 0)
-            {
+            if (cc_len_ % modem_.GetInputLen() != 0) {
                 fprintf(stderr, "\n(cc_len_ = %d) %% (input_len_ = %d) != 0 !\n", cc_len_, modem_.GetInputLen());
                 system("pause");
                 exit(3);
@@ -70,14 +69,14 @@ class ModemLinearSystem {
             linsym_.AWGNLinearSystem(xx_, sym_prob);
         }
 
-        void MLSystemPartition(int* cc,
-                               std::vector<std::complex<double>>& selectH) const {
+        void MLSystemPartition(int *cc,
+                               std::vector<std::complex<double>> &selectH) const {
             modem_.Mapping(cc, xx_, cc_len_);
 
             linsym_.PartitionHAWGNSystem(xx_, selectH);
         }
 
-        void SoftDemodulation(std::vector<std::pair<int, std::complex<double>>>& thetaList) const {
+        void SoftDemodulation(std::vector<std::pair<int, std::complex<double>>> &thetaList) const {
             std::vector<std::complex<double>> um = GetRSymbol();
 
             int symbolPerPart = um.size() / thetaList.size();
@@ -89,7 +88,7 @@ class ModemLinearSystem {
                     linsym_.GetYy()[0] = tum[j + i * symbolPerPart].real();
                     linsym_.GetYy()[1] = tum[j + i * symbolPerPart].imag();
                     int temp = (j + i * symbolPerPart) * linsym_.GetMModem()->GetNumSymbol();
-                    linsym_.SoftAWGNDemodulation(linsym_.GetYy(), (sym_prob_ + temp),  thetaList[i].second);
+                    linsym_.SoftAWGNDemodulation(linsym_.GetYy(), (sym_prob_ + temp), thetaList[i].second);
                 }
             }
         }
@@ -117,11 +116,11 @@ class ModemLinearSystem {
     private:
         int cc_len_;
         int xx_len_;
-        double * xx_;
-        double * sym_prob_;
+        double *xx_;
+        double *sym_prob_;
         Modem modem_;
         LinearSystem linsym_;
-};
+    };
 
 }
 

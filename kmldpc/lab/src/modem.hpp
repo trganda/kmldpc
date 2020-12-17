@@ -9,12 +9,12 @@
 
 namespace lab {
 
-class Modem {
+    class Modem {
     public:
         explicit Modem()
-            : num_symbol_(0), input_len_(0), output_len_(0),
-              input_symbol_(nullptr), output_symbol_(nullptr), symbol_prob_(nullptr),
-              energy_(0.0) {}
+                : num_symbol_(0), input_len_(0), output_len_(0),
+                  input_symbol_(nullptr), output_symbol_(nullptr), symbol_prob_(nullptr),
+                  energy_(0.0) {}
 
         virtual ~Modem() {
             for (int i = 0; i < num_symbol_; i++) {
@@ -34,8 +34,7 @@ class Modem {
             double energy;
             FILE *fp;
 
-            if ((fp = fopen(file_name, "r")) == nullptr)
-            {
+            if ((fp = fopen(file_name, "r")) == nullptr) {
                 fprintf(stderr, "\nCannot Open %s", file_name);
                 exit(3);
             }
@@ -53,33 +52,28 @@ class Modem {
             output_symbol_ = new double *[num_symbol_];
             symbol_prob_ = new double[num_symbol_];
 
-            for (i = 0; i < num_symbol_; i++)
-            {
+            for (i = 0; i < num_symbol_; i++) {
                 fscanf(fp, "%d", &sym);
 
                 input_symbol_[i] = new int[input_len_];
                 temp = 0;
-                for (j = 0; j < input_len_; j++)
-                {
+                for (j = 0; j < input_len_; j++) {
                     fscanf(fp, "%d", &input_symbol_[i][j]);
                     //temp = (temp<<1) | input_symbol_[i][j];
                     temp = (temp << 1) + input_symbol_[i][j];
                 }
-                if (sym != temp || sym != i)
-                {
+                if (sym != temp || sym != i) {
                     fprintf(stderr, "\nSym = %d is not the binary expression of %d!\n", sym, temp);
                     fprintf(stderr, "\nSome symbols are missed or not in the right order!\n");
                     system("pause");
                     exit(3);
                 }
                 output_symbol_[i] = new double[output_len_];
-                for (j = 0; j < output_len_; j++)
-                {
+                for (j = 0; j < output_len_; j++) {
                     fscanf(fp, "%lf", &output_symbol_[i][j]);
                 }
 
-                for (j = 0; j < output_len_; j++)
-                {
+                for (j = 0; j < output_len_; j++) {
                     energy = output_symbol_[i][j] * output_symbol_[i][j];
                     energy_ += energy;
                 }
@@ -87,10 +81,8 @@ class Modem {
             fclose(fp);
 
             energy_ = energy_ / num_symbol_;
-            for (i = 0; i < num_symbol_; i++)
-            {
-                for (j = 0; j < output_len_; j++)
-                {
+            for (i = 0; i < num_symbol_; i++) {
+                for (j = 0; j < output_len_; j++) {
                     output_symbol_[i][j] /= sqrt(energy_);
                 }
             }
@@ -106,24 +98,20 @@ class Modem {
             fprintf(fp, "%%%-20s = %lf;\n", "Es", energy_);
             fprintf(fp, "%%%-20s = %s;\n", "spacial_constell_file", "'spacial_constellation.txt'");
 
-            if ((fpp = fopen("spacial_constellation.txt", "w")) == nullptr)
-            {
+            if ((fpp = fopen("spacial_constellation.txt", "w")) == nullptr) {
                 fprintf(stderr, "\nCannot Open %s", "spacial_constellation.txt");
                 exit(3);
             }
 
             fprintf(fpp, "\"symbol\"____\"binary_expression\"____\"mapping(real_image_..._real_image)\"\n");
-            for (i = 0; i < num_symbol_; i++)
-            {
+            for (i = 0; i < num_symbol_; i++) {
                 fprintf(fpp, "%-20d", i);
-                for (j = 0; j < input_len_; j++)
-                {
+                for (j = 0; j < input_len_; j++) {
                     fprintf(fpp, "%d ", input_symbol_[i][j]);
                 }
 
                 fprintf(fpp, "%-5s", " ");
-                for (j = 0; j < output_len_; j++)
-                {
+                for (j = 0; j < output_len_; j++) {
                     fprintf(fpp, "%13.10lf ", output_symbol_[i][j]);
                 }
                 fprintf(fpp, "\n");
@@ -141,17 +129,14 @@ class Modem {
 
             r = 0;
             t = 0;
-            for (i = 0; i < num_point_in_blk; i++)
-            {
+            for (i = 0; i < num_point_in_blk; i++) {
                 symbol = 0;
-                for (j = 0; j < input_len_; j++)
-                {
+                for (j = 0; j < input_len_; j++) {
                     //symbol = (symbol << 1) | bin_cc[r];
                     symbol = (symbol << 1) + bin_cc[r];
                     r++;
                 }
-                for (j = 0; j < output_len_; j++)
-                {
+                for (j = 0; j < output_len_; j++) {
                     xx[t] = output_symbol_[symbol][j];
                     t++;
                 }
@@ -172,17 +157,14 @@ class Modem {
 
             for (i = 0; i < num_point_in_blk; i++) //���� prob(x=0 | y);
             {
-                for (q = 0; q < num_symbol_; q++)
-                {
+                for (q = 0; q < num_symbol_; q++) {
                     symbol_prob_[q] = 1.0;
                 }
 
                 //convert bit extrinsic message to symbol message
                 t = i * input_len_;
-                for (j = 0; j < input_len_; j++)
-                {
-                    for (q = 0; q < num_symbol_; q++)
-                    {
+                for (j = 0; j < input_len_; j++) {
+                    for (q = 0; q < num_symbol_; q++) {
                         if (input_symbol_[q][j] == 0)
                             symbol_prob_[q] *= bitLin[t];
                         else
@@ -194,8 +176,7 @@ class Modem {
                 //compute symbol full message
                 sum = 0.0;
                 t = i * num_symbol_;
-                for (q = 0; q < num_symbol_; q++)
-                {
+                for (q = 0; q < num_symbol_; q++) {
                     symbol_prob_[q] *= symRin[t];
                     sum += symbol_prob_[q];
                     t++;
@@ -207,12 +188,10 @@ class Modem {
 
                 //compute bit extrinsic message for output
                 t = i * input_len_;
-                for (j = 0; j < input_len_; j++)
-                {
+                for (j = 0; j < input_len_; j++) {
                     P_0 = 0;
                     P_1 = 0;
-                    for (q = 0; q < num_symbol_; q++)
-                    {
+                    for (q = 0; q < num_symbol_; q++) {
                         if (input_symbol_[q][j] == 0)
                             P_0 += symbol_prob_[q];
                         else
@@ -230,8 +209,7 @@ class Modem {
 
         std::vector<std::complex<double>> GetConstellations() const {
             std::vector<std::complex<double>> result(num_symbol_);
-            for (int i = 0; i < num_symbol_; i++)
-            {
+            for (int i = 0; i < num_symbol_; i++) {
                 result[i] = std::complex<double>(output_symbol_[i][0], output_symbol_[i][1]);
             }
             return result;
@@ -249,7 +227,7 @@ class Modem {
             return output_len_;
         }
 
-        double** GetOutputSymbol() const {
+        double **GetOutputSymbol() const {
             return output_symbol_;
         }
 
@@ -264,7 +242,7 @@ class Modem {
         double *symbol_prob_;
 
         double energy_;
-};
+    };
 
 }
 
