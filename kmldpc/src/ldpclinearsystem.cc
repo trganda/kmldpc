@@ -130,8 +130,9 @@ void LDPCLinearSystem::Simulator() {
                     out << metrics[i % metrics.size()] << ' ';
                 }
                 out << std::endl;
+            } else {
+                codec_.Decoder(modem_linear_system_, h_hats, uu_hat_);
             }
-            codec_.Decoder(modem_linear_system_, h_hats, uu_hat_);
 
             source_sink_.CntErr(uu_, uu_hat_, codec_.GetUuLen(), 1);
 
