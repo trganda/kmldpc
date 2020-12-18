@@ -2,6 +2,7 @@
 
 #include "randnum.hpp"
 #include "log.hpp"
+#include "toml.hpp"
 
 #include "ldpclinearsystem.h"
 
@@ -27,8 +28,15 @@ int main()
     lab::logger::Log::Get().SetLevel(lab::logger::Info);
     LOG(lab::logger::Info, true) << "Start simulation" << std::endl;
 
-    LDPCLinearSystem sim_ldpc;
-    sim_ldpc.Simulator();
+    std::ifstream ifs("config.toml", std::ios_base::binary);
+    if (ifs.good()) {
+        auto arguments = toml::parse(ifs);
+        LDPCLinearSystem simulator(arguments);
+        simulator.Simulator();
+    } else {
+        LOG(lab::logger::Info, true) << "Encouter error while opening config.toml" << std::endl;
+    }
+
     LOG(lab::logger::Info, true) << "Simulation done" << std::endl;
 
     return 0;

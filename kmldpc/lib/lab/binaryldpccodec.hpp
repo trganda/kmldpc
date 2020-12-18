@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "utility.hpp"
+#include "toml.hpp"
 
 namespace lab {
 
@@ -12,7 +13,7 @@ namespace lab {
     public:
         explicit BinaryLDPCCodec()
                 : code_dim_(0), code_len_(0), code_chk_(0),
-                  coderate_(0.0), encoder_active_(0),
+                  coderate_(0.0), encoder_active_(false),
                   num_row_(0), num_col_(0), dec_h_(nullptr), enc_h_(nullptr),
                   syndrom_soft_(nullptr), row_head_(nullptr), col_head_(nullptr),
                   cc_hat_(nullptr), max_iter_(0), success_(0) {}
@@ -31,43 +32,21 @@ namespace lab {
             delete[]syndrom_soft_;
         }
 
-        virtual void Malloc(int code_no, char *file_name) {
+        virtual void Malloc(const toml::value& arguments) {
             int i, j;
             int row_no, row_deg, col_no;
-            char matrix_filename[255];
-            Edge *temp_edge;
 
-            char temp_str[80] = {' '};
-            char mark[80];
-            FILE *fp = nullptr;
+            const auto ldpc = toml::find(arguments, "ldpc");
+            max_iter_ = toml::find<int>(ldpc, "max_iter");
+            encoder_active_ = toml::find<bool>(ldpc, "active");
+            std::string matrix_file = toml::find<std::string>(ldpc, "matrix_file");
 
-            sprintf(mark, "LDPC***%d***PARAMETERS", code_no);
-
-            if ((fp = fopen(file_name, "r")) == nullptr) {
-                fprintf(stderr, "\nCannot Open %s", file_name);
-                exit(3);
-            }
-
-            while (strcmp(temp_str, mark) != 0)
-                fscanf(fp, "%s", temp_str);
-
-            //decdoing
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%d", &max_iter_);
-
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%d", &encoder_active_);
-
-            //file_name_of_H
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%s", matrix_filename);
-
-            fclose(fp);
-
+            FILE* fp = nullptr;
+            char temp_str[80];
             //Read H from file temp_str
-            if ((fp = fopen(matrix_filename, "r")) == nullptr) {
-                fprintf(stderr, "\nCannot Open %s", matrix_filename);
-                exit(0);
+            if ((fp = fopen(matrix_file.c_str(), "r")) == nullptr) {
+                LOG(lab::logger::Error, true) << "Cannot Open " << matrix_file << std::endl;
+                exit(-1);
             }
 
             fscanf(fp, "%s", temp_str);
@@ -100,6 +79,7 @@ namespace lab {
             }
 
             fscanf(fp, "%s", temp_str);
+            Edge *temp_edge;
             for (i = 0; i < num_row_; i++) {
                 fscanf(fp, "%d %d", &row_no, &row_deg);
                 for (j = 0; j < row_deg; j++) {
@@ -146,7 +126,7 @@ namespace lab {
         }
         fclose(fq);
 #endif
-            if (encoder_active_ == 1)
+            if (encoder_active_)
                 SystemMatrixH();
 
             cc_hat_ = new int[code_len_];
@@ -157,13 +137,13 @@ namespace lab {
 
             //codeword = [parity_check_bits information_bits]
             switch (encoder_active_) {
-                case 0:
+                case false:
                     for (i = 0; i < code_dim_; i++)
                         uu[i] = 0;
                     for (i = 0; i < code_len_; i++)
                         cc[i] = 0;
                     break;
-                case 1:
+                case true:
                     for (t = code_chk_; t < code_len_; t++)
                         cc[t] = uu[t - code_chk_];
 
@@ -560,7 +540,7 @@ namespace lab {
         int code_len_;           // Length of code
         int code_chk_;           // Number of Parity check
         double coderate_;        // Code rate
-        int encoder_active_;     // 0： not use encoder  1： otherwise
+        bool encoder_active_;     // 0： not use encoder  1： otherwise
         // Parity-check matrix
         int num_row_;            // Row of parity matrix
         int num_col_;            // Column of parity matrix

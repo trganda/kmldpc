@@ -1,9 +1,0 @@
-RanXORLDPC***0***PARAMETERS
-using_5GLDPC
-1
-iter_Count_5GLDPC
-5
-using_Syndrom_Metric
-1
-LDPCCodesetupFile
-LDPC.txt

@@ -23,8 +23,7 @@ namespace lab {
             delete[]symbol_prob_;
         }
 
-        void Malloc(Modem *modem, int len_xx,
-                    int code_no, char *file_name) {
+        void Malloc(Modem *modem, int len_xx) {
             modem_ = modem;
             xx_len_ = len_xx;
 

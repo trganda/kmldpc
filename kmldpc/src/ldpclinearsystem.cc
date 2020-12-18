@@ -1,8 +1,9 @@
 ﻿#include "ldpclinearsystem.h"
 
-LDPCLinearSystem::LDPCLinearSystem()
+LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
         : source_sink_(lab::CSourceSink()),
           codec_(lab::XORSegCodec()), modem_linear_system_(lab::ModemLinearSystem()),
+          arguments_(std::move(arguments)),
           min_snr_(0.0), max_snr_(0.0), step_snr_(0.0),
           max_err_blk_(0), max_num_blk_(0),
           uu_(nullptr), uu_hat_(nullptr), uu_len_(0),
@@ -17,45 +18,21 @@ LDPCLinearSystem::~LDPCLinearSystem() {
 }
 
 void LDPCLinearSystem::InitSimulator() {
-    char codec_file[80];
-    char modem_file[80];
-    char temp_str[80];
-    FILE *fp;
 
-    std::string config_file = "Setup_of_LDPC_Linear_System0.txt";
-    if ((fp = fopen(config_file.c_str(), "r")) == nullptr) {
-        fprintf(stderr, "\nCan't Open the %s file!\n", config_file.c_str());
-        exit(-1);
-    }
+    const auto range = toml::find(arguments_, "range");
 
-    fscanf(fp, "%s", temp_str);
-    fscanf(fp, "%lf", &min_snr_);
+    min_snr_ = toml::find<double>(range, "minimum_snr");
+    max_snr_ = toml::find<double>(range, "maximum_snr");
+    step_snr_ = toml::find<double>(range, "step_snr");
+    max_err_blk_ = toml::find<int>(range, "maximum_error_number");
+    max_num_blk_ = toml::find<int>(range, "maximum_block_number");
 
-    fscanf(fp, "%s", temp_str);
-    fscanf(fp, "%lf", &max_snr_);
-
-    fscanf(fp, "%s", temp_str);
-    fscanf(fp, "%lf", &step_snr_);
-
-    fscanf(fp, "%s", temp_str);
-    fscanf(fp, "%d", &max_err_blk_);
-
-    fscanf(fp, "%s", temp_str);
-    fscanf(fp, "%d", &max_num_blk_);
-
-    fscanf(fp, "%s", temp_str);
-    fscanf(fp, "%s", codec_file);
-
-    fscanf(fp, "%s", temp_str);
-    fscanf(fp, "%s", modem_file);
-    fclose(fp);
-
-    codec_.Malloc(0, codec_file);
+    codec_.Malloc(arguments_);
 
     uu_len_ = codec_.GetUuLen();
     cc_len_ = codec_.GetCcLen();
 
-    modem_linear_system_.Malloc(cc_len_, 0, modem_file);
+    modem_linear_system_.Malloc(cc_len_, arguments_);
 
     uu_ = new int[uu_len_];
     uu_hat_ = new int[uu_len_];
@@ -78,26 +55,29 @@ void LDPCLinearSystem::InitSimulator() {
 }
 
 void LDPCLinearSystem::Simulator() {
-    double sigma, var;
-
     InitSimulator();
-
     // Save simulation results
     std::vector<std::pair<double, double>> ber_result;
     std::vector<std::pair<double, double>> fer_result;
+    // Record metric for histogram
+    const auto histogram = toml::find(arguments_, "histogram");
+    const bool histogram_enable = toml::find<bool>(histogram, "enable");
 
     double snr = min_snr_;
     while (snr <= max_snr_) {
         //var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
-        var = pow(10.0, -0.1 * (snr));
-
-        sigma = sqrt(var);
+        double var = pow(10.0, -0.1 * (snr));
+        double sigma = sqrt(var);
 
         modem_linear_system_.GetLinearSystem().SetSigma(sigma);
         modem_linear_system_.GetLinearSystem().SetVar(var);
-
         source_sink_.ClrCnt();
 
+        std::fstream out;
+        if (histogram_enable) {
+            std::string histfilename = "histogram_" + std::to_string(snr) + ".txt";
+            out = std::fstream(histfilename, std::ios::out);
+        }
         while ((source_sink_.GetNumTotBlk() < max_num_blk_
                 && source_sink_.GetNumErrBlk() < max_err_blk_)) {
 
@@ -142,6 +122,15 @@ void LDPCLinearSystem::Simulator() {
                                           << std::setw(7) << std::right << (source_sink_.GetNumTotBlk() + 1)
                                           << std::endl;
 
+            if (histogram_enable) {
+                auto metrics = codec_.GetHistogramData(modem_linear_system_, h_hats, uu_hat_);
+                auto idx_of_min = std::distance(metrics.begin(),
+                                                min_element(metrics.begin(), metrics.end()));
+                for (auto i = idx_of_min; i < idx_of_min + metrics.size(); i++) {
+                    out << metrics[i % metrics.size()] << ' ';
+                }
+                out << std::endl;
+            }
             codec_.Decoder(modem_linear_system_, h_hats, uu_hat_);
 
             source_sink_.CntErr(uu_, uu_hat_, codec_.GetUuLen(), 1);
@@ -149,6 +138,9 @@ void LDPCLinearSystem::Simulator() {
             if (int(source_sink_.GetNumTotBlk()) > 0 && int(source_sink_.GetNumTotBlk()) % 100 == 0) {
                 source_sink_.PrintResult(snr);
             }
+        }
+        if (histogram_enable) {
+            out.close();
         }
         source_sink_.PrintResult(snr);
 

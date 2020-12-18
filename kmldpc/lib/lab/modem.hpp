@@ -26,7 +26,7 @@ namespace lab {
             delete[] symbol_prob_;
         }
 
-        void Malloc(int code_no, char *file_name) {
+        void Malloc(int code_no, const std::string& modem_file) {
             int i, j;
             char temp_str[255] = {' '};
             int sym;
@@ -34,9 +34,9 @@ namespace lab {
             double energy;
             FILE *fp;
 
-            if ((fp = fopen(file_name, "r")) == nullptr) {
-                fprintf(stderr, "\nCannot Open %s", file_name);
-                exit(3);
+            if ((fp = fopen(modem_file.c_str(), "r")) == nullptr) {
+                LOG(lab::logger::Error, true) << "Cannot Open " << modem_file << std::endl;
+                exit(-1);
             }
 
             fscanf(fp, "%s", temp_str);

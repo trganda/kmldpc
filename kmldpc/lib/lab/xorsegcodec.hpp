@@ -20,7 +20,7 @@ namespace lab {
     public:
         explicit XORSegCodec()
                 : ldpc_codec_5g_(Binary5GLDPCCodec()), ldpc_codec_(BinaryLDPCCodec()),
-                  iter_cnt_(0), using_ldpc_5g_(0), using_syndrom_metric_(0),
+                  iter_cnt_(0), using_ldpc_5g_(false), using_syndrom_metric_(false),
                   uu_len_(0), cc_len_(0),
                   rr_(nullptr), bit_l_in_(nullptr), bit_l_out_(nullptr) {}
 
@@ -30,44 +30,21 @@ namespace lab {
             delete[] bit_l_out_;
         }
 
-        void Malloc(int code_no, const char *file_name) {
-            // setup from "Setup_of_Codec.txt"
-            char temp_str[80] = {' '};
-            char mark[80];
+        void Malloc(const toml::value& arguments) {
+            const auto xcodec = toml::find(arguments, "xcodec");
 
-            FILE *fp = fopen(file_name, "r");
-            if (nullptr == fp) {
-                fprintf(stderr, "\nCannot Open %s", file_name);
-                exit(-1);
-            }
+            using_ldpc_5g_ = toml::find<bool>(xcodec, "5gldpc");
+            using_syndrom_metric_ = toml::find<bool>(xcodec, "metric_type");
+            iter_cnt_ = toml::find<int>(xcodec, "metric_iter");
 
-            sprintf(mark, "RanXORLDPC***%d***PARAMETERS", code_no);
-            while (strcmp(temp_str, mark)) {
-                fscanf(fp, "%s", temp_str);
-            }
-
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%u", &using_ldpc_5g_);
-
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%d", &iter_cnt_);
-
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%u", &using_syndrom_metric_);
-
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%s", temp_str);
-
-            fclose(fp);
-
-            if (using_ldpc_5g_ == 1) {
+            if (using_ldpc_5g_) {
                 LOG(logger::Info, true) << "Using 5G LDPC." << std::endl;
-                ldpc_codec_5g_.Malloc(code_no, temp_str);
+                ldpc_codec_5g_.Malloc(arguments);
                 uu_len_ = ldpc_codec_5g_.GetCodeDim();
                 cc_len_ = ldpc_codec_5g_.GetCodeenPuncture();
             } else {
                 LOG(logger::Info, true) << "Using traditional LDPC." << std::endl;
-                ldpc_codec_.Malloc(code_no, temp_str);
+                ldpc_codec_.Malloc(arguments);
                 uu_len_ = ldpc_codec_.GetCodeDim();
                 cc_len_ = ldpc_codec_.GetCodeLen();
             }
@@ -78,7 +55,7 @@ namespace lab {
         }
 
         void Encoder(int *uu, int *cc) {
-            if (using_ldpc_5g_ == 1) {
+            if (using_ldpc_5g_) {
                 ldpc_codec_5g_.Encoder(uu, cc);
             } else {
                 ldpc_codec_.Encoder(uu, cc);
@@ -98,7 +75,7 @@ namespace lab {
             temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
             DeMapping(modem_linear_system, temp);
 
-            if (using_ldpc_5g_ == 1) {
+            if (using_ldpc_5g_) {
                 ldpc_codec_5g_.Decoder(bit_l_out_, uu_hat, ldpc_codec_5g_.GetMaxIter());
             } else {
                 ldpc_codec_.Decoder(bit_l_out_, uu_hat, ldpc_codec_.GetMaxIter());
@@ -135,7 +112,7 @@ namespace lab {
         }
 
         int GetParityCheck() const {
-            if (using_ldpc_5g_ == 1) {
+            if (using_ldpc_5g_) {
                 return ldpc_codec_5g_.ParityCheck(ldpc_codec_5g_.GetCcHat());
             } else {
                 // hard decision without decoding
@@ -160,7 +137,7 @@ namespace lab {
             for (auto i = 0; i < metric_results.size(); i++) {
                 temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
                 DeMapping(modem_linear_system, temp);
-                if (using_ldpc_5g_ == 1) {
+                if (using_ldpc_5g_) {
                     metric_results[i] = Metric(ldpc_codec_5g_, uu_hat);
                 } else {
                     metric_results[i] = Metric(ldpc_codec_, uu_hat);
@@ -189,7 +166,7 @@ namespace lab {
                     metric_result += log(soft_syndroms[j]);
                 }
             } else {
-                if (using_ldpc_5g_ == 1) {
+                if (using_ldpc_5g_) {
                     codec.Decoder(bit_l_out_, uu_hat, iter_cnt_);
                 }
                 metric_result = GetParityCheck();
@@ -202,8 +179,8 @@ namespace lab {
         BinaryLDPCCodec ldpc_codec_;
 
         int iter_cnt_;       // iteration times while using LDPC on 5G
-        unsigned int using_ldpc_5g_;
-        unsigned int using_syndrom_metric_;
+        bool using_ldpc_5g_;
+        bool using_syndrom_metric_;
         int uu_len_;         // length of uu for LDPC
         int cc_len_;         // length of cc for LDPC
         int *rr_;             // hard decision

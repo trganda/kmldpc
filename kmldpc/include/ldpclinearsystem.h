@@ -12,24 +12,26 @@
 #include "modemlinearsystem.hpp"
 #include "randnum.hpp"
 #include "log.hpp"
+#include "toml.hpp"
 
 #include "kmeans.h"
 
 class LDPCLinearSystem {
 public:
-    explicit LDPCLinearSystem();
-
+    explicit LDPCLinearSystem(toml::value arguments);
     virtual ~LDPCLinearSystem();
 
-    void InitSimulator();
-
     void Simulator();
+
+private:
+    void InitSimulator();
 
 private:
     lab::CSourceSink source_sink_;
     lab::XORSegCodec codec_;
     lab::ModemLinearSystem modem_linear_system_;
 
+    const toml::value arguments_;
     // Simulation range of snr
     double min_snr_;
     double max_snr_;

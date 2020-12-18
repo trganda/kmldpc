@@ -23,7 +23,7 @@ include_directories(src, include)
 aux_source_directory(src SRC)
 
 # Copy config folder
-file(COPY ${CMAKE_SOURCE_DIR}/config/ DESTINATION ${PROJECT_BINARY_DIR}/kmldpc FILES_MATCHING PATTERN "*.txt")
+file(COPY ${CMAKE_SOURCE_DIR}/config/ DESTINATION ${PROJECT_BINARY_DIR}/kmldpc FILES_MATCHING PATTERN "*")
 # Crate records folder
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/kmldpc/records)
 # Crate logger folder

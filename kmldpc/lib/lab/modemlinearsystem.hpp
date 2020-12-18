@@ -23,29 +23,15 @@ namespace lab {
             delete[]sym_prob_;
         }
 
-        void Malloc(int len_cc, int code_no, char *file_name) {
+        void Malloc(int len_cc, const toml::value& arguments) {
             int temp0, temp;
-            char temp_str[80] = {' '};
-            char mark[80];
-            char constellation_file_[255];
-            FILE *fp;
 
             cc_len_ = len_cc;
 
-            if ((fp = fopen(file_name, "r")) == nullptr) {
-                fprintf(stderr, "\nCannot Open %s", file_name);
-                exit(3);
-            }
+            const auto modem = toml::find(arguments, "modem");
+            std::string modem_file = toml::find<std::string>(modem, "modem_file");
 
-            sprintf(mark, "ModemLinearSystem***%d***PARAMETERS", code_no);
-            while (strcmp(temp_str, mark) != 0)
-                fscanf(fp, "%s", temp_str);
-
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%s", constellation_file_);
-            fclose(fp);
-
-            modem_.Malloc(0, constellation_file_);
+            modem_.Malloc(0, modem_file);
 
             temp0 = cc_len_ / modem_.GetInputLen();
             if (cc_len_ % modem_.GetInputLen() != 0) {
@@ -60,7 +46,7 @@ namespace lab {
             temp = temp0 * modem_.GetNumSymbol();
             sym_prob_ = new double[temp];
 
-            linsym_.Malloc(&modem_, xx_len_, 0, file_name);
+            linsym_.Malloc(&modem_, xx_len_);
         }
 
         void MLSystem(int *cc, double *sym_prob) {

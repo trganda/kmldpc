@@ -37,6 +37,7 @@ set(TOML11_SRC
         ${TOML11_DIR}/source_location.hpp
         ${TOML11_DIR}/storage.hpp
         ${TOML11_DIR}/string.hpp
+        ${TOML11_DIR}/toml.hpp
         ${TOML11_DIR}/traits.hpp
         ${TOML11_DIR}/types.hpp
         ${TOML11_DIR}/utility.hpp

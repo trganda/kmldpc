@@ -20,44 +20,24 @@ namespace lab {
             delete[] cc_soft_no_puncture_;
         }
 
-        void Malloc(int code_no, char *file_name) override {
+        void Malloc(const toml::value& arguments) override {
             int i, j;
             int row_no, row_deg, col_no;
-            char matrix_filename[255];
-            Edge *temp_edge;
-            FILE *fq = nullptr;
+
 
             char temp_str[80] = {' '};
             char mark[80];
             FILE *fp;
 
-            sprintf(mark, "LDPC***%d***PARAMETERS", code_no);
-
-            if ((fp = fopen(file_name, "r")) == nullptr) {
-                fprintf(stderr, "\nCannot Open %s", file_name);
-                exit(3);
-            }
-
-            while (strcmp(temp_str, mark) != 0)
-                fscanf(fp, "%s", temp_str);
-
-            //decdoing
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%d", &max_iter_);
-
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%d", &encoder_active_);
-
-            //file_name_of_H
-            fscanf(fp, "%s", temp_str);
-            fscanf(fp, "%s", matrix_filename);
-
-            fclose(fp);
+            const auto ldpc = toml::find(arguments, "ldpc");
+            max_iter_ = toml::find<int>(ldpc, "max_iter");
+            encoder_active_ = toml::find<bool>(ldpc, "active");
+            std::string matrix_file = toml::find<std::string>(ldpc, "matrix_file");
 
             //Read H from file temp_str
-            if ((fp = fopen(matrix_filename, "r")) == nullptr) {
-                fprintf(stderr, "\nCannot Open %s", matrix_filename);
-                exit(0);
+            if ((fp = fopen(matrix_file.c_str(), "r")) == nullptr) {
+                LOG(lab::logger::Error, true) << "Cannot Open " << matrix_file << std::endl;
+                exit(-1);
             }
 
             fscanf(fp, "%s", temp_str);
@@ -95,6 +75,7 @@ namespace lab {
             }
 
             fscanf(fp, "%s", temp_str);
+            Edge *temp_edge;
             for (i = 0; i < num_row_; i++) {
                 fscanf(fp, "%d %d", &row_no, &row_deg);
                 for (j = 0; j < row_deg; j++) {
