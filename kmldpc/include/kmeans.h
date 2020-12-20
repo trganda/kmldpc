@@ -7,7 +7,7 @@
 #include <utility>
 #include <iostream>
 
-#include "mat.hpp"
+#include "mat.h"
 
 namespace kmldpc {
 

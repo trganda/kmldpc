@@ -7,11 +7,11 @@
 #include <fstream>
 #include <iomanip>
 
-#include "sourcesink.hpp"
-#include "xorsegcodec.hpp"
-#include "modemlinearsystem.hpp"
-#include "randnum.hpp"
-#include "log.hpp"
+#include "sourcesink.h"
+#include "xorsegcodec.h"
+#include "modemlinearsystem.h"
+#include "randnum.h"
+#include "log.h"
 #include "toml.hpp"
 
 #include "kmeans.h"

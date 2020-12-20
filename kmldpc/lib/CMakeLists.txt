@@ -3,22 +3,11 @@ set(LAB_DIR lab)
 set(TOML11_DIR toml11)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/${LAB_DIR})
 
-# using set to include the source code since the aux_source_directory
-# cannot find *.hpp files.
-set(LAB_SRC
-        ${LAB_DIR}/binary5gldpccodec.hpp
-        ${LAB_DIR}/binaryldpccodec.hpp
-        ${LAB_DIR}/linearsystem.hpp
-        ${LAB_DIR}/log.hpp
-        ${LAB_DIR}/mat.hpp
-        ${LAB_DIR}/modem.hpp
-        ${LAB_DIR}/modemlinearsystem.hpp
-        ${LAB_DIR}/randnum.hpp
-        ${LAB_DIR}/sourcesink.hpp
-        ${LAB_DIR}/utility.hpp
-        ${LAB_DIR}/xorsegcodec.hpp)
+aux_source_directory(${LAB_DIR} LAB_SRC)
 
 # add toml11 https://github.com/ToruNiina/toml11/releases/tag/v3.6.0
+# using set to include the source code since the aux_source_directory
+# cannot find *.hpp files.
 set(TOML11_SRC
         ${TOML11_DIR}/color.hpp
         ${TOML11_DIR}/combinator.hpp
@@ -47,6 +36,9 @@ set(TOML11_SRC
 # build as library
 add_library(lab ${LAB_SRC})
 add_library(toml11 ${TOML11_SRC})
+
+target_include_directories(lab PUBLIC
+        ${TOML11_DIR})
 
 # set using c++
 set_target_properties(lab PROPERTIES LINKER_LANGUAGE CXX)

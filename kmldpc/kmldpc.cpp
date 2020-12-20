@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "randnum.hpp"
-#include "log.hpp"
+#include "randnum.h"
+#include "log.h"
 #include "toml.hpp"
 
 #include "ldpclinearsystem.h"
