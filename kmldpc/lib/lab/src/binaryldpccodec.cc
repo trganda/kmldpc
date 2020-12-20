@@ -116,8 +116,9 @@ namespace lab {
     }
     fclose(fq);
 #endif
-        if (encoder_active_)
+        if (encoder_active_) {
             SystemMatrixH();
+        }
 
         cc_hat_ = new int[code_len_];
     }

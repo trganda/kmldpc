@@ -19,18 +19,12 @@
 class LDPCLinearSystem {
 public:
     explicit LDPCLinearSystem(toml::value arguments);
+
     virtual ~LDPCLinearSystem();
 
     void Simulator();
 
 private:
-    void InitSimulator();
-
-private:
-    lab::CSourceSink source_sink_;
-    lab::XORSegCodec codec_;
-    lab::ModemLinearSystem modem_linear_system_;
-
     const toml::value arguments_;
     // Simulation range of snr
     double min_snr_;
@@ -52,6 +46,10 @@ private:
     int cc_len_;
 
     double *sym_prob_;
+
+    lab::CSourceSink source_sink_;
+    lab::XORSegCodec codec_;
+    lab::ModemLinearSystem modem_linear_system_;
 };
 
 #endif

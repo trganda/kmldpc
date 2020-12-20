@@ -14,7 +14,7 @@ namespace lab {
 
     class ModemLinearSystem {
     public:
-        explicit ModemLinearSystem();
+        explicit ModemLinearSystem(const toml::value& arguments, int cc_len);
         virtual ~ModemLinearSystem();
 
         void Malloc(int len_cc, const toml::value& arguments);

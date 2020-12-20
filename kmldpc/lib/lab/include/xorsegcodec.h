@@ -18,7 +18,8 @@ namespace lab {
 
     class XORSegCodec {
     public:
-        explicit XORSegCodec();
+        XORSegCodec() = default;
+        explicit XORSegCodec(const toml::value& arguments);
         virtual ~XORSegCodec();
 
         void Malloc(const toml::value& arguments);

@@ -2,11 +2,12 @@
 
 namespace lab {
 
-    XORSegCodec::XORSegCodec()
-            : ldpc_codec_5g_(Binary5GLDPCCodec()), ldpc_codec_(BinaryLDPCCodec()),
-              iter_cnt_(0), using_ldpc_5g_(false), using_syndrom_metric_(false),
+    XORSegCodec::XORSegCodec(const toml::value& arguments)
+            : iter_cnt_(0), using_ldpc_5g_(false), using_syndrom_metric_(false),
               uu_len_(0), cc_len_(0),
-              rr_(nullptr), bit_l_in_(nullptr), bit_l_out_(nullptr) {}
+              rr_(nullptr), bit_l_in_(nullptr), bit_l_out_(nullptr) {
+        Malloc(arguments);
+    }
 
     XORSegCodec::~XORSegCodec() {
         delete[] rr_;

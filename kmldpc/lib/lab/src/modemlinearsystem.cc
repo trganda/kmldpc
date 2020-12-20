@@ -2,10 +2,12 @@
 
 namespace lab {
 
-    ModemLinearSystem::ModemLinearSystem()
-            : cc_len_(0), xx_len_(0),
+    ModemLinearSystem::ModemLinearSystem(const toml::value& arguments, int cc_len)
+            : cc_len_(cc_len), xx_len_(0),
               xx_(nullptr), sym_prob_(nullptr),
-              modem_(Modem()), linsym_(LinearSystem()) {}
+              modem_(Modem()), linsym_(LinearSystem()) {
+        Malloc(cc_len, arguments);
+    }
 
     ModemLinearSystem::~ModemLinearSystem() {
         delete[]xx_;

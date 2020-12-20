@@ -1,24 +1,10 @@
 ﻿#include "ldpclinearsystem.h"
 
 LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
-        : source_sink_(lab::CSourceSink()),
-          codec_(lab::XORSegCodec()), modem_linear_system_(lab::ModemLinearSystem()),
-          arguments_(std::move(arguments)),
-          min_snr_(0.0), max_snr_(0.0), step_snr_(0.0),
-          max_err_blk_(0), max_num_blk_(0),
-          uu_(nullptr), uu_hat_(nullptr), uu_len_(0),
-          cc_(nullptr), cc_hat_(nullptr), cc_len_(0), sym_prob_(nullptr) {}
-
-LDPCLinearSystem::~LDPCLinearSystem() {
-    delete[] uu_;
-    delete[] uu_hat_;
-    delete[] cc_;
-    delete[] cc_hat_;
-    delete[] sym_prob_;
-}
-
-void LDPCLinearSystem::InitSimulator() {
-
+        : arguments_(std::move(arguments)),
+          source_sink_(lab::CSourceSink()),
+          codec_(lab::XORSegCodec(arguments_)),
+          modem_linear_system_(lab::ModemLinearSystem(arguments_, codec_.GetCcLen())) {
     const auto range = toml::find(arguments_, "range");
 
     min_snr_ = toml::find<double>(range, "minimum_snr");
@@ -27,22 +13,16 @@ void LDPCLinearSystem::InitSimulator() {
     max_err_blk_ = toml::find<int>(range, "maximum_error_number");
     max_num_blk_ = toml::find<int>(range, "maximum_block_number");
 
-    codec_.Malloc(arguments_);
-
     uu_len_ = codec_.GetUuLen();
     cc_len_ = codec_.GetCcLen();
 
-    modem_linear_system_.Malloc(cc_len_, arguments_);
-
     uu_ = new int[uu_len_];
     uu_hat_ = new int[uu_len_];
-
     cc_ = new int[cc_len_];
     cc_hat_ = new int[cc_len_];
 
     sym_prob_ = new double[cc_len_ / modem_linear_system_.GetModem().GetInputLen()
                            * modem_linear_system_.GetModem().GetNumSymbol()];
-
     LOG(lab::logger::Info, true) << '[' << std::fixed << std::setprecision(3)
                                  << min_snr_ << ','
                                  << step_snr_ << ','
@@ -54,8 +34,15 @@ void LDPCLinearSystem::InitSimulator() {
                                  << std::endl;
 }
 
+LDPCLinearSystem::~LDPCLinearSystem() {
+    delete[] uu_;
+    delete[] uu_hat_;
+    delete[] cc_;
+    delete[] cc_hat_;
+    delete[] sym_prob_;
+}
+
 void LDPCLinearSystem::Simulator() {
-    InitSimulator();
     // Save simulation results
     std::vector<std::pair<double, double>> ber_result;
     std::vector<std::pair<double, double>> fer_result;
