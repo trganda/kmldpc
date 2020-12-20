@@ -3,7 +3,7 @@ set(LAB_DIR lab)
 set(TOML11_DIR toml11)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/${LAB_DIR})
 
-aux_source_directory(${LAB_DIR} LAB_SRC)
+aux_source_directory(${LAB_DIR}/src LAB_SRC)
 
 # add toml11 https://github.com/ToruNiina/toml11/releases/tag/v3.6.0
 # using set to include the source code since the aux_source_directory
@@ -38,7 +38,8 @@ add_library(lab ${LAB_SRC})
 add_library(toml11 ${TOML11_SRC})
 
 target_include_directories(lab PUBLIC
-        ${TOML11_DIR})
+        ${TOML11_DIR}
+        "${LAB_DIR}/include")
 
 # set using c++
 set_target_properties(lab PROPERTIES LINKER_LANGUAGE CXX)
