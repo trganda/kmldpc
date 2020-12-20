@@ -2,20 +2,7 @@
 
 namespace lab {
 
-    XORSegCodec::XORSegCodec(const toml::value& arguments)
-            : iter_cnt_(0), using_ldpc_5g_(false), using_syndrom_metric_(false),
-              uu_len_(0), cc_len_(0),
-              rr_(nullptr), bit_l_in_(nullptr), bit_l_out_(nullptr) {
-        Malloc(arguments);
-    }
-
-    XORSegCodec::~XORSegCodec() {
-        delete[] rr_;
-        delete[] bit_l_in_;
-        delete[] bit_l_out_;
-    }
-
-    void XORSegCodec::Malloc(const toml::value &arguments) {
+    XORSegCodec::XORSegCodec(const toml::value& arguments) {
         const auto xcodec = toml::find(arguments, "xcodec");
 
         using_ldpc_5g_ = toml::find<bool>(xcodec, "5gldpc");
@@ -24,14 +11,16 @@ namespace lab {
 
         if (using_ldpc_5g_) {
             LOG(logger::Info, true) << "Using 5G LDPC." << std::endl;
-            ldpc_codec_5g_.Malloc(arguments);
-            uu_len_ = ldpc_codec_5g_.GetCodeDim();
-            cc_len_ = ldpc_codec_5g_.GetCodeenPuncture();
+            ldpc_codec_ = nullptr;
+            ldpc_codec_5g_ = new Binary5GLDPCCodec(arguments);
+            uu_len_ = ldpc_codec_5g_->GetCodeDim();
+            cc_len_ = ldpc_codec_5g_->GetCodeenPuncture();
         } else {
             LOG(logger::Info, true) << "Using traditional LDPC." << std::endl;
-            ldpc_codec_.Malloc(arguments);
-            uu_len_ = ldpc_codec_.GetCodeDim();
-            cc_len_ = ldpc_codec_.GetCodeLen();
+            ldpc_codec_5g_ = nullptr;
+            ldpc_codec_ = new BinaryLDPCCodec(arguments);
+            uu_len_ = ldpc_codec_->GetCodeDim();
+            cc_len_ = ldpc_codec_->GetCodeLen();
         }
 
         rr_ = new int[cc_len_];
@@ -39,11 +28,22 @@ namespace lab {
         bit_l_out_ = new double[cc_len_];
     }
 
+    XORSegCodec::~XORSegCodec() {
+        if (using_ldpc_5g_) {
+            delete ldpc_codec_5g_;
+        } else {
+            delete ldpc_codec_;
+        }
+        delete[] rr_;
+        delete[] bit_l_in_;
+        delete[] bit_l_out_;
+    }
+
     void XORSegCodec::Encoder(int *uu, int *cc) {
         if (using_ldpc_5g_) {
-            ldpc_codec_5g_.Encoder(uu, cc);
+            ldpc_codec_5g_->Encoder(uu, cc);
         } else {
-            ldpc_codec_.Encoder(uu, cc);
+            ldpc_codec_->Encoder(uu, cc);
         }
     }
 
@@ -61,9 +61,9 @@ namespace lab {
         DeMapping(modem_linear_system, temp);
 
         if (using_ldpc_5g_) {
-            ldpc_codec_5g_.Decoder(bit_l_out_, uu_hat, ldpc_codec_5g_.GetMaxIter());
+            ldpc_codec_5g_->Decoder(bit_l_out_, uu_hat, ldpc_codec_5g_->GetMaxIter());
         } else {
-            ldpc_codec_.Decoder(bit_l_out_, uu_hat, ldpc_codec_.GetMaxIter());
+            ldpc_codec_->Decoder(bit_l_out_, uu_hat, ldpc_codec_->GetMaxIter());
         }
     }
 
@@ -97,7 +97,7 @@ namespace lab {
 
     int XORSegCodec::GetParityCheck() const {
         if (using_ldpc_5g_) {
-            return ldpc_codec_5g_.ParityCheck(ldpc_codec_5g_.GetCcHat());
+            return ldpc_codec_5g_->ParityCheck(ldpc_codec_5g_->GetCcHat());
         } else {
             // hard decision without decoding
             for (int i = 0; i < cc_len_; i++) {
@@ -110,7 +110,7 @@ namespace lab {
             // For Debug
             std::vector<int> rr_debug(rr_, rr_ + cc_len_);
 
-            return ldpc_codec_.ParityCheck(rr_);
+            return ldpc_codec_->ParityCheck(rr_);
         }
     }
 
@@ -138,20 +138,20 @@ namespace lab {
         return metric_results;
     }
 
-    double XORSegCodec::Metric(BinaryLDPCCodec &codec, int *uu_hat) {
+    double XORSegCodec::Metric(BinaryLDPCCodec* codec, int *uu_hat) {
         double metric_result;
 
         if (using_syndrom_metric_ == 1) {
-            codec.Decoder(bit_l_out_, uu_hat, iter_cnt_);
+            codec->Decoder(bit_l_out_, uu_hat, iter_cnt_);
             std::vector<double> soft_syndroms;
-            soft_syndroms = std::vector<double>(codec.GetSyndromSoft(),
-                                                codec.GetSyndromSoft() + codec.GetNumRow());
-            for (auto j = 0; j < codec.GetNumRow(); j++) {
+            soft_syndroms = std::vector<double>(codec->GetSyndromSoft(),
+                                                codec->GetSyndromSoft() + codec->GetNumRow());
+            for (auto j = 0; j < codec->GetNumRow(); j++) {
                 metric_result += log(soft_syndroms[j]);
             }
         } else {
             if (using_ldpc_5g_) {
-                codec.Decoder(bit_l_out_, uu_hat, iter_cnt_);
+                codec->Decoder(bit_l_out_, uu_hat, iter_cnt_);
             }
             metric_result = GetParityCheck();
         }

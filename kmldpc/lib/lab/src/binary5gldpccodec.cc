@@ -1,16 +1,19 @@
 #include "binary5gldpccodec.h"
 
 namespace lab {
-    Binary5GLDPCCodec::Binary5GLDPCCodec()
-            : code_len_no_puncture_(0), code_len_puncture_(0), lifting_factor_(0),
-              cc_no_puncture_(nullptr), cc_soft_no_puncture_(nullptr) {}
+    Binary5GLDPCCodec::Binary5GLDPCCodec(const toml::value& arguments)
+            : BinaryLDPCCodec(arguments),
+              code_len_no_puncture_(0), code_len_puncture_(0), lifting_factor_(0),
+              cc_no_puncture_(nullptr), cc_soft_no_puncture_(nullptr) {
+        init(arguments);
+    }
 
     Binary5GLDPCCodec::~Binary5GLDPCCodec() {
         delete[] cc_no_puncture_;
         delete[] cc_soft_no_puncture_;
     }
 
-    void Binary5GLDPCCodec::Malloc(const toml::value &arguments) {
+    void Binary5GLDPCCodec::init(const toml::value &arguments) {
         int i, j;
         int row_no, row_deg, col_no;
 

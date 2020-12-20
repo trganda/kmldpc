@@ -1,12 +1,14 @@
 #include "binaryldpccodec.h"
 
 namespace lab {
-    BinaryLDPCCodec::BinaryLDPCCodec()
+    BinaryLDPCCodec::BinaryLDPCCodec(const toml::value& arguments)
             : code_dim_(0), code_len_(0), code_chk_(0),
               coderate_(0.0), encoder_active_(false),
               num_row_(0), num_col_(0), dec_h_(nullptr), enc_h_(nullptr),
               syndrom_soft_(nullptr), row_head_(nullptr), col_head_(nullptr),
-              cc_hat_(nullptr), max_iter_(0), success_(0) {}
+              cc_hat_(nullptr), max_iter_(0), success_(0) {
+        init(arguments);
+    }
 
     BinaryLDPCCodec::~BinaryLDPCCodec() {
         FreeTannerGraph();
@@ -22,7 +24,7 @@ namespace lab {
         delete[]syndrom_soft_;
     }
 
-    void BinaryLDPCCodec::Malloc(const toml::value &arguments) {
+    void BinaryLDPCCodec::init(const toml::value &arguments) {
         int i, j;
         int row_no, row_deg, col_no;
 

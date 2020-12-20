@@ -22,7 +22,6 @@ namespace lab {
         explicit XORSegCodec(const toml::value& arguments);
         virtual ~XORSegCodec();
 
-        void Malloc(const toml::value& arguments);
         void Encoder(int *uu, int *cc);
         void Decoder(ModemLinearSystem &modem_linear_system,
                      const std::vector<std::complex<double>> &hHats, int *uu_hat);
@@ -37,11 +36,11 @@ namespace lab {
         int GetParityCheck() const;
         std::vector<double> GetMetrics(ModemLinearSystem &modem_linear_system,
                                        const std::vector<std::complex<double>> &hHats, int *uu_hat);
-        double Metric(BinaryLDPCCodec &codec, int *uu_hat);
+        double Metric(BinaryLDPCCodec *codec, int *uu_hat);
 
     private:
-        Binary5GLDPCCodec ldpc_codec_5g_;
-        BinaryLDPCCodec ldpc_codec_;
+        Binary5GLDPCCodec* ldpc_codec_5g_;
+        BinaryLDPCCodec* ldpc_codec_;
 
         int iter_cnt_;       // iteration times while using LDPC on 5G
         bool using_ldpc_5g_;
