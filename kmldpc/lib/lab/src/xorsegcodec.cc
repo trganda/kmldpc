@@ -83,16 +83,13 @@ namespace lab {
 
     void XORSegCodec::DeMapping(ModemLinearSystem &modem_linear_system,
                                 std::vector<std::pair<int, std::complex<double>>> &thetaList) const {
-        modem_linear_system.SoftDemodulation(thetaList);
-
         // demapping to Get soft information
         for (int i = 0; i < cc_len_; i++) {
             bit_l_in_[i] = 0.5;
         }
 
-        modem_linear_system.GetModem().DeMapping(
-                bit_l_in_, modem_linear_system.GetSymProb(),
-                bit_l_out_, cc_len_);
+        modem_linear_system.DeMapping(thetaList,
+                bit_l_in_, bit_l_out_);
     }
 
     int XORSegCodec::GetParityCheck() const {

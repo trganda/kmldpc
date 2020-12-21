@@ -45,8 +45,6 @@ private:
     int *cc_hat_;
     int cc_len_;
 
-    double *sym_prob_;
-
     lab::CSourceSink source_sink_;
     lab::XORSegCodec codec_;
     lab::ModemLinearSystem modem_linear_system_;

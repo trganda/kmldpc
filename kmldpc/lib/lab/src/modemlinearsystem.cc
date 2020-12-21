@@ -2,86 +2,105 @@
 
 namespace lab {
 
-    ModemLinearSystem::ModemLinearSystem(const toml::value& arguments, int cc_len)
-            : Modem(arguments), cc_len_(cc_len), xx_len_(0),
-              xx_(nullptr), sym_prob_(nullptr),
-              modem_(Modem(arguments)), linsym_(LinearSystem()) {
-        int temp0, temp;
-
-        temp0 = cc_len_ / modem_.GetInputLen();
-        if (cc_len_ % modem_.GetInputLen() != 0) {
+    ModemLinearSystem::ModemLinearSystem(const toml::value &arguments, int cc_len)
+            : Modem(arguments), cc_len_(cc_len), sigma_(0.0),
+              var_(0.0), sym_prob_(nullptr) {
+        if (cc_len_ % input_len_ != 0) {
             LOG(logger::Error, true) << "(cc_len_ = " << cc_len_ << " %% (input_len_ = "
-                                               << GetInputLen() << " ) != 0 !" << std::endl;
+                                     << input_len_ << " ) != 0 !" << std::endl;
             exit(-1);
         }
-
-        xx_len_ = temp0 * modem_.GetOutputLen();
-        xx_ = new double[xx_len_];
-
-
-
-        temp = temp0 * modem_.GetNumSymbol();
-        sym_prob_ = new double[temp];
-
-        linsym_.Malloc(&modem_, xx_len_);
+        yy_ = std::vector<std::complex<double>>(cc_len_ / input_len_);
+        sym_prob_ = new double[(cc_len_ / input_len_) * symbol_num_];
     }
 
     ModemLinearSystem::~ModemLinearSystem() {
-        delete[]xx_;
         delete[]sym_prob_;
     }
 
-    void ModemLinearSystem::MLSystem(int *cc, double *sym_prob) {
-        modem_.Mapping(cc, xx_, cc_len_);
-
-        linsym_.AWGNLinearSystem(xx_, sym_prob);
+    void ModemLinearSystem::PartitionModemLSystem(const int *cc,
+                                                  std::vector<std::complex<double>> &select_h) {
+        auto ret = Mapping(cc, cc_len_);
+        PartitionHAWGNSystem(ret, select_h);
     }
 
-    void ModemLinearSystem::MLSystemPartition(const int *cc,
-                                              std::vector<std::complex<double>> &selectH) {
-//        modem_.Mapping(cc, xx_, cc_len_);
-        auto ret = modem_.Mapping(cc, cc_len_);
-        linsym_.PartitionHAWGNSystem(ret, selectH);
-//        linsym_.PartitionHAWGNSystem(xx_, selectH);
-    }
+    void ModemLinearSystem::PartitionHAWGNSystem(
+            std::vector<std::complex<double>> &xx,
+            std::vector<std::complex<double>> &selected_h) {
 
-    void ModemLinearSystem::SoftDemodulation(std::vector<std::pair<int, std::complex<double>>> &thetaList) const {
-        std::vector<std::complex<double>> um = GetRSymbol();
+        std::vector<std::complex<double>> noise(xx.size());
+        CLCRandNum::Get().Normal(noise);
 
-        int symbolPerPart = um.size() / thetaList.size();
-
-        std::vector<std::complex<double>> tum(um.size());
-        for (size_t i = 0; i < thetaList.size(); i++) {
-            for (int j = 0; j < symbolPerPart; j++) {
-                tum[j + i * symbolPerPart] = um[j + i * symbolPerPart];
-                linsym_.GetYy()[0] = tum[j + i * symbolPerPart].real();
-                linsym_.GetYy()[1] = tum[j + i * symbolPerPart].imag();
-                int temp = (j + i * symbolPerPart) * linsym_.GetMModem()->GetNumSymbol();
-                linsym_.SoftAWGNDemodulation(linsym_.GetYy(), (sym_prob_ + temp), thetaList[i].second);
-//                linsym_.SoftAWGNDemodulation(um[j+i*symbolPerPart], sym_prob_+temp, thetaList[i].second);
+        for (size_t i = 0; i < selected_h.size(); i++) {
+            auto num_of_part = xx.size() / selected_h.size();
+            for (size_t j = i * num_of_part; j < num_of_part; j++) {
+                std::complex<double> temp = xx[j] * selected_h[i];
+                yy_[j] = temp + noise[j] * std::complex<double>(sigma_ / kSqrt2, 0);
             }
         }
     }
 
-    std::vector<std::complex<double>> ModemLinearSystem::GetRSymbol() const {
-//        std::vector<std::complex<double>> um(xx_len_ / 2);
-//        for (size_t i = 0; i < um.size(); i++) {
-//            um[i] = std::complex<double>(linsym_.GetNyy()[i * 2], linsym_.GetNyy()[i * 2 + 1]);
-//        }
-//        return um;
-        return linsym_.GetTyy();
+    void ModemLinearSystem::SoftAWGNDemodulation(const std::complex<double> &yy, double *sym_prob,
+                                                 std::complex<double> &theta_h) const {
+        std::vector<double> symbol_prob(symbol_num_);
+        double sqr_norm = 0.0;
+
+        for (size_t i = 0; i < symbol_prob.size(); i++) {
+            auto symbol = symbol_out_[i];
+            symbol *= theta_h;
+            symbol -= yy;
+            sqr_norm = (symbol.real() * symbol.real() + symbol.imag() * symbol.imag()) / var_;
+            symbol_prob[i] = -sqr_norm;
+        }
+
+        auto max_prob = std::max_element(symbol_prob.begin(), symbol_prob.end());
+        for (int i = 0; i < symbol_num_; i++) {
+            symbol_prob[i] = exp(symbol_prob[i] - *max_prob);
+        }
+        // normalization
+        double sum = 0.0;
+        for (int i = 0; i < symbol_num_; i++) {
+            sum += symbol_prob[i];
+        }
+
+        for (int i = 0; i < symbol_num_; i++) {
+            symbol_prob[i] /= sum;
+        }
+
+        for (int i = 0; i < symbol_num_; i++) {
+            sym_prob[i] = symbol_prob[i];
+        }
+
+        utility::ProbClip(sym_prob, symbol_num_);
     }
 
-    double *ModemLinearSystem::GetSymProb() const {
-        return sym_prob_;
+    void ModemLinearSystem::SoftDemodulation(std::vector<std::pair<int, std::complex<double>>> &thetaList) const {
+        auto symbolPerPart = yy_.size() / thetaList.size();
+
+        for (size_t i = 0; i < thetaList.size(); i++) {
+            for (size_t j = 0; j < symbolPerPart; j++) {
+                auto temp = (j + i * symbolPerPart) * symbol_num_;
+                SoftAWGNDemodulation(yy_[j + i * symbolPerPart], sym_prob_ + temp, thetaList[i].second);
+            }
+        }
     }
 
-    const Modem &ModemLinearSystem::GetModem() const {
-        return modem_;
+    void ModemLinearSystem::DeMapping(std::vector<std::pair<int, std::complex<double>>> &thetaList, double *bitLin,
+                                      double *bitLout) {
+        SoftDemodulation(thetaList);
+        Modem::DeMapping(bitLin, sym_prob_, bitLout, yy_.size());
     }
 
-    LinearSystem &ModemLinearSystem::GetLinearSystem() {
-        return linsym_;
+    std::vector<std::complex<double>> ModemLinearSystem::GetRecvSymbol() const {
+        return yy_;
+    }
+
+    void ModemLinearSystem::SetSigma(double sigma) {
+        this->sigma_ = sigma;
+    }
+
+    void ModemLinearSystem::SetVar(double var) {
+        this->var_ = var;
     }
 
 }

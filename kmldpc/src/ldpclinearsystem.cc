@@ -21,8 +21,6 @@ LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
     cc_ = new int[cc_len_];
     cc_hat_ = new int[cc_len_];
 
-    sym_prob_ = new double[cc_len_ / modem_linear_system_.GetModem().GetInputLen()
-                           * modem_linear_system_.GetModem().GetNumSymbol()];
     LOG(lab::logger::Info, true) << '[' << std::fixed << std::setprecision(3)
                                  << min_snr_ << ','
                                  << step_snr_ << ','
@@ -39,7 +37,6 @@ LDPCLinearSystem::~LDPCLinearSystem() {
     delete[] uu_hat_;
     delete[] cc_;
     delete[] cc_hat_;
-    delete[] sym_prob_;
 }
 
 void LDPCLinearSystem::Simulator() {
@@ -56,8 +53,8 @@ void LDPCLinearSystem::Simulator() {
         double var = pow(10.0, -0.1 * (snr));
         double sigma = sqrt(var);
 
-        modem_linear_system_.GetLinearSystem().SetSigma(sigma);
-        modem_linear_system_.GetLinearSystem().SetVar(var);
+        modem_linear_system_.SetSigma(sigma);
+        modem_linear_system_.SetVar(var);
         source_sink_.ClrCnt();
 
         std::fstream out;
@@ -86,11 +83,11 @@ void LDPCLinearSystem::Simulator() {
             }
 
             // Modulation and pass through the channel
-            modem_linear_system_.MLSystemPartition(cc_, generated_h);
+            modem_linear_system_.PartitionModemLSystem(cc_, generated_h);
             // Get constellation
-            auto constellations = modem_linear_system_.GetLinearSystem().GetMModem()->GetConstellations();
+            auto constellations = modem_linear_system_.GetConstellations();
             // Get received symbols
-            auto received_symbols = modem_linear_system_.GetRSymbol();
+            auto received_symbols = modem_linear_system_.GetRecvSymbol();
             // KMeans
             kmldpc::KMeans kmeans = kmldpc::KMeans(received_symbols, constellations, 20);
             kmeans.Run();
