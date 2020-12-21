@@ -46,25 +46,16 @@ namespace lab {
         double x1, x2, w;
         int t;
 
-        for (
-                t = 0;
-                2 * t + 1 <
-                len_nn;
-                t++) {
+        for (t = 0; 2 * t + 1 < len_nn; t++) {
             w = 2.0;
             while (w > 1.0) {
                 x1 = 2.0 * Uniform() - 1.0;
                 x2 = 2.0 * Uniform() - 1.0;
-
                 w = x1 * x1 + x2 * x2;
             }
-
             w = sqrt(-2.0 * log(w) / w);
-
-            nn[2 * t] =
-                    x1 * w;
-            nn[2 * t + 1] =
-                    x2 * w;
+            nn[2 * t] = x1 * w;
+            nn[2 * t + 1] = x2 * w;
         }
 
         if (len_nn % 2 == 1) {
@@ -72,16 +63,20 @@ namespace lab {
             while (w > 1.0) {
                 x1 = 2.0 * Uniform() - 1.0;
                 x2 = 2.0 * Uniform() - 1.0;
-
                 w = x1 * x1 + x2 * x2;
             }
-
             w = sqrt(-2.0 * log(w) / w);
-
-            nn[len_nn - 1] =
-                    x1 * w;
+            nn[len_nn - 1] = x1 * w;
         }
     };
+
+    void CLCRandNum::Normal(std::vector<std::complex<double>> &nn) {
+        double temp[2];
+        for (auto &item : nn) {
+            Normal(temp, 2);
+            item = std::complex<double>(temp[0], temp[1]);
+        }
+    }
 
     // Singleton pattern
     CLCRandNum &CLCRandNum::Get() {

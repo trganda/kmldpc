@@ -4,7 +4,7 @@ namespace lab {
     LinearSystem::LinearSystem()
             : sigma_(0.0), var_(0.0),
               noise_(nullptr), yy_(nullptr), nyy_(nullptr), symbol_prob_(nullptr),
-              xx_len_(0), num_symbol_(0), modem_(nullptr) {}
+              xx_len_(0), symbol_num_(0), modem_(nullptr) {}
 
     LinearSystem::~LinearSystem() {
         delete[]noise_;
@@ -20,10 +20,11 @@ namespace lab {
         noise_ = new double[xx_len_];
         yy_ = new double[2];
         nyy_ = new double[xx_len_];
+        tyy_ = std::vector<std::complex<double>>(xx_len_/modem_->GetOutputLen());
 
         symbol_prob_ = new double[modem_->GetNumSymbol()];
 
-        num_symbol_ = modem_->GetNumSymbol();
+        symbol_num_ = modem_->GetNumSymbol();
     }
 
     void LinearSystem::SoftAWGNDemodulation(const double *yy, double *sym_prob,
@@ -33,7 +34,7 @@ namespace lab {
         double temp;
 
         temp = 0.0;
-        for (i = 0; i < num_symbol_; i++) {
+        for (i = 0; i < symbol_num_; i++) {
             sqr_norm = 0.0;
 
             double symbol_x = modem_->GetOutputSymbol()[i][0];
@@ -49,27 +50,63 @@ namespace lab {
 
         }
 
-        temp = utility::Seqmax(symbol_prob_, num_symbol_);
+        temp = utility::Seqmax(symbol_prob_, symbol_num_);
 
-        for (q = 0; q < num_symbol_; q++) {
+        for (q = 0; q < symbol_num_; q++) {
             symbol_prob_[q] = exp(symbol_prob_[q] - temp);
         }
 
         //normalization
         sum = 0.0;
-        for (q = 0; q < num_symbol_; q++) {
+        for (q = 0; q < symbol_num_; q++) {
             sum += symbol_prob_[q];
         }
 
-        for (q = 0; q < num_symbol_; q++) {
+        for (q = 0; q < symbol_num_; q++) {
             symbol_prob_[q] /= sum;
         }
 
-        for (q = 0; q < num_symbol_; q++) {
+        for (q = 0; q < symbol_num_; q++) {
             sym_prob[q] = symbol_prob_[q];
         }
 
-        utility::ProbClip(sym_prob, num_symbol_);
+        utility::ProbClip(sym_prob, symbol_num_);
+    }
+
+    void LinearSystem::SoftAWGNDemodulation(const std::complex<double>& yy, double *sym_prob,
+                                            std::complex<double> &theta) const {
+        for (int i=0; i < symbol_num_; i++) {
+            double sqr_norm = 0.0;
+
+            auto symbol = modem_->GetConstellations()[i];
+            symbol *= theta;
+            symbol -= yy;
+
+            sqr_norm += (symbol.real()*symbol.real() + symbol.imag()*symbol.imag()) / var_;
+            symbol_prob_[i] = -sqr_norm;
+        }
+
+        double max_prob;
+        max_prob = utility::Seqmax(symbol_prob_, symbol_num_);
+
+        for (int i=0; i<symbol_num_; i++) {
+            symbol_prob_[i] = exp(symbol_prob_[i] - max_prob);
+        }
+        // normalization
+        double sum = 0.0;
+        for (int i=0; i<symbol_num_; i++) {
+            sum += symbol_prob_[i];
+        }
+
+        for (int i=0; i<symbol_num_; i++) {
+            symbol_prob_[i] /= sum;
+        }
+
+        for (int i=0; i<symbol_num_; i++) {
+            sym_prob[i] = symbol_prob_[i];
+        }
+
+        utility::ProbClip(sym_prob, symbol_num_);
     }
 
     void LinearSystem::AWGNLinearSystem(const double *xx, double *sym_prob) const {
@@ -140,7 +177,27 @@ namespace lab {
         return nyy_;
     }
 
+    std::vector<std::complex<double>> LinearSystem::GetTyy() const {
+        return tyy_;
+    }
+
     Modem *LinearSystem::GetMModem() const {
         return modem_;
+    }
+
+    void LinearSystem::PartitionHAWGNSystem(
+            std::vector<std::complex<double>>& xx,
+            std::vector<std::complex<double>>& seleted_h) {
+
+        std::vector<std::complex<double>> noise(xx.size());
+        CLCRandNum::Get().Normal(noise);
+
+        for (int i=0; i<seleted_h.size(); i++) {
+            int num_of_part = xx.size() / seleted_h.size();;
+            for (int j=i*num_of_part; j<num_of_part; j++) {
+                std::complex<double> temp = xx[j] * seleted_h[i];
+                tyy_[j] = temp + noise[j] * std::complex<double>(sigma_/kSqrt2, 0);
+            }
+        }
     }
 }

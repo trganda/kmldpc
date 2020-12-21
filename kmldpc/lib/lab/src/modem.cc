@@ -1,13 +1,17 @@
 #include "modem.h"
 
 namespace lab {
-    Modem::Modem()
-            : num_symbol_(0), input_len_(0), output_len_(0),
+    Modem::Modem(const toml::value& arguments)
+            : symbol_num_(0), input_len_(0), output_len_(0),
               input_symbol_(nullptr), output_symbol_(nullptr), symbol_prob_(nullptr),
-              energy_(0.0) {}
+              energy_(0.0) {
+        const auto modem = toml::find(arguments, "modem");
+        std::string modem_file = toml::find<std::string>(modem, "modem_file");
+        this->init(modem_file);
+    }
 
     Modem::~Modem() {
-        for (int i = 0; i < num_symbol_; i++) {
+        for (int i = 0; i < symbol_num_; i++) {
             delete[] output_symbol_[i];
             delete[] input_symbol_[i];
         }
@@ -16,7 +20,7 @@ namespace lab {
         delete[] symbol_prob_;
     }
 
-    void Modem::Malloc(int code_no, const std::string &modem_file) {
+    void Modem::Malloc(const std::string &modem_file) {
         int i, j;
         char temp_str[255] = {' '};
         int sym;
@@ -37,12 +41,12 @@ namespace lab {
 
         fscanf(fp, "%s", temp_str);
         energy_ = 0.0;
-        num_symbol_ = 1 << input_len_;
-        input_symbol_ = new int *[num_symbol_];
-        output_symbol_ = new double *[num_symbol_];
-        symbol_prob_ = new double[num_symbol_];
+        symbol_num_ = 1 << input_len_;
+        input_symbol_ = new int *[symbol_num_];
+        output_symbol_ = new double *[symbol_num_];
+        symbol_prob_ = new double[symbol_num_];
 
-        for (i = 0; i < num_symbol_; i++) {
+        for (i = 0; i < symbol_num_; i++) {
             fscanf(fp, "%d", &sym);
 
             input_symbol_[i] = new int[input_len_];
@@ -70,8 +74,8 @@ namespace lab {
         }
         fclose(fp);
 
-        energy_ = energy_ / num_symbol_;
-        for (i = 0; i < num_symbol_; i++) {
+        energy_ = energy_ / symbol_num_;
+        for (i = 0; i < symbol_num_; i++) {
             for (j = 0; j < output_len_; j++) {
                 output_symbol_[i][j] /= sqrt(energy_);
             }
@@ -101,6 +105,20 @@ namespace lab {
         }
     }
 
+    std::vector<std::complex<double>> Modem::Mapping(const int* bin_cc, int bin_cc_len) {
+        int blk_symbol_num = bin_cc_len / input_len_;
+        std::vector<std::complex<double>> ret(blk_symbol_num);
+        for (int i=0; i<blk_symbol_num; i++) {
+            int symbol_idx = 0;
+            for (int j=0; j<input_len_; j++) {
+                symbol_idx = (symbol_idx << 1) + bin_cc[j + i*input_len_];
+            }
+            ret[i] = symbol_out_[symbol_idx];
+        }
+
+        return ret;
+    }
+
     void Modem::DeMapping(double *bitLin, double *symRin,
                           double *bitLout, int num_bit_in_blk) const {
         int i, j, q, t;
@@ -111,18 +129,18 @@ namespace lab {
         num_point_in_blk = num_bit_in_blk / input_len_;
 
         utility::ProbClip(bitLin, num_bit_in_blk);
-        utility::ProbClip(symRin, num_symbol_ * num_point_in_blk);
+        utility::ProbClip(symRin, symbol_num_ * num_point_in_blk);
 
         for (i = 0; i < num_point_in_blk; i++) //���� prob(x=0 | y);
         {
-            for (q = 0; q < num_symbol_; q++) {
+            for (q = 0; q < symbol_num_; q++) {
                 symbol_prob_[q] = 1.0;
             }
 
             //convert bit extrinsic message to symbol message
             t = i * input_len_;
             for (j = 0; j < input_len_; j++) {
-                for (q = 0; q < num_symbol_; q++) {
+                for (q = 0; q < symbol_num_; q++) {
                     if (input_symbol_[q][j] == 0)
                         symbol_prob_[q] *= bitLin[t];
                     else
@@ -133,15 +151,15 @@ namespace lab {
 
             //compute symbol full message
             sum = 0.0;
-            t = i * num_symbol_;
-            for (q = 0; q < num_symbol_; q++) {
+            t = i * symbol_num_;
+            for (q = 0; q < symbol_num_; q++) {
                 symbol_prob_[q] *= symRin[t];
                 sum += symbol_prob_[q];
                 t++;
             }
 
             //normalized
-            for (q = 0; q < num_symbol_; q++)
+            for (q = 0; q < symbol_num_; q++)
                 symbol_prob_[q] /= sum;
 
             //compute bit extrinsic message for output
@@ -149,7 +167,7 @@ namespace lab {
             for (j = 0; j < input_len_; j++) {
                 P_0 = 0;
                 P_1 = 0;
-                for (q = 0; q < num_symbol_; q++) {
+                for (q = 0; q < symbol_num_; q++) {
                     if (input_symbol_[q][j] == 0)
                         P_0 += symbol_prob_[q];
                     else
@@ -166,15 +184,16 @@ namespace lab {
     }
 
     std::vector<std::complex<double>> Modem::GetConstellations() const {
-        std::vector<std::complex<double>> result(num_symbol_);
-        for (int i = 0; i < num_symbol_; i++) {
-            result[i] = std::complex<double>(output_symbol_[i][0], output_symbol_[i][1]);
-        }
-        return result;
+//        std::vector<std::complex<double>> result(symbol_num_);
+//        for (int i = 0; i < symbol_num_; i++) {
+//            result[i] = std::complex<double>(output_symbol_[i][0], output_symbol_[i][1]);
+//        }
+//        return result;
+        return symbol_out_;
     }
 
     int Modem::GetNumSymbol() const {
-        return num_symbol_;
+        return symbol_num_;
     }
 
     int Modem::GetInputLen() const {
@@ -189,4 +208,49 @@ namespace lab {
         return output_symbol_;
     }
 
+    void Modem::init(const std::string& modem_file) {
+        std::ifstream ifs(modem_file, std::ios_base::binary);
+        if (!ifs.is_open()) {
+            LOG(lab::logger::Error, true) << "Cannot Open " << modem_file << std::endl;
+            exit(-1);
+        }
+
+        std::string temp;
+        ifs >> temp;
+        ifs >> input_len_;
+        ifs >> temp;
+        ifs >> output_len_;
+        ifs >> temp;
+
+        symbol_num_ = 1<<input_len_;
+        symbol_in_ = std::vector<std::vector<int>>(symbol_num_,
+                                                   std::vector<int>(input_len_));
+        symbol_out_ = std::vector<std::complex<double>>(symbol_num_);
+
+        int sym_dec = 0;
+        double energies = 0;
+        for (int i=0; i<symbol_num_; i++) {
+            ifs >> sym_dec;
+            int temp_dec = 0;
+            for (int j=0; j<input_len_; j++) {
+                ifs >> symbol_in_[i][j];
+                temp_dec = (temp_dec << 1) + symbol_in_[i][j];
+            }
+            if (sym_dec != temp_dec || sym_dec != i) {
+                LOG(lab::logger::Error, true) << sym_dec << " is not the binary expression of "
+                                              << temp_dec << std::endl;
+                exit(-1);
+            }
+            double real, imag;
+            ifs >> real >> imag;
+            symbol_out_[i] = std::complex<double>(real, imag);
+            energies += pow(abs(symbol_out_[i]), 2);
+        }
+        ifs.close();
+
+        energies /= symbol_num_;
+        for (int i=0; i<symbol_num_; i++) {
+            symbol_out_[i] /= sqrt(energies);
+        }
+    }
 }

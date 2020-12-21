@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
+#include <complex>
 
 namespace lab {
 
@@ -40,6 +41,7 @@ namespace lab {
         void PrintState(FILE *fp) final;
         double Uniform() final;
         void Normal(double *nn, int len_nn) final;
+        void Normal(std::vector<std::complex<double>> &nn);
         // Singleton pattern
         static CLCRandNum &Get();
     private:
