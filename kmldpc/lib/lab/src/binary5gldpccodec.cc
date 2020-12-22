@@ -5,20 +5,10 @@ Binary5GLDPCCodec::Binary5GLDPCCodec(const toml::value &arguments)
     : BinaryLDPCCodec(arguments),
       code_len_no_puncture_(0), code_len_puncture_(0), lifting_factor_(0),
       cc_no_puncture_(nullptr), cc_soft_no_puncture_(nullptr) {
-  init(arguments);
-}
-
-Binary5GLDPCCodec::~Binary5GLDPCCodec() {
-  delete[] cc_no_puncture_;
-  delete[] cc_soft_no_puncture_;
-}
-
-void Binary5GLDPCCodec::init(const toml::value &arguments) {
   int i, j;
   int row_no, row_deg, col_no;
 
   char temp_str[80] = {' '};
-  char mark[80];
   FILE *fp;
 
   const auto ldpc = toml::find(arguments, "ldpc");
@@ -120,6 +110,11 @@ void Binary5GLDPCCodec::init(const toml::value &arguments) {
   cc_hat_ = new int[code_len_no_puncture_];
 }
 
+Binary5GLDPCCodec::~Binary5GLDPCCodec() {
+  delete[] cc_no_puncture_;
+  delete[] cc_soft_no_puncture_;
+}
+
 void Binary5GLDPCCodec::Encoder(int *uu, int *cc) const {
   int i, j, t;
 
@@ -127,26 +122,22 @@ void Binary5GLDPCCodec::Encoder(int *uu, int *cc) const {
     cc_no_puncture_[i] = 0;
 
   //codeword = [parity_check_bits information_bits]
-  switch (encoder_active_) {
-    case 0:
-      for (i = 0; i < code_dim_; i++)
-        uu[i] = 0;
-      for (i = 0; i < code_len_puncture_; i++)
-        cc[i] = 0;
-      break;
-    case 1:
-      for (t = 0; t < code_dim_; t++)
-        cc_no_puncture_[t] = uu[t];
-      for (t = 0; t < code_chk_; t++) {
-        cc_no_puncture_[code_dim_ + t] = 0;
-        for (j = 0; j < code_dim_; j++)
-          cc_no_puncture_[code_dim_ + t] ^= (cc_no_puncture_[j] & enc_h_[t][j]);
-      }
-      for (t = 0; t < code_len_puncture_; t++) {
-        cc[t] = cc_no_puncture_[t + lifting_factor_ * 2];
-      }
-      break;
-    default:break;
+  if (encoder_active_) {
+    for (t = 0; t < code_dim_; t++)
+      cc_no_puncture_[t] = uu[t];
+    for (t = 0; t < code_chk_; t++) {
+      cc_no_puncture_[code_dim_ + t] = 0;
+      for (j = 0; j < code_dim_; j++)
+        cc_no_puncture_[code_dim_ + t] ^= (cc_no_puncture_[j] & enc_h_[t][j]);
+    }
+    for (t = 0; t < code_len_puncture_; t++) {
+      cc[t] = cc_no_puncture_[t + lifting_factor_ * 2];
+    }
+  } else {
+    for (i = 0; i < code_dim_; i++)
+      uu[i] = 0;
+    for (i = 0; i < code_len_puncture_; i++)
+      cc[i] = 0;
   }
 }
 

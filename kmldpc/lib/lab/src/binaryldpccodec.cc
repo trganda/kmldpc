@@ -7,24 +7,6 @@ BinaryLDPCCodec::BinaryLDPCCodec(const toml::value &arguments)
       num_row_(0), num_col_(0), dec_h_(nullptr), enc_h_(nullptr),
       syndrom_soft_(nullptr), row_head_(nullptr), col_head_(nullptr),
       cc_hat_(nullptr), max_iter_(0), success_(0) {
-  init(arguments);
-}
-
-BinaryLDPCCodec::~BinaryLDPCCodec() {
-  FreeTannerGraph();
-
-  if (encoder_active_ != 0) {
-    for (int i = 0; i < num_row_; i++) {
-      delete[]enc_h_[i];
-    }
-    delete[]enc_h_;
-  }
-
-  delete[]cc_hat_;
-  delete[]syndrom_soft_;
-}
-
-void BinaryLDPCCodec::init(const toml::value &arguments) {
   int i, j;
   int row_no, row_deg, col_no;
 
@@ -123,6 +105,20 @@ fclose(fq);
   }
 
   cc_hat_ = new int[code_len_];
+}
+
+BinaryLDPCCodec::~BinaryLDPCCodec() {
+  FreeTannerGraph();
+
+  if (encoder_active_ != 0) {
+    for (int i = 0; i < num_row_; i++) {
+      delete[]enc_h_[i];
+    }
+    delete[]enc_h_;
+  }
+
+  delete[]cc_hat_;
+  delete[]syndrom_soft_;
 }
 
 void BinaryLDPCCodec::Encoder(int *uu, int *cc) const {

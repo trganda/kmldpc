@@ -1,10 +1,10 @@
 # range
 [range]
-    minimum_snr = 15.0
-    maximum_snr = 15.0
-    step_snr = 1.0
-    maximum_error_number = 1
-    maximum_block_number = 1
+    minimum_snr = 45.0
+    maximum_snr = 50.0
+    step_snr = 5.0
+    maximum_error_number = 200
+    maximum_block_number = 200
 
 [xcodec]
     # default, using normal ldcp.
@@ -15,7 +15,7 @@
     metric_iter = 5
 
 [histogram]
-    enable = false
+    enable = true
 
 [ldpc]
     max_iter = 50

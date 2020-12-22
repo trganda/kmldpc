@@ -17,14 +17,52 @@
 
 #include "kmeans.h"
 
+typedef struct CodecData {
+  CodecData(const CodecData &codec_data) {
+    uu_len_ = codec_data.uu_len_;
+    cc_len_ = codec_data.cc_len_;
+    uu_ = new int[uu_len_];
+    uu_hat_ = new int[uu_len_];
+    cc_ = new int[cc_len_];
+    cc_hat_ = new int[cc_len_];
+  }
+
+  CodecData(int uu_len, int cc_len) {
+    uu_len_ = uu_len;
+    cc_len_ = cc_len;
+    uu_ = new int[uu_len_];
+    uu_hat_ = new int[uu_len_];
+    cc_ = new int[cc_len_];
+    cc_hat_ = new int[cc_len_];
+  }
+
+  ~CodecData() {
+    delete[] uu_;
+    delete[] uu_hat_;
+    delete[] cc_;
+    delete[] cc_hat_;
+  }
+
+  // Uncoded codeword
+  int *uu_;
+  int *uu_hat_;
+  int uu_len_;
+  // Encoded codeword
+  int *cc_;
+  int *cc_hat_;
+  int cc_len_;
+} CodecData;
+
 class LDPCLinearSystem {
  public:
   explicit LDPCLinearSystem(toml::value arguments);
-  virtual ~LDPCLinearSystem();
+  virtual ~LDPCLinearSystem() = default;
 
   void Simulator();
  private:
-  void Run(double snr, bool histogram_enable);
+  void Run(lab::ModemLinearSystem &mls, lab::CSourceSink &ssink, CodecData &cdata,
+           double snr, bool histogram_enable,
+           std::pair<double, double> &ber, std::pair<double, double> &fer);
 
  private:
   const toml::value arguments_;
@@ -38,17 +76,10 @@ class LDPCLinearSystem {
   int max_err_blk_;
   // Maximum blocks for simulation
   int max_num_blk_;
-  // Uncoded codeword
-  int *uu_;
-  int *uu_hat_;
-  int uu_len_;
-  // Encoded codeword
-  int *cc_;
-  int *cc_hat_;
-  int cc_len_;
 
   lab::CSourceSink source_sink_;
   lab::XORSegCodec codec_;
+  CodecData codec_data_;
   lab::ModemLinearSystem modem_linear_system_;
 };
 

@@ -15,6 +15,13 @@ ModemLinearSystem::ModemLinearSystem(const toml::value &arguments, int cc_len)
   sym_prob_ = new double[(cc_len_ / input_len_) * symbol_num_];
 }
 
+ModemLinearSystem::ModemLinearSystem(const ModemLinearSystem &mls)
+    : Modem(mls), cc_len_(mls.cc_len_),
+      sigma_(mls.sigma_), var_(mls.var_),
+      xx_(mls.xx_), yy_(mls.yy_) {
+  sym_prob_ = new double[(cc_len_ / input_len_) * symbol_num_];
+}
+
 ModemLinearSystem::~ModemLinearSystem() {
   delete[]sym_prob_;
 }

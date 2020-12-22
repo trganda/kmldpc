@@ -13,7 +13,8 @@ namespace lab {
 
 class ModemLinearSystem : public Modem {
  public:
-  explicit ModemLinearSystem(const toml::value &arguments, int cc_len);
+  ModemLinearSystem(const toml::value &arguments, int cc_len);
+  ModemLinearSystem(const ModemLinearSystem &mls);
   ~ModemLinearSystem() override;
 
   void PartitionModemLSystem(const int *cc,

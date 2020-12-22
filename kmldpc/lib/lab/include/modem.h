@@ -14,6 +14,7 @@ namespace lab {
 
 class Modem {
  public:
+  Modem() = default;
   explicit Modem(const toml::value &arguments);
   virtual ~Modem() = default;
  public:

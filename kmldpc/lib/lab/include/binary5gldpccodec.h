@@ -11,10 +11,9 @@ namespace lab {
 
 class Binary5GLDPCCodec : public BinaryLDPCCodec {
  public:
+  Binary5GLDPCCodec() = default;
   explicit Binary5GLDPCCodec(const toml::value &arguments);
   ~Binary5GLDPCCodec() override;
-
-  void init(const toml::value &arguments) override;
 
   void Encoder(int *uu, int *cc) const override;
 

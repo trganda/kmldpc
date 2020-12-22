@@ -1,5 +1,5 @@
 # CMakeList.txt : CMake project for kmldpc, include source and define
-
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 # Will add __FILENAME__ macros for all source files, which is the filename without full find_path
 # Courtesy of SO
 function(define_file_basename_for_sources targetname)
@@ -45,6 +45,7 @@ if (BUILD_STATIC)
     endif()
 endif()
 
+find_package(Threads REQUIRED)
 find_package(matio REQUIRED)
 if(MATIO_FOUND)
     include_directories(${MATIO_INCLUDE_DIR})
@@ -57,7 +58,7 @@ add_subdirectory("lib")
 
 # Add source to this project's executable.
 add_executable (kmldpc "kmldpc.cpp" ${SRC})
-target_link_libraries(kmldpc ${MATIO_LIBRARY} lab toml11)
+target_link_libraries(kmldpc PRIVATE ${MATIO_LIBRARY} lab toml11 Threads::Threads)
 
 # add the binary tree to the search path for include files
 target_include_directories(kmldpc PUBLIC

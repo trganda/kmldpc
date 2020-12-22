@@ -12,10 +12,10 @@ namespace lab {
 
 class BinaryLDPCCodec {
  public:
+  BinaryLDPCCodec() = default;
   explicit BinaryLDPCCodec(const toml::value &arguments);
   virtual ~BinaryLDPCCodec();
  public:
-  virtual void init(const toml::value &arguments);
   virtual void Encoder(int *uu, int *cc) const;
   virtual int Decoder(const double *M2V, int *uu_hat, int iter_count);
 

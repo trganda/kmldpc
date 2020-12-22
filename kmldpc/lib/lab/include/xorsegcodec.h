@@ -25,8 +25,8 @@ class XORSegCodec {
   void Encoder(int *uu, int *cc);
   void Decoder(ModemLinearSystem &modem_linear_system,
                const std::vector<std::complex<double>> &hHats, int *uu_hat);
-  std::vector<double> GetHistogramData(ModemLinearSystem &modem_linear_system,
-                                       const std::vector<std::complex<double>> &hHats, int *uu_hat);
+  std::vector<double> GetHistogramData(ModemLinearSystem &mlsystem,
+                                       const std::vector<std::complex<double>> &hhats, int *uu_hat);
   // Getter
   int GetUuLen() const;
   int GetCcLen() const;
@@ -47,8 +47,8 @@ class XORSegCodec {
   bool using_syndrom_metric_;
   int uu_len_;         // length of uu for LDPC
   int cc_len_;         // length of cc for LDPC
-  int *rr_;             // hard decision
-  double *bit_l_in_;     // bit input probability
+  int *rr_;            // hard decision
+  double *bit_l_in_;   // bit input probability
   double *bit_l_out_;  // bit out probability
 };
 

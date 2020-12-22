@@ -67,9 +67,9 @@ void XORSegCodec::Decoder(ModemLinearSystem &modem_linear_system,
   }
 }
 
-std::vector<double> XORSegCodec::GetHistogramData(ModemLinearSystem &modem_linear_system,
-                                                  const std::vector<std::complex<double>> &hHats, int *uu_hat) {
-  return GetMetrics(modem_linear_system, hHats, uu_hat);
+std::vector<double> XORSegCodec::GetHistogramData(ModemLinearSystem &mlsystem,
+                                                  const std::vector<std::complex<double>> &hhats, int *uu_hat) {
+  return GetMetrics(mlsystem, hhats, uu_hat);
 }
 
 // Getter
