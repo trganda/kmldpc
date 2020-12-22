@@ -16,41 +16,41 @@
 
 namespace lab {
 
-    class XORSegCodec {
-    public:
-        XORSegCodec() = default;
-        explicit XORSegCodec(const toml::value& arguments);
-        virtual ~XORSegCodec();
+class XORSegCodec {
+ public:
+  XORSegCodec() = default;
+  explicit XORSegCodec(const toml::value &arguments);
+  virtual ~XORSegCodec();
 
-        void Encoder(int *uu, int *cc);
-        void Decoder(ModemLinearSystem &modem_linear_system,
-                     const std::vector<std::complex<double>> &hHats, int *uu_hat);
-        std::vector<double> GetHistogramData(ModemLinearSystem &modem_linear_system,
-                                             const std::vector<std::complex<double>> &hHats, int *uu_hat);
-        // Getter
-        int GetUuLen() const;
-        int GetCcLen() const;
-    private:
-        void DeMapping(ModemLinearSystem &modem_linear_system,
-                       std::vector<std::pair<int, std::complex<double>>> &thetaList) const;
-        int GetParityCheck() const;
-        std::vector<double> GetMetrics(ModemLinearSystem &modem_linear_system,
+  void Encoder(int *uu, int *cc);
+  void Decoder(ModemLinearSystem &modem_linear_system,
+               const std::vector<std::complex<double>> &hHats, int *uu_hat);
+  std::vector<double> GetHistogramData(ModemLinearSystem &modem_linear_system,
                                        const std::vector<std::complex<double>> &hHats, int *uu_hat);
-        double Metric(BinaryLDPCCodec *codec, int *uu_hat);
+  // Getter
+  int GetUuLen() const;
+  int GetCcLen() const;
+ private:
+  void DeMapping(ModemLinearSystem &modem_linear_system,
+                 std::vector<std::pair<int, std::complex<double>>> &thetaList) const;
+  int GetParityCheck() const;
+  std::vector<double> GetMetrics(ModemLinearSystem &modem_linear_system,
+                                 const std::vector<std::complex<double>> &hHats, int *uu_hat);
+  double Metric(BinaryLDPCCodec *codec, int *uu_hat);
 
-    private:
-        Binary5GLDPCCodec* ldpc_codec_5g_;
-        BinaryLDPCCodec* ldpc_codec_;
+ private:
+  Binary5GLDPCCodec *ldpc_codec_5g_;
+  BinaryLDPCCodec *ldpc_codec_;
 
-        int iter_cnt_;       // iteration times while using LDPC on 5G
-        bool using_ldpc_5g_;
-        bool using_syndrom_metric_;
-        int uu_len_;         // length of uu for LDPC
-        int cc_len_;         // length of cc for LDPC
-        int *rr_;             // hard decision
-        double *bit_l_in_;     // bit input probability
-        double *bit_l_out_;  // bit out probability
-    };
+  int iter_cnt_;       // iteration times while using LDPC on 5G
+  bool using_ldpc_5g_;
+  bool using_syndrom_metric_;
+  int uu_len_;         // length of uu for LDPC
+  int cc_len_;         // length of cc for LDPC
+  int *rr_;             // hard decision
+  double *bit_l_in_;     // bit input probability
+  double *bit_l_out_;  // bit out probability
+};
 
 }
 

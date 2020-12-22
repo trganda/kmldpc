@@ -11,33 +11,33 @@
 
 namespace lab {
 
-    class ModemLinearSystem : public Modem{
-    public:
-        explicit ModemLinearSystem(const toml::value& arguments, int cc_len);
-        ~ModemLinearSystem() override;
+class ModemLinearSystem : public Modem {
+ public:
+  explicit ModemLinearSystem(const toml::value &arguments, int cc_len);
+  ~ModemLinearSystem() override;
 
-        void PartitionModemLSystem(const int *cc,
-                                   std::vector<std::complex<double>> &select_h);
-        void DeMapping(std::vector<std::pair<int, std::complex<double>>> &thetaList,
-                       double* bitLin, double* bitLout);
-        std::vector<std::complex<double>> GetRecvSymbol() const;
+  void PartitionModemLSystem(const int *cc,
+                             std::vector<std::complex<double>> &select_h);
+  void DeMapping(std::vector<std::pair<int, std::complex<double>>> &thetaList,
+                 double *bitLin, double *bitLout);
+  std::vector<std::complex<double>> GetRecvSymbol() const;
 
-    public:
-        void SetSigma(double sigma);
-        void SetVar(double var);
-    private:
-        void SoftDemodulation(std::vector<std::pair<int, std::complex<double>>> &thetaList) const;
-        void PartitionHAWGNSystem(std::vector<std::complex<double>>& xx,
-                                  std::vector<std::complex<double>>& selected_h);
-        void SoftAWGNDemodulation(const std::complex<double>& yy, double *sym_prob,
-                                  std::complex<double> &theta_h) const;
-    private:
-        int cc_len_;
-        double sigma_;
-        double var_;
-        double *sym_prob_;
-        std::vector<std::complex<double>> yy_;
-    };
+ public:
+  void SetSigma(double sigma);
+  void SetVar(double var);
+ private:
+  void SoftDemodulation(std::vector<std::pair<int, std::complex<double>>> &thetaList) const;
+  void PartitionHAWGNSystem(std::vector<std::complex<double>> &selected_h);
+  void SoftAWGNDemodulation(const std::complex<double> &yy, double *sym_prob,
+                            std::complex<double> &theta_h) const;
+ private:
+  int cc_len_;
+  double sigma_;
+  double var_;
+  double *sym_prob_;
+  std::vector<std::complex<double>> xx_;
+  std::vector<std::complex<double>> yy_;
+};
 
 }
 

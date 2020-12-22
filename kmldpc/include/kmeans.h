@@ -11,30 +11,30 @@
 
 namespace kmldpc {
 
-    class KMeans {
-    public:
-        explicit KMeans(std::vector<std::complex<double>> &data,
-                        std::vector<std::complex<double>> &constellations,
-                        int iter);
+class KMeans {
+ public:
+  explicit KMeans(std::vector<std::complex<double>> &data,
+                  std::vector<std::complex<double>> &constellations,
+                  int iter);
 
-        ~KMeans();
+  ~KMeans();
 
-    public:
-        std::vector<std::complex<double>> GetClusters();
+ public:
+  std::vector<std::complex<double>> GetClusters();
 
-        std::vector<int> GetIdx();
+  std::vector<int> GetIdx();
 
-        void Run();
+  void Run();
 
-        void DumpToMat(std::string &filename, std::vector<std::complex<double>> &append);
+  void DumpToMat(std::string &filename, std::vector<std::complex<double>> &append);
 
-    private:
-        const std::vector<std::complex<double>> data_;
-        const std::vector<std::complex<double>> constellations_;
-        std::vector<std::complex<double>> clusters_;
-        std::vector<int> idx_;
-        unsigned int iter_;
-    };
+ private:
+  const std::vector<std::complex<double>> data_;
+  const std::vector<std::complex<double>> constellations_;
+  std::vector<std::complex<double>> clusters_;
+  std::vector<int> idx_;
+  unsigned int iter_;
+};
 
 } // namespace
 
