@@ -36,22 +36,23 @@ void LDPCLinearSystem::Simulator() {
   const bool histogram_enable = toml::find<bool>(histogram, "enable");
 
   std::vector<std::thread> threads(max_threads);
-  std::vector<CodecData> cdatas(max_threads, this->codec_data_);
   std::vector<lab::CSourceSink> sources(max_threads);
+  std::vector<CodecData> cdatas(max_threads, this->codec_data_);
+  std::vector<lab::XORSegCodec> codecs(max_threads, this->codec_);
   std::vector<lab::ModemLinearSystem> mlss(max_threads, this->modem_linear_system_);
 
   for (unsigned long i = 0; i < max_threads; i++) {
-//    threads[i] = std::thread(&LDPCLinearSystem::Run, this, std::ref(mlss[i]), std::ref(sources[i]),
-//                             std::ref(cdatas[i]), (min_snr_ + step_snr_ * i), histogram_enable,
-//                             std::ref(ber_result[i]), std::ref(fer_result[i]));
-    Run(mlss[i], sources[i], cdatas[i],
-        (min_snr_ + step_snr_ * i), histogram_enable,
-        ber_result[i], fer_result[i]);
+    threads[i] = std::thread(&LDPCLinearSystem::Run, this, std::ref(codecs[i]), std::ref(mlss[i]), std::ref(sources[i]),
+                             std::ref(cdatas[i]), (min_snr_ + step_snr_ * i), histogram_enable,
+                             std::ref(ber_result[i]), std::ref(fer_result[i]));
+//    Run(codec_, mlss[i], sources[i], cdatas[i],
+//        (min_snr_ + step_snr_ * i), histogram_enable,
+//        ber_result[i], fer_result[i]);
   }
 
-//  for (auto &entry : threads) {
-//    entry.join();
-//  }
+  for (auto &entry : threads) {
+    entry.join();
+  }
 
   LOG(lab::logger::Info, true) << "BER Result" << std::endl;
   for (auto item : ber_result) {
@@ -72,9 +73,14 @@ void LDPCLinearSystem::Simulator() {
   }
 }
 
-void LDPCLinearSystem::Run(lab::ModemLinearSystem &mls, lab::CSourceSink &ssink, CodecData &cdata,
-                           double snr, bool histogram_enable,
-                           std::pair<double, double> &ber, std::pair<double, double> &fer) {
+void LDPCLinearSystem::Run(lab::XORSegCodec &codec,
+                           lab::ModemLinearSystem &mls,
+                           lab::CSourceSink &ssink,
+                           CodecData &cdata,
+                           double snr,
+                           bool histogram_enable,
+                           std::pair<double, double> &ber,
+                           std::pair<double, double> &fer) {
   //var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
   double var = pow(10.0, -0.1 * (snr));
   double sigma = sqrt(var);
@@ -92,7 +98,7 @@ void LDPCLinearSystem::Run(lab::ModemLinearSystem &mls, lab::CSourceSink &ssink,
       && ssink.GetNumErrBlk() < max_err_blk_)) {
 
     ssink.GetBitStr(cdata.uu_, cdata.uu_len_);
-    codec_.Encoder(cdata.uu_, cdata.cc_);
+    codec.Encoder(cdata.uu_, cdata.cc_);
 
     // Generate H
     double real;
@@ -133,7 +139,7 @@ void LDPCLinearSystem::Run(lab::ModemLinearSystem &mls, lab::CSourceSink &ssink,
                                   << std::endl;
 
     if (histogram_enable) {
-      auto metrics = codec_.GetHistogramData(mls, h_hats, cdata.uu_hat_);
+      auto metrics = codec.GetHistogramData(mls, h_hats, cdata.uu_hat_);
       auto idx_of_min = std::distance(metrics.begin(),
                                       min_element(metrics.begin(), metrics.end()));
       for (size_t i = idx_of_min; i < idx_of_min + metrics.size(); i++) {
@@ -141,10 +147,10 @@ void LDPCLinearSystem::Run(lab::ModemLinearSystem &mls, lab::CSourceSink &ssink,
       }
       out << std::endl;
     } else {
-      codec_.Decoder(mls, h_hats, cdata.uu_hat_);
+      codec.Decoder(mls, h_hats, cdata.uu_hat_);
     }
 
-    ssink.CntErr(cdata.uu_, cdata.uu_hat_, codec_.GetUuLen(), 1);
+    ssink.CntErr(cdata.uu_, cdata.uu_hat_, codec.GetUuLen(), 1);
 
     if (int(ssink.GetNumTotBlk()) > 0 && int(ssink.GetNumTotBlk()) % 100 == 0) {
       ssink.PrintResult(snr);

@@ -2,6 +2,22 @@
 
 namespace lab {
 
+XORSegCodec::XORSegCodec(const XORSegCodec &codec)
+    : iter_cnt_(codec.iter_cnt_), using_ldpc_5g_(codec.using_ldpc_5g_),
+      using_syndrom_metric_(codec.using_syndrom_metric_),
+      uu_len_(codec.uu_len_), cc_len_(codec.cc_len_) {
+  if (using_ldpc_5g_) {
+    ldpc_codec_5g_ = new Binary5GLDPCCodec(*codec.ldpc_codec_5g_);
+    ldpc_codec_ = nullptr;
+  } else {
+    ldpc_codec_5g_ = nullptr;
+    ldpc_codec_ = new BinaryLDPCCodec(*codec.ldpc_codec_);
+  }
+  rr_ = new int[cc_len_];
+  bit_l_in_ = new double[cc_len_];
+  bit_l_out_ = new double[cc_len_];
+}
+
 XORSegCodec::XORSegCodec(const toml::value &arguments) {
   const auto xcodec = toml::find(arguments, "xcodec");
 

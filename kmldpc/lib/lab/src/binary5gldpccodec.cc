@@ -1,6 +1,14 @@
 #include "binary5gldpccodec.h"
 
 namespace lab {
+
+Binary5GLDPCCodec::Binary5GLDPCCodec(const Binary5GLDPCCodec &codec)
+    : BinaryLDPCCodec(codec), code_len_no_puncture_(codec.code_len_no_puncture_),
+      code_len_puncture_(codec.code_len_puncture_), lifting_factor_(codec.lifting_factor_) {
+  cc_no_puncture_ = new int[code_len_no_puncture_];
+  cc_soft_no_puncture_ = new double[code_len_no_puncture_];
+}
+
 Binary5GLDPCCodec::Binary5GLDPCCodec(const toml::value &arguments)
     : BinaryLDPCCodec(arguments),
       code_len_no_puncture_(0), code_len_puncture_(0), lifting_factor_(0),
@@ -30,7 +38,6 @@ Binary5GLDPCCodec::Binary5GLDPCCodec(const toml::value &arguments)
   coderate_ = (double) code_dim_ / code_len_puncture_;
 
   cc_no_puncture_ = new int[code_len_no_puncture_];
-
   cc_soft_no_puncture_ = new double[code_len_no_puncture_];
 
   row_head_ = new Edge[num_row_];

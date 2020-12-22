@@ -1,6 +1,73 @@
 #include "binaryldpccodec.h"
 
 namespace lab {
+
+BinaryLDPCCodec::BinaryLDPCCodec(const BinaryLDPCCodec &codec)
+    : code_dim_(codec.code_dim_), code_len_(codec.code_len_), code_chk_(codec.code_chk_),
+      coderate_(codec.coderate_), encoder_active_(codec.encoder_active_),
+      num_row_(codec.num_row_), num_col_(codec.num_col_),
+      max_iter_(codec.max_iter_), success_(0) {
+  syndrom_soft_ = new double[code_dim_];
+  cc_hat_ = new int[code_len_];
+
+  row_head_ = new Edge[num_row_];
+  col_head_ = new Edge[num_col_];
+
+  for (int i = 0; i < num_row_; i++) {
+    (row_head_ + i)->m_row_no = i;
+    (row_head_ + i)->m_col_no = -1;
+    (row_head_ + i)->left = row_head_ + i;
+    (row_head_ + i)->right = row_head_ + i;
+    (row_head_ + i)->up = row_head_ + i;
+    (row_head_ + i)->down = row_head_ + i;
+  }
+
+  for (int i = 0; i < num_col_; i++) {
+    (col_head_ + i)->m_row_no = -1;
+    (col_head_ + i)->m_col_no = i;
+    (col_head_ + i)->left = col_head_ + i;
+    (col_head_ + i)->right = col_head_ + i;
+    (col_head_ + i)->up = col_head_ + i;
+    (col_head_ + i)->down = col_head_ + i;
+  }
+
+  Edge *temp_edge;
+  Edge *head = nullptr;
+  for (int i = 0; i < num_row_; i++) {
+    head = (codec.row_head_ + i)->right;
+    while(head->m_col_no != -1) {
+      temp_edge = new Edge;
+      temp_edge->m_row_no = head->m_row_no;
+      temp_edge->m_col_no = head->m_col_no;
+
+      temp_edge->right = (row_head_ + i)->right;
+      (row_head_ + i)->right = temp_edge;
+      temp_edge->left = row_head_ + i;
+      (temp_edge->right)->left = temp_edge;
+
+      temp_edge->down = (col_head_ + head->m_col_no)->down;
+      (col_head_ + head->m_col_no)->down = temp_edge;
+      temp_edge->up = col_head_ + head->m_col_no;
+      (temp_edge->down)->up = temp_edge;
+
+      head = head->right;
+    }
+  }
+
+  if (encoder_active_) {
+    enc_h_ = new char *[num_row_];
+    dec_h_ = nullptr;
+    for (int i=0; i<num_row_; i++) {
+      enc_h_[i] = new char[num_col_];
+    }
+    for (int i=0; i<num_row_; i++) {
+      for (int j=0; j<num_col_; j++) {
+        enc_h_[i][j] = codec.enc_h_[i][j];
+      }
+    }
+  }
+}
+
 BinaryLDPCCodec::BinaryLDPCCodec(const toml::value &arguments)
     : code_dim_(0), code_len_(0), code_chk_(0),
       coderate_(0.0), encoder_active_(false),
@@ -110,15 +177,15 @@ fclose(fq);
 BinaryLDPCCodec::~BinaryLDPCCodec() {
   FreeTannerGraph();
 
-  if (encoder_active_ != 0) {
+  if (encoder_active_) {
     for (int i = 0; i < num_row_; i++) {
-      delete[]enc_h_[i];
+      delete[] enc_h_[i];
     }
-    delete[]enc_h_;
+    delete[] enc_h_;
   }
 
-  delete[]cc_hat_;
-  delete[]syndrom_soft_;
+  delete[] cc_hat_;
+  delete[] syndrom_soft_;
 }
 
 void BinaryLDPCCodec::Encoder(int *uu, int *cc) const {

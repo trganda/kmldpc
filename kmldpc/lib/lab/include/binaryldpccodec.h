@@ -13,6 +13,7 @@ namespace lab {
 class BinaryLDPCCodec {
  public:
   BinaryLDPCCodec() = default;
+  BinaryLDPCCodec(const BinaryLDPCCodec &codec);
   explicit BinaryLDPCCodec(const toml::value &arguments);
   virtual ~BinaryLDPCCodec();
  public:
