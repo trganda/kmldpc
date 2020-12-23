@@ -28,9 +28,8 @@ class XORSegCodec {
                const std::vector<std::complex<double>> &hHats, int *uu_hat);
   std::vector<double> GetHistogramData(ModemLinearSystem &mlsystem,
                                        const std::vector<std::complex<double>> &hhats, int *uu_hat);
-  // Getter
-  int GetUuLen() const;
-  int GetCcLen() const;
+  int uu_len() const;
+  int cc_len() const;
  private:
   void DeMapping(ModemLinearSystem &modem_linear_system,
                  std::vector<std::pair<int, std::complex<double>>> &thetaList) const;
@@ -40,7 +39,6 @@ class XORSegCodec {
   double Metric(BinaryLDPCCodec *codec, int *uu_hat);
 
  private:
-  Binary5GLDPCCodec *ldpc_codec_5g_;
   BinaryLDPCCodec *ldpc_codec_;
 
   int iter_cnt_;       // iteration times while using LDPC on 5G

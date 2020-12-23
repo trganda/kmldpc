@@ -37,8 +37,6 @@ namespace utility {
 // using inline to avoid multi definition of function
 void MatrixProd(int *uu, int *cc, int **G, int dim, int len);
 
-double Seqmax(double *x, int num);
-
 void ProbClip(double *xx, int len_xx);
 
 std::ostream &operator<<(std::ostream &os, const std::complex<double> &c);

@@ -24,8 +24,8 @@ class ModemLinearSystem : public Modem {
   std::vector<std::complex<double>> GetRecvSymbol() const;
 
  public:
-  void SetSigma(double sigma);
-  void SetVar(double var);
+  void set_sigma(double sigma);
+  void set_var(double var);
  private:
   void SoftDemodulation(std::vector<std::pair<int, std::complex<double>>> &thetaList) const;
   void PartitionHAWGNSystem(std::vector<std::complex<double>> &selected_h);

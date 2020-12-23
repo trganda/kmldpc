@@ -8,14 +8,14 @@
 
 int main() {
   std::string dirname = "logs";
-  std::string logFileName = lab::logger::Log::GetCurrentSystemTime() + "-kmldpc.logger";
+  std::string logFileName = lab::logger::Log::get_time() + "-kmldpc.logger";
   std::ofstream logFile(dirname + "/" + logFileName);
   lab::logger::TeeStream logTee(logFile, std::cout);
 
   if (logFile.is_open() && logFile.good())
-    lab::logger::Log::Get().SetLogStream(logTee);
+    lab::logger::Log::get().set_log_stream(logTee);
   else
-    lab::logger::Log::Get().SetLogStream(std::cout);
+    lab::logger::Log::get().set_log_stream(std::cout);
 
   int flag0, flag1;
 
@@ -24,7 +24,7 @@ int main() {
 
   flag1 = 0;
   lab::CWHRandNum::Get().SetSeed(flag1);
-  lab::logger::Log::Get().SetLevel(lab::logger::Info);
+  lab::logger::Log::get().set_log_level(lab::logger::Info);
   LOG(lab::logger::Info, true) << "Start simulation" << std::endl;
 
   std::ifstream ifs("config.toml", std::ios_base::binary);

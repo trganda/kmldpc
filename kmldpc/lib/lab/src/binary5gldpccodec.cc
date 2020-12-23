@@ -286,7 +286,7 @@ int Binary5GLDPCCodec::Decoder(const double *M2V, int *uu_hat, int iter_cnt) {
   return iter + (iter < max_iter_);
 }
 
-int Binary5GLDPCCodec::GetCodeenPuncture() const {
+int Binary5GLDPCCodec::code_len_puncture() const {
   return code_len_puncture_;
 }
 

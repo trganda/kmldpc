@@ -17,10 +17,8 @@ class Binary5GLDPCCodec : public BinaryLDPCCodec {
   ~Binary5GLDPCCodec() override;
 
   void Encoder(int *uu, int *cc) const override;
-
   int Decoder(const double *M2V, int *uu_hat, int iter_cnt) override;
-
-  int GetCodeenPuncture() const;
+  int code_len_puncture() const;
 
  private:
   void SystH_5G();

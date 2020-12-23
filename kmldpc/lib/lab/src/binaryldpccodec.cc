@@ -374,27 +374,27 @@ void BinaryLDPCCodec::InitMsg() const {
   }
 }
 
-int BinaryLDPCCodec::GetCodeDim() const {
+int BinaryLDPCCodec::code_dim() const {
   return code_dim_;
 }
 
-int BinaryLDPCCodec::GetCodeLen() const {
+int BinaryLDPCCodec::code_len() const {
   return code_len_;
 }
 
-int BinaryLDPCCodec::GetNumRow() const {
+int BinaryLDPCCodec::num_row() const {
   return num_row_;
 }
 
-double *BinaryLDPCCodec::GetSyndromSoft() const {
+double *BinaryLDPCCodec::syndrom_soft() const {
   return syndrom_soft_;
 }
 
-int *BinaryLDPCCodec::GetCcHat() const {
+int *BinaryLDPCCodec::cc_hat() const {
   return cc_hat_;
 }
 
-int BinaryLDPCCodec::GetMaxIter() const {
+int BinaryLDPCCodec::max_iter() const {
   return max_iter_;
 }
 

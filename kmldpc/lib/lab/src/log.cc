@@ -5,10 +5,10 @@ namespace logger {
 TeeBuf::TeeBuf(std::streambuf *sbtofile, std::streambuf *sbtoscreen)
     : strbuf_to_file_(sbtofile),
       strbuf_to_stdout_(sbtoscreen),
-      _flag(true) {}
+      flag_(true) {}
 
-void TeeBuf::SetFlag(bool flag) {
-  this->_flag = flag;
+void TeeBuf::set_flag(bool flag) {
+  this->flag_ = flag;
 }
 
 int TeeBuf::overflow(int c) {
@@ -16,7 +16,7 @@ int TeeBuf::overflow(int c) {
     return !EOF;
   } else {
     const int r1 = strbuf_to_file_->sputc(c);
-    if (_flag) {
+    if (flag_) {
       const int r2 = strbuf_to_stdout_->sputc(c);
       return r1 == EOF || r2 == EOF ? EOF : c;
     } else {
@@ -27,7 +27,7 @@ int TeeBuf::overflow(int c) {
 
 int TeeBuf::sync() {
   const int r1 = strbuf_to_file_->pubsync();
-  if (_flag) {
+  if (flag_) {
     const int r2 = strbuf_to_stdout_->pubsync();
     return r1 == 0 && r2 == 0 ? 0 : -1;
   } else {
@@ -39,34 +39,34 @@ TeeStream::TeeStream(std::ostream &o1, std::ostream &o2)
     : std::ostream(&tbuf_),
       tbuf_(o1.rdbuf(), o2.rdbuf()) {}
 
-TeeBuf &TeeStream::GetTeeBuf() {
+TeeBuf &TeeStream::tbuf() {
   return tbuf_;
 }
 
-void Log::SetLogStream(std::ostream &stream) {
+void Log::set_log_stream(std::ostream &stream) {
   this->log_stream_ = &stream;
 }
 
-Log &Log::SetLevel(Level level) {
+Log &Log::set_log_level(Level level) {
   log_level_ = level;
   return *this;
 }
 
-Level Log::GetLevel() {
+Level Log::log_level() const {
   return log_level_;
 }
 
-std::ostream &Log::GetStream() {
+std::ostream &Log::log_stream() const {
   return *log_stream_;
 }
 
-std::ostream &Log::GetStream(bool flag) {
+std::ostream &Log::log_stream(bool flag) const {
   auto ptr = (TeeStream *) log_stream_;
-  ptr->GetTeeBuf().SetFlag(flag);
+  ptr->tbuf().set_flag(flag);
   return *log_stream_;
 }
 
-std::string Log::GetCurrentSystemTime() {
+std::string Log::get_time() {
   std::time_t secSinceEpoch = std::chrono::system_clock::to_time_t(
       std::chrono::system_clock::now());
   struct tm *calendarTime = localtime(&secSinceEpoch);
@@ -76,7 +76,7 @@ std::string Log::GetCurrentSystemTime() {
   return std::string(usrdefFormat);
 }
 
-Log &Log::Get() {
+Log &Log::get() {
   static Log instance;
   return instance;
 }

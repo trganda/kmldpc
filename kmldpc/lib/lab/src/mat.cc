@@ -2,6 +2,8 @@
 
 namespace lab {
 
+#ifndef NO_MATIO
+
 Mat::Mat(std::string &filename)
     : filename_(filename), matfp_(nullptr) {}
 
@@ -15,7 +17,7 @@ void Mat::Open() {
   matfp_ = Mat_CreateVer(filename_.c_str(), nullptr,
                          MAT_FT_DEFAULT);
   if (nullptr == matfp_) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Creating file failed, file name is "
                              << filename_ << std::endl;
     exit(-1);
@@ -32,7 +34,7 @@ void Mat::Close() {
 void Mat::WriteInt(const std::string &varname,
                    int32_t data) {
   if (nullptr == matfp_) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
     exit(-1);
   }
@@ -43,7 +45,7 @@ void Mat::WriteInt(const std::string &varname,
                                     MAT_C_INT32, MAT_T_INT32,
                                     2, dims, datas, 0);
   if (nullptr == matfp_) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
     exit(-1);
   } else {
@@ -51,14 +53,14 @@ void Mat::WriteInt(const std::string &varname,
     Mat_VarFree(mat_var);
   }
 
-  logger::Log::Get().SetLevel(logger::Info);
+  logger::Log::get().set_log_level(logger::Info);
   LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
 
 }
 
 void Mat::WriteDouble(const std::string &varname, double data) {
   if (nullptr == matfp_) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
     exit(-1);
   }
@@ -68,7 +70,7 @@ void Mat::WriteDouble(const std::string &varname, double data) {
   matvar_t *mat_var = Mat_VarCreate(
       varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, datas, 0);
   if (nullptr == mat_var) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
     exit(-1);
   } else {
@@ -76,13 +78,13 @@ void Mat::WriteDouble(const std::string &varname, double data) {
     Mat_VarFree(mat_var);
   }
 
-  logger::Log::Get().SetLevel(logger::Info);
+  logger::Log::get().set_log_level(logger::Info);
   LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
 }
 
 void Mat::WriteComplex(const std::string &varname, std::complex<double> data) {
   if (nullptr == matfp_) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
     exit(-1);
   }
@@ -96,7 +98,7 @@ void Mat::WriteComplex(const std::string &varname, std::complex<double> data) {
                                     MAT_C_DOUBLE, MAT_T_DOUBLE,
                                     2, dims, &datas, MAT_F_COMPLEX);
   if (nullptr == mat_var) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
     exit(-1);
   } else {
@@ -104,13 +106,13 @@ void Mat::WriteComplex(const std::string &varname, std::complex<double> data) {
     Mat_VarFree(mat_var);
   }
 
-  logger::Log::Get().SetLevel(logger::Info);
+  logger::Log::get().set_log_level(logger::Info);
   LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
 }
 
 void Mat::WriteVector(const std::string &varname, const std::vector<int32_t> &data) {
   if (nullptr == matfp_) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
     exit(-1);
   }
@@ -124,7 +126,7 @@ void Mat::WriteVector(const std::string &varname, const std::vector<int32_t> &da
   delete[] data_wrap;
 
   if (nullptr == mat_var) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
     exit(-1);
   } else {
@@ -132,13 +134,13 @@ void Mat::WriteVector(const std::string &varname, const std::vector<int32_t> &da
     Mat_VarFree(mat_var);
   }
 
-  logger::Log::Get().SetLevel(logger::Info);
+  logger::Log::get().set_log_level(logger::Info);
   LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
 }
 
 void Mat::WriteVector(const std::string &varname, const std::vector<double> &data) {
   if (nullptr == matfp_) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
     exit(-1);
   }
@@ -152,7 +154,7 @@ void Mat::WriteVector(const std::string &varname, const std::vector<double> &dat
       varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, data_wrap, 0);
   delete[] data_wrap;
   if (nullptr == mat_var) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
     exit(-1);
   } else {
@@ -160,13 +162,13 @@ void Mat::WriteVector(const std::string &varname, const std::vector<double> &dat
     Mat_VarFree(mat_var);
   }
 
-  logger::Log::Get().SetLevel(logger::Info);
+  logger::Log::get().set_log_level(logger::Info);
   LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
 }
 
 void Mat::WriteVector(const std::string &varname, const std::vector<std::complex<double>> &data) {
   if (nullptr == matfp_) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
     exit(-1);
   }
@@ -182,7 +184,7 @@ void Mat::WriteVector(const std::string &varname, const std::vector<std::complex
   matvar_t *mat_var = Mat_VarCreate(varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &datas,
                                     MAT_F_COMPLEX);
   if (nullptr == mat_var) {
-    logger::Log::Get().SetLevel(logger::Error);
+    logger::Log::get().set_log_level(logger::Error);
     LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
     exit(-1);
   } else {
@@ -190,7 +192,10 @@ void Mat::WriteVector(const std::string &varname, const std::vector<std::complex
     Mat_VarFree(mat_var);
   }
 
-  logger::Log::Get().SetLevel(logger::Info);
+  logger::Log::get().set_log_level(logger::Info);
   LOG(logger::Info, false) << "Writed " << varname << " to " << filename_ << std::endl;
 }
+
+#endif
+
 }

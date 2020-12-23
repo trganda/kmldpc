@@ -13,15 +13,10 @@ namespace lab {
 class RandNum {
  public:
   explicit RandNum() = default;
-
   virtual ~RandNum() = default;
-
   virtual void SetSeed(int flag) = 0;
-
   virtual void PrintState(FILE *fp) = 0;
-
   virtual double Uniform() = 0;
-
   virtual void Normal(double *, int) = 0;
 };
 

@@ -16,18 +16,14 @@ class KMeans {
   explicit KMeans(std::vector<std::complex<double>> &data,
                   std::vector<std::complex<double>> &constellations,
                   int iter);
-
   ~KMeans();
-
  public:
-  std::vector<std::complex<double>> GetClusters();
-
-  std::vector<int> GetIdx();
-
+  std::vector<std::complex<double>> clusters();
+  std::vector<int> idx();
   void Run();
-
+#ifndef NO_MATIO
   void DumpToMat(std::string &filename, std::vector<std::complex<double>> &append);
-
+#endif
  private:
   const std::vector<std::complex<double>> data_;
   const std::vector<std::complex<double>> constellations_;

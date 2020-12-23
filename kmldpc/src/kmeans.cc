@@ -86,14 +86,15 @@ void KMeans::Run() {
   }
 }
 
-std::vector<std::complex<double>> KMeans::GetClusters() {
+std::vector<std::complex<double>> KMeans::clusters() {
   return this->clusters_;
 }
 
-std::vector<int> KMeans::GetIdx() {
+std::vector<int> KMeans::idx() {
   return this->idx_;
 }
 
+#ifndef NO_MATIO
 void KMeans::DumpToMat(std::string &filename, std::vector<std::complex<double>> &append) {
   lab::Mat mat = lab::Mat(filename);
 
@@ -107,5 +108,6 @@ void KMeans::DumpToMat(std::string &filename, std::vector<std::complex<double>> 
 
   mat.Close();
 }
+#endif
 
 }   // namespace

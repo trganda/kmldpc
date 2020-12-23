@@ -50,6 +50,7 @@ find_package(matio REQUIRED)
 if(MATIO_FOUND)
     include_directories(${MATIO_INCLUDE_DIR})
 else()
+    add_definitions(-DNO_MATIO)
     message("\nmatio directory not found.")
 endif()
 

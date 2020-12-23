@@ -1,13 +1,13 @@
 #include "sourcesink.h"
 
 namespace lab {
-void CSourceSink::GetBitStr(int *uu, int len) {
+void SourceSink::GetBitStr(int *uu, int len) {
   for (int t = 0; t < len; t++) {
     uu[t] = (CLCRandNum::Get().Uniform() < 0.5 ? 0 : 1);
   }
 }
 
-void CSourceSink::GetSymStr(int *uu, int qary, int len) {
+void SourceSink::GetSymStr(int *uu, int qary, int len) {
   for (int t = 0; t < len; t++) {
     uu[t] = qary;
     while (uu[t] == qary)
@@ -15,15 +15,15 @@ void CSourceSink::GetSymStr(int *uu, int qary, int len) {
   }
 }
 
-void CSourceSink::ClrCnt() {
+void SourceSink::ClrCnt() {
   num_tot_blk_ = 0;
   num_tot_bit_ = 0;
   num_err_blk_ = 0;
   num_err_bit_ = 0;
 }
 
-void CSourceSink::CntErr(const int *uu, const int *uu_hat,
-                         int len, int accumulator) {
+void SourceSink::CntErr(const int *uu, const int *uu_hat,
+                        int len, int accumulator) {
   temp_err_ = 0;
   for (int t = 0; t < len; t++) {
     if (uu_hat[t] != uu[t])
@@ -44,7 +44,7 @@ void CSourceSink::CntErr(const int *uu, const int *uu_hat,
   }
 }
 
-void CSourceSink::PrintResult(double snr) const {
+void SourceSink::PrintResult(double snr) const {
   LOG(logger::Info, true) << std::fixed << std::setprecision(3) << std::setfill('0')
                           << "SNR = "
                           << std::setw(3) << std::right << snr << ' '
@@ -60,25 +60,19 @@ void CSourceSink::PrintResult(double snr) const {
                           << std::endl;
 }
 
-void CSourceSink::PrintResult(FILE *fp) const {
-  fprintf(fp, "tot_blk = %d: err_blk = %d: err_bit = %d: ber = %12.10lf: fer = %12.10lf\n",
-          (int) num_tot_blk_, num_err_blk_, num_err_bit_, ber_, fer_);
-}
-
-// Getter
-double CSourceSink::GetNumTotBlk() const {
+double SourceSink::num_tot_blk() const {
   return num_tot_blk_;
 }
 
-int CSourceSink::GetNumErrBlk() const {
+int SourceSink::num_err_blk() const {
   return num_err_blk_;
 }
 
-double CSourceSink::GetBer() const {
+double SourceSink::ber() const {
   return ber_;
 }
 
-double CSourceSink::GetFer() const {
+double SourceSink::fer() const {
   return fer_;
 }
 

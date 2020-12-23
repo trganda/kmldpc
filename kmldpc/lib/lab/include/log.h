@@ -14,8 +14,8 @@
 #endif
 
 #define LOG(level, flag) \
-if (level > lab::logger::Log::Get().GetLevel()) ; \
-else lab::logger::Log::Get().GetStream(flag) << '[' << lab::logger::Log::GetCurrentSystemTime() << ']' \
+if (level > lab::logger::Log::get().log_level()) ; \
+else lab::logger::Log::get().log_stream(flag) << '[' << lab::logger::Log::get_time() << ']' \
 << '[' << __FILENAME__ << ':' << std::dec << __LINE__ << "] "
 
 namespace lab {
@@ -35,7 +35,7 @@ class TeeBuf : public std::streambuf {
   // Construct a streambuf which tees output to both input
   // streambufs.
   explicit TeeBuf(std::streambuf *sbtofile, std::streambuf *sbtoscreen);
-  void SetFlag(bool flag);
+  void set_flag(bool flag);
 
  private:
   // This tee buffer has no buffer. So every character "overflows"
@@ -48,13 +48,13 @@ class TeeBuf : public std::streambuf {
  private:
   std::streambuf *strbuf_to_file_;
   std::streambuf *strbuf_to_stdout_;
-  bool _flag;
+  bool flag_;
 };
 
 class TeeStream : public std::ostream {
  public:
   explicit TeeStream(std::ostream &o1, std::ostream &o2);
-  TeeBuf &GetTeeBuf();
+  TeeBuf &tbuf();
 
  private:
   TeeBuf tbuf_;
@@ -64,13 +64,13 @@ class Log {
  public:
   ~Log() = default;
 
-  void SetLogStream(std::ostream &stream);
-  Log &SetLevel(Level level);
-  Level GetLevel();
-  std::ostream &GetStream();
-  std::ostream &GetStream(bool flag);
-  static std::string GetCurrentSystemTime();
-  static Log &Get();
+  void set_log_stream(std::ostream &stream);
+  Log &set_log_level(Level level);
+  Level log_level() const;
+  std::ostream &log_stream() const;
+  std::ostream &log_stream(bool flag) const;
+  static Log &get();
+  static std::string get_time();
 
  private:
   Level log_level_;
@@ -79,7 +79,6 @@ class Log {
 
 }
 
-}   // namespace
+}
 
-
-#endif //KMLDPC_LOG_H
+#endif

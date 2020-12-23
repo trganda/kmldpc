@@ -2,9 +2,9 @@
 
 LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
     : arguments_(std::move(arguments)),
-      source_sink_(lab::CSourceSink()), codec_(lab::XORSegCodec(arguments_)),
-      codec_data_(codec_.GetUuLen(), codec_.GetCcLen()),
-      modem_linear_system_(lab::ModemLinearSystem(arguments_, codec_.GetCcLen())) {
+      source_sink_(lab::SourceSink()), codec_(lab::XORSegCodec(arguments_)),
+      codec_data_(codec_.uu_len(), codec_.cc_len()),
+      modem_linear_system_(lab::ModemLinearSystem(arguments_, codec_.cc_len())) {
   const auto range = toml::find(arguments_, "range");
 
   min_snr_ = toml::find<double>(range, "minimum_snr");
@@ -36,7 +36,7 @@ void LDPCLinearSystem::Simulator() {
   const bool histogram_enable = toml::find<bool>(histogram, "enable");
 
   std::vector<std::thread> threads(max_threads);
-  std::vector<lab::CSourceSink> sources(max_threads);
+  std::vector<lab::SourceSink> sources(max_threads);
   std::vector<CodecData> cdatas(max_threads, this->codec_data_);
   std::vector<lab::XORSegCodec> codecs(max_threads, this->codec_);
   std::vector<lab::ModemLinearSystem> mlss(max_threads, this->modem_linear_system_);
@@ -75,7 +75,7 @@ void LDPCLinearSystem::Simulator() {
 
 void LDPCLinearSystem::Run(lab::XORSegCodec &codec,
                            lab::ModemLinearSystem &mls,
-                           lab::CSourceSink &ssink,
+                           lab::SourceSink &ssink,
                            CodecData &cdata,
                            double snr,
                            bool histogram_enable,
@@ -85,8 +85,8 @@ void LDPCLinearSystem::Run(lab::XORSegCodec &codec,
   double var = pow(10.0, -0.1 * (snr));
   double sigma = sqrt(var);
 
-  mls.SetSigma(sigma);
-  mls.SetVar(var);
+  mls.set_sigma(sigma);
+  mls.set_var(var);
   ssink.ClrCnt();
 
   std::fstream out;
@@ -94,8 +94,8 @@ void LDPCLinearSystem::Run(lab::XORSegCodec &codec,
     std::string histfilename = "histogram_" + std::to_string(snr) + ".txt";
     out = std::fstream(histfilename, std::ios::out);
   }
-  while ((ssink.GetNumTotBlk() < max_num_blk_
-      && ssink.GetNumErrBlk() < max_err_blk_)) {
+  while ((ssink.num_tot_blk() < max_num_blk_
+      && ssink.num_err_blk() < max_err_blk_)) {
 
     ssink.GetBitStr(cdata.uu_, cdata.uu_len_);
     codec.Encoder(cdata.uu_, cdata.cc_);
@@ -117,14 +117,14 @@ void LDPCLinearSystem::Run(lab::XORSegCodec &codec,
     // Modulation and pass through the channel
     mls.PartitionModemLSystem(cdata.cc_, generated_h);
     // Get constellation
-    auto constellations = mls.GetConstellations();
+    auto constellations = mls.constellations();
     // Get received symbols
     auto received_symbols = mls.GetRecvSymbol();
     // KMeans
     kmldpc::KMeans kmeans = kmldpc::KMeans(received_symbols, constellations, 20);
     kmeans.Run();
-    auto clusters = kmeans.GetClusters();
-    auto idx = kmeans.GetIdx();
+    auto clusters = kmeans.clusters();
+    auto idx = kmeans.idx();
 
     // Get H hat
     std::complex<double> h_hat = clusters[0] / constellations[0];
@@ -135,7 +135,7 @@ void LDPCLinearSystem::Run(lab::XORSegCodec &codec,
 
     LOG(lab::logger::Info, false) << std::fixed << std::setprecision(0) << std::setfill('0')
                                   << "Current Block Number = "
-                                  << std::setw(7) << std::right << (ssink.GetNumTotBlk() + 1)
+                                  << std::setw(7) << std::right << (ssink.num_tot_blk() + 1)
                                   << std::endl;
 
     if (histogram_enable) {
@@ -150,9 +150,9 @@ void LDPCLinearSystem::Run(lab::XORSegCodec &codec,
       codec.Decoder(mls, h_hats, cdata.uu_hat_);
     }
 
-    ssink.CntErr(cdata.uu_, cdata.uu_hat_, codec.GetUuLen(), 1);
+    ssink.CntErr(cdata.uu_, cdata.uu_hat_, codec.uu_len(), 1);
 
-    if (int(ssink.GetNumTotBlk()) > 0 && int(ssink.GetNumTotBlk()) % 100 == 0) {
+    if (int(ssink.num_tot_blk()) > 0 && int(ssink.num_tot_blk()) % 100 == 0) {
       ssink.PrintResult(snr);
     }
   }
@@ -161,7 +161,7 @@ void LDPCLinearSystem::Run(lab::XORSegCodec &codec,
   }
   ssink.PrintResult(snr);
   // BER
-  ber = std::pair<double, double>(snr, ssink.GetBer());
+  ber = std::pair<double, double>(snr, ssink.ber());
   // FER
-  fer = std::pair<double, double>(snr, ssink.GetFer());
+  fer = std::pair<double, double>(snr, ssink.fer());
 }

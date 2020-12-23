@@ -10,23 +10,20 @@
 
 namespace lab {
 
-class CSourceSink {
+class SourceSink {
  public:
   void GetBitStr(int *uu, int len);
   void GetSymStr(int *uu, int qary, int len);
   void ClrCnt();
-
   void CntErr(const int *uu, const int *uu_hat,
               int len, int accumulator);
 
   void PrintResult(double snr) const;
-  void PrintResult(FILE *fp) const;
-
   // Getter
-  double GetNumTotBlk() const;
-  int GetNumErrBlk() const;
-  double GetBer() const;
-  double GetFer() const;
+  int num_err_blk() const;
+  double num_tot_blk() const;
+  double ber() const;
+  double fer() const;
 
  private:
   double num_tot_blk_;

@@ -101,11 +101,11 @@ std::vector<std::complex<double>> ModemLinearSystem::GetRecvSymbol() const {
   return yy_;
 }
 
-void ModemLinearSystem::SetSigma(double sigma) {
+void ModemLinearSystem::set_sigma(double sigma) {
   this->sigma_ = sigma;
 }
 
-void ModemLinearSystem::SetVar(double var) {
+void ModemLinearSystem::set_var(double var) {
   this->var_ = var;
 }
 

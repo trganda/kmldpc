@@ -60,7 +60,7 @@ class LDPCLinearSystem {
 
   void Simulator();
  private:
-  void Run(lab::XORSegCodec &codec, lab::ModemLinearSystem &mls, lab::CSourceSink &ssink, CodecData &cdata,
+  void Run(lab::XORSegCodec &codec, lab::ModemLinearSystem &mls, lab::SourceSink &ssink, CodecData &cdata,
            double snr, bool histogram_enable,
            std::pair<double, double> &ber, std::pair<double, double> &fer);
 
@@ -77,7 +77,7 @@ class LDPCLinearSystem {
   // Maximum blocks for simulation
   int max_num_blk_;
 
-  lab::CSourceSink source_sink_;
+  lab::SourceSink source_sink_;
   lab::XORSegCodec codec_;
   CodecData codec_data_;
   lab::ModemLinearSystem modem_linear_system_;

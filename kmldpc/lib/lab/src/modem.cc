@@ -78,7 +78,7 @@ void Modem::DeMapping(double *bitLin, double *symRin,
   utility::ProbClip(bitLout, yy_len * input_len_);
 }
 
-std::vector<std::complex<double>> Modem::GetConstellations() const {
+std::vector<std::complex<double>> Modem::constellations() const {
   return symbol_out_;
 }
 

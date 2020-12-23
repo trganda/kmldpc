@@ -22,12 +22,12 @@ class BinaryLDPCCodec {
 
   int ParityCheck(const int *rr) const;
   void InitMsg() const;
-  int GetCodeDim() const;
-  int GetCodeLen() const;
-  int GetNumRow() const;
-  double *GetSyndromSoft() const;
-  int *GetCcHat() const;
-  int GetMaxIter() const;
+  int code_dim() const;
+  int code_len() const;
+  int num_row() const;
+  double *syndrom_soft() const;
+  int *cc_hat() const;
+  int max_iter() const;
 
  private:
   void SystemMatrixH();

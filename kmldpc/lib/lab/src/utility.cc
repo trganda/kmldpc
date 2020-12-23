@@ -15,15 +15,6 @@ void MatrixProd(int *uu, int *cc, int **G, int dim, int len) {
   }
 }
 
-double Seqmax(double *x, int num) {
-  double temp = x[0];
-  for (int i = 1; i < num; i++) {
-    if (x[i] > temp)
-      temp = x[i];
-  }
-  return temp;
-}
-
 void ProbClip(double *xx, int len_xx) {
   for (int i = 0; i < len_xx; i++) {
     if (xx[i] < kSmallestProb) {
