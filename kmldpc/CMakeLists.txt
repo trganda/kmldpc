@@ -47,19 +47,21 @@ endif()
 
 find_package(Threads REQUIRED)
 find_package(matio REQUIRED)
-if(MATIO_FOUND)
-    include_directories(${MATIO_INCLUDE_DIR})
-else()
-    add_definitions(-DNO_MATIO)
-    message("\nmatio directory not found.")
-endif()
+
 
 # include lab code
 add_subdirectory("lib")
 
 # Add source to this project's executable.
 add_executable (kmldpc "kmldpc.cpp" ${SRC})
-target_link_libraries(kmldpc PRIVATE ${MATIO_LIBRARY} lab toml11 Threads::Threads)
+if(MATIO_FOUND)
+    include_directories(${MATIO_INCLUDE_DIR})
+    target_link_libraries(kmldpc PRIVATE ${MATIO_LIBRARY} lab toml11 Threads::Threads)
+else()
+    add_definitions(-DNO_MATIO)
+    message(STATUS "matio directory not found, relative function will abandon.")
+    target_link_libraries(kmldpc PRIVATE lab toml11 Threads::Threads)
+endif()
 
 # add the binary tree to the search path for include files
 target_include_directories(kmldpc PUBLIC
