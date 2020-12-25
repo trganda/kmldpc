@@ -28,7 +28,7 @@ ModemLinearSystem::~ModemLinearSystem() {
 
 void ModemLinearSystem::PartitionModemLSystem(const int *cc,
                                               std::vector<std::complex<double>> &select_h) {
-  Mapping(cc, cc_len_, xx_);
+  Mapping(cc, xx_);
   PartitionHAWGNSystem(select_h);
 }
 

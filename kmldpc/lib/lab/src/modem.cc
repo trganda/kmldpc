@@ -8,7 +8,7 @@ Modem::Modem(const toml::value &arguments)
   this->init(modem_file);
 }
 
-void Modem::Mapping(const int *bin_cc, int bin_cc_len, std::vector<std::complex<double>> &xx) {
+void Modem::Mapping(const int *bin_cc, std::vector<std::complex<double>> &xx) {
   for (size_t i = 0; i < xx.size(); i++) {
     int symbol_idx = 0;
     for (int j = 0; j < input_len_; j++) {

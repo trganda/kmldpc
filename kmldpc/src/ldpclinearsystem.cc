@@ -2,7 +2,7 @@
 
 LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
     : arguments_(std::move(arguments)),
-      source_sink_(lab::SourceSink()), codec_(lab::XORSegCodec(arguments_)),
+      codec_(lab::XORSegCodec(arguments_)),
       codec_data_(codec_.uu_len(), codec_.cc_len()),
       modem_linear_system_(lab::ModemLinearSystem(arguments_, codec_.cc_len())) {
   const auto range = toml::find(arguments_, "range");
@@ -27,7 +27,7 @@ LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
 void LDPCLinearSystem::Simulator() {
   // Threads number
   const auto max_threads = (unsigned long) ((max_snr_ - min_snr_) / step_snr_ + 1);
-//  const unsigned long hardware_threads = std::thread::hardware_concurrency();
+  // const unsigned long hardware_threads = std::thread::hardware_concurrency();
   // Save simulation results
   std::vector<std::pair<double, double>> ber_result(max_threads);
   std::vector<std::pair<double, double>> fer_result(max_threads);
@@ -77,10 +77,8 @@ void LDPCLinearSystem::Run(lab::XORSegCodec &codec,
                            lab::ModemLinearSystem &mls,
                            lab::SourceSink &ssink,
                            CodecData &cdata,
-                           double snr,
-                           bool histogram_enable,
-                           std::pair<double, double> &ber,
-                           std::pair<double, double> &fer) {
+                           double snr, bool histogram_enable,
+                           std::pair<double, double> &ber, std::pair<double, double> &fer) const {
   //var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
   double var = pow(10.0, -0.1 * (snr));
   double sigma = sqrt(var);

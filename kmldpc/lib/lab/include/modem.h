@@ -18,7 +18,7 @@ class Modem {
   explicit Modem(const toml::value &arguments);
   virtual ~Modem() = default;
  public:
-  void Mapping(const int *bin_cc, int bin_cc_len, std::vector<std::complex<double>> &xx);
+  void Mapping(const int *bin_cc, std::vector<std::complex<double>> &xx);
 
   void DeMapping(double *bitLin, double *symRin,
                  double *bitLout, int yy_len) const;

@@ -110,7 +110,7 @@ std::vector<double> XORSegCodec::GetMetrics(ModemLinearSystem &modem_linear_syst
                                             const std::vector<std::complex<double>> &hHats, int *uu_hat) {
   std::vector<double> metric_results(hHats.size(), 0);
   std::vector<std::pair<int, std::complex<double>>> temp;
-  for (auto i = 0; i < metric_results.size(); i++) {
+  for (size_t i = 0; i < metric_results.size(); i++) {
     temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
     DeMapping(modem_linear_system, temp);
     metric_results[i] = Metric(ldpc_codec_, uu_hat);
@@ -127,7 +127,7 @@ std::vector<double> XORSegCodec::GetMetrics(ModemLinearSystem &modem_linear_syst
 }
 
 double XORSegCodec::Metric(BinaryLDPCCodec *codec, int *uu_hat) {
-  double metric_result;
+  double metric_result = 0.0;
 
   if (using_syndrom_metric_ == 1) {
     codec->Decoder(bit_l_out_, uu_hat, iter_cnt_);

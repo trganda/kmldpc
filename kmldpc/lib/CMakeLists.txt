@@ -32,7 +32,9 @@ set(TOML11_SRC
         ${TOML11_DIR}/utility.hpp
         ${TOML11_DIR}/value.hpp
         )
-
+if (!MATIO_FOUND)
+    add_definitions(-DNO_MATIO)
+endif ()
 # build as library
 add_library(lab ${LAB_SRC})
 add_library(toml11 ${TOML11_SRC})
