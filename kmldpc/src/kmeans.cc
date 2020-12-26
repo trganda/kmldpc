@@ -27,8 +27,8 @@ void KMeans::Run() {
         clusters_[i] = constellations_[i] * hatH;
     }
     std::vector<std::complex<double>> tempClusters(clusters_.size());
-    std::vector<int> idxCount(clusters_.size());
-    std::vector<std::complex<double>> idxSum(clusters_.size());
+    std::vector<int> idxCount(clusters_.size(), 0);
+    std::vector<std::complex<double>> idxSum(clusters_.size(), 0);
     for (size_t i = 0; i < iter_; i++) {
         idxCount.clear();
         idxSum.clear();

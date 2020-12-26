@@ -54,10 +54,9 @@ class LDPCLinearSystem {
     virtual ~LDPCLinearSystem() = default;
     void Simulator();
  private:
-    void Run(
+    std::pair<double, double> Run(
         lab::XORSegCodec codec, lab::ModemLinearSystem mls, const CodecData cdata,
-        double snr, bool histogram_enable,
-        std::pair<double, double> &ber, std::pair<double, double> &fer
+        double snr, bool histogram_enable
     ) const;
  private:
     const toml::value arguments_;

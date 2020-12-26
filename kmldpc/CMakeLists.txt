@@ -36,12 +36,16 @@ if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 endif()
 
+if(WIN32)
+    set(BUILD_STATIC TRUE)
+endif(WIN32)
+
 # Set static if BUILD_STATIC is set
 if (BUILD_STATIC)
     set(MATIO_STATIC_LIBRARIES TRUE)
     # Link libgcc and libstc++ statically as well
     if(CMAKE_COMPILER_IS_GNUCXX)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -lwinpthread")
     endif()
 endif()
 

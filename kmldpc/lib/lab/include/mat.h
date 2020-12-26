@@ -6,9 +6,7 @@
 #include <complex>
 
 #ifndef NO_MATIO
-
 #include <matio.h>
-
 #endif
 
 #include "log.h"

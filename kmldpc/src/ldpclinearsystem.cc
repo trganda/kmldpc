@@ -28,21 +28,25 @@ void LDPCLinearSystem::Simulator() {
     // Save simulation results
     std::vector<std::pair<double, double>> ber_result(max_threads);
     std::vector<std::pair<double, double>> fer_result(max_threads);
+    std::vector<std::future<std::pair<double, double>>> ber_and_fer(max_threads);
     // Record metric for histogram
     const auto histogram = toml::find(arguments_, "histogram");
     const bool histogram_enable = toml::find<bool>(histogram, "enable");
     lab::ThreadsPool threads_pool;
     for (unsigned long i = 0; i < max_threads; i++) {
-//    Run(codec_, mlss[i], sources[i], cdatas[i],
-//        (min_snr_ + step_snr_ * i), histogram_enable,
-//        ber_result[i], fer_result[i]);
-        auto res = threads_pool.submit(
+        ber_and_fer[i] = threads_pool.submit(
             std::bind(
                 &LDPCLinearSystem::Run, this, this->codec_, this->modem_linear_system_,
-                this->codec_data_, (min_snr_ + step_snr_ * i), histogram_enable,
-                std::ref(ber_result[i]), std::ref(fer_result[i]))
-        );
+                this->codec_data_, (min_snr_ + step_snr_ * i), histogram_enable
+        ));
     }
+
+    for (size_t i=0; i<max_threads; i++) {
+        auto result = ber_and_fer[i].get();
+        ber_result[i] = std::pair<double, double>((min_snr_ + step_snr_ * i), result.first);
+        fer_result[i] = std::pair<double, double>((min_snr_ + step_snr_ * i), result.second);
+    }
+
     LOG(lab::logger::Info, true) << "BER Result" << std::endl;
     for (auto item : ber_result) {
         LOG(lab::logger::Info, true) << std::fixed << std::setprecision(3) << std::setfill('0')
@@ -61,12 +65,11 @@ void LDPCLinearSystem::Simulator() {
     }
 }
 
-void LDPCLinearSystem::Run(
+std::pair<double, double> LDPCLinearSystem::Run(
     lab::XORSegCodec codec,
     lab::ModemLinearSystem mls,
     const CodecData cdata,
-    double snr, bool histogram_enable,
-    std::pair<double, double> &ber, std::pair<double, double> &fer
+    double snr, bool histogram_enable
 ) const {
     //var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
     double var = pow(10.0, -0.1 * (snr));
@@ -141,8 +144,7 @@ void LDPCLinearSystem::Run(
         out.close();
     }
     ssink.PrintResult(snr);
-    // BER
-    ber = std::pair<double, double>(snr, ssink.ber());
-    // FER
-    fer = std::pair<double, double>(snr, ssink.fer());
+    // BER and FER
+    auto ret = std::pair<double, double>(ssink.ber(), ssink.fer());
+    return ret;
 }

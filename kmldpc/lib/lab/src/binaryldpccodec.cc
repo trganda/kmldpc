@@ -122,31 +122,7 @@ BinaryLDPCCodec::BinaryLDPCCodec(const toml::value &arguments)
         }
     }
     fclose(fp);
-#ifdef _DEBUG
-    if ((fq = fopen("a.txt", "a+")) == NULL){
-    fprintf(stderr, "\nCannot open %s", "a.txt");
-    exit(0);
-  }
 
-  for(i = 0; i < m_num_row; i++){
-    fprintf(fp,  "%d: %d* %d --- %d* %d --- %d* %d --- %d* %d --- %d* %d\n",i,
-                 (m_row_head + i) -> m_row_no,(m_row_head + i)-> m_col_no,
-                 (m_row_head + i) -> left -> m_row_no,(m_row_head + i) -> left -> m_col_no,
-                 (m_row_head + i) -> right -> m_row_no,(m_row_head + i) -> right -> m_col_no,
-                 (m_row_head + i) -> up -> m_row_no,(m_row_head + i) -> up -> m_col_no,
-                 (m_row_head + i) -> down -> m_row_no,(m_row_head + i) -> down -> m_col_no);
-  }
-
-  for(i = 0; i < m_num_col; i++){
-    fprintf(fp,  "%d: %d* %d --- %d* %d --- %d* %d --- %d* %d --- %d* %d\n",i,
-                 (m_col_head + i) -> m_row_no,(m_col_head + i)-> m_col_no,
-                 (m_col_head + i) -> left -> m_row_no,(m_col_head + i) -> left -> m_col_no,
-                 (m_col_head + i) -> right -> m_row_no,(m_col_head + i) -> right -> m_col_no,
-                 (m_col_head + i) -> up -> m_row_no,(m_col_head + i) -> up -> m_col_no,
-                 (m_col_head + i) -> down -> m_row_no,(m_col_head + i) -> down -> m_col_no);
-  }
-  fclose(fq);
-#endif
     if (encoder_active_) {
         SystemMatrixH();
     }

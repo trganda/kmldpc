@@ -1,4 +1,4 @@
-#ifndef LAB_BINARY_LDPC_CODEC_H
+﻿#ifndef LAB_BINARY_LDPC_CODEC_H
 #define LAB_BINARY_LDPC_CODEC_H
 
 #include <cstdio>

@@ -1,9 +1,7 @@
 #include <iostream>
-#include <list>
-#include <numeric>
+
 #include "randnum.h"
 #include "log.h"
-#include "thread_pool.h"
 #include "toml.hpp"
 #include "ldpclinearsystem.h"
 
