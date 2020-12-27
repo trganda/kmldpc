@@ -21,11 +21,11 @@ XORSegCodec::XORSegCodec(const toml::value &arguments) {
     using_syndrom_metric_ = toml::find<bool>(xcodec, "metric_type");
     iter_cnt_ = toml::find<int>(xcodec, "metric_iter");
     if (using_ldpc_5g_) {
-        LOG(logger::Info, true) << "Using 5G LDPC." << std::endl;
+        logger::INFO("Using 5G LDPC.", true);
         ldpc_codec_ = new Binary5GLDPCCodec(arguments);
         cc_len_ = dynamic_cast<Binary5GLDPCCodec *>(ldpc_codec_)->code_len_puncture();
     } else {
-        LOG(logger::Info, true) << "Using traditional LDPC." << std::endl;
+        logger::INFO("Using traditional LDPC.", true);
         ldpc_codec_ = new BinaryLDPCCodec(arguments);
         cc_len_ = ldpc_codec_->code_len();
     }
@@ -56,7 +56,7 @@ void XORSegCodec::Decoder(
     auto minIndex = std::distance(
         metric_results.begin(),
         min_element(metric_results.begin(), metric_results.end()));
-    LOG(logger::Info, false) << "hatIndex = " << minIndex << std::endl;
+    logger::INFO(std::string("hatIndex = " + std::to_string(minIndex)), false);
     temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
     DeMapping(modem_linear_system, temp);
     ldpc_codec_->Decoder(bit_l_out_, uu_hat, ldpc_codec_->max_iter());
@@ -113,15 +113,18 @@ std::vector<double> XORSegCodec::GetMetrics(
 ) {
     std::vector<double> metric_results(hHats.size(), 0);
     std::vector<std::pair<int, std::complex<double>>> temp;
+    std::stringstream stream;
     for (size_t i = 0; i < metric_results.size(); i++) {
         temp = {std::pair<int, std::complex<double>>(0, hHats[i])};
         DeMapping(modem_linear_system, temp);
         metric_results[i] = Metric(ldpc_codec_, uu_hat);
-        LOG(lab::logger::Info, false) << std::fixed << std::setprecision(14)
+        stream << std::fixed << std::setprecision(14)
                                       << "Hhat = " << hHats[i]
                                       << " Metric = "
                                       << std::setw(5) << std::right
                                       << metric_results[i] << std::endl;
+        logger::INFO(stream.str(), false);
+        stream.str("");
         metric_results[i] = abs(metric_results[i]);
     }
     return metric_results;

@@ -23,7 +23,7 @@ Binary5GLDPCCodec::Binary5GLDPCCodec(const toml::value &arguments)
 
     //Read H from file temp_str
     if ((fp = fopen(matrix_file.c_str(), "r")) == nullptr) {
-        LOG(lab::logger::Error, true) << "Cannot Open " << matrix_file << std::endl;
+        lab::logger::ERROR("Cannot Opne" + matrix_file, true);
         exit(-1);
     }
     fscanf(fp, "%s", temp_str);

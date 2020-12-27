@@ -1,7 +1,6 @@
 #include "log.h"
 
-namespace lab {
-namespace logger {
+namespace lab::logger {
 TeeBuf::TeeBuf(std::streambuf *sbtofile, std::streambuf *sbtoscreen)
     : strbuf_to_file_(sbtofile),
       strbuf_to_stdout_(sbtoscreen),
@@ -44,7 +43,7 @@ TeeBuf &TeeStream::tbuf() {
 }
 
 void Log::set_log_stream(std::ostream &stream) {
-    this->log_stream_ = &stream;
+    log_stream_ = &stream;
 }
 
 Log &Log::set_log_level(Level level) {
@@ -56,11 +55,11 @@ Level Log::log_level() const {
     return log_level_;
 }
 
-std::ostream &Log::log_stream() const {
+std::ostream &Log::log_stream() {
     return *log_stream_;
 }
 
-std::ostream &Log::log_stream(bool flag) const {
+std::ostream &Log::log_stream(bool flag) {
     auto ptr = (TeeStream *) log_stream_;
     ptr->tbuf().set_flag(flag);
     return *log_stream_;
@@ -78,9 +77,24 @@ std::string Log::get_time() {
     return std::string(usrdefFormat);
 }
 
+void Log::log(const std::string &message, Level level, bool flag) {
+    if (level > this->log_level_) {
+        return;
+    }
+    std::stringstream stream;
+    stream << '[' << get_time() << ']'
+           << message << std::endl;
+    log(stream.str(), flag);
+}
+
+void Log::log(const std::string &message, bool flag) {
+    std::lock_guard<std::mutex> lock(this->log_mutex);
+    log_stream(flag);
+    log_stream() << message;
+}
+
 Log &Log::get() {
     static Log instance;
     return instance;
-}
 }
 } // namespace lab

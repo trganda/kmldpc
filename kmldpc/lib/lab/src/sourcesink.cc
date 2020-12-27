@@ -23,8 +23,8 @@ void SourceSink::ClrCnt() {
 }
 
 void SourceSink::CntErr(
-    const int *uu, const int *uu_hat,
-    int len, int accumulator
+const int *uu, const int *uu_hat,
+int len, int accumulator
 ) {
     temp_err_ = 0;
     for (int t = 0; t < len; t++) {
@@ -44,19 +44,20 @@ void SourceSink::CntErr(
 }
 
 void SourceSink::PrintResult(double snr) const {
-    LOG(logger::Info, true) << std::fixed << std::setprecision(3) << std::setfill('0')
-                            << "SNR = "
-                            << std::setw(3) << std::right << snr << ' '
-                            << "Total blk = "
-                            << std::setw(7) << std::right << std::setprecision(0) << num_tot_blk_ << ' '
-                            << "Error blk = "
-                            << std::setw(7) << std::right << num_err_blk_ << ' '
-                            << "Error bit = "
-                            << std::setw(7) << std::right << num_err_bit_ << ' '
-                            << std::fixed << std::setprecision(14)
-                            << "BER = " << ber_ << ' '
-                            << "FER = " << fer_
-                            << std::endl;
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(3) << std::setfill('0')
+           << "SNR = "
+           << std::setw(3) << std::right << snr << ' '
+           << "Total blk = "
+           << std::setw(7) << std::right << std::setprecision(0) << num_tot_blk_ << ' '
+           << "Error blk = "
+           << std::setw(7) << std::right << num_err_blk_ << ' '
+           << "Error bit = "
+           << std::setw(7) << std::right << num_err_bit_ << ' '
+           << std::fixed << std::setprecision(14)
+           << "BER = " << ber_ << ' '
+           << "FER = " << fer_;
+    logger::INFO(stream.str(), true);
 }
 
 double SourceSink::num_tot_blk() const {

@@ -84,7 +84,7 @@ std::vector<std::complex<double>> Modem::constellations() const {
 void Modem::init(const std::string &modem_file) {
     std::ifstream ifs(modem_file, std::ios_base::binary);
     if (!ifs.is_open()) {
-        LOG(lab::logger::Error, true) << "Cannot Open " << modem_file << std::endl;
+        lab::logger::ERROR("Cannot Opne" + modem_file, true);
         exit(-1);
     }
     std::string temp;
@@ -108,8 +108,9 @@ void Modem::init(const std::string &modem_file) {
             temp_dec = (temp_dec << 1) + symbol_in_[i][j];
         }
         if (sym_dec != temp_dec || sym_dec != i) {
-            LOG(lab::logger::Error, true) << sym_dec << " is not the binary expression of "
-                                          << temp_dec << std::endl;
+            lab::logger::ERROR(std::string(
+                    std::to_string(sym_dec) + " is not the binary expression of " +
+                    std::to_string(temp_dec)), true);
             exit(-1);
         }
         double real, imag;

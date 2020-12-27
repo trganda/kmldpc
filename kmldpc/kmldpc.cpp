@@ -20,7 +20,7 @@ int main() {
     flag1 = 0;
     lab::CWHRandNum::Get().SetSeed(flag1);
     lab::logger::Log::get().set_log_level(lab::logger::Info);
-    LOG(lab::logger::Info, true) << "Start simulation" << std::endl;
+    lab::logger::INFO("Start simulation", true);
     std::ifstream ifs("config.toml", std::ios_base::binary);
     if (ifs.is_open()) {
         auto arguments = toml::parse(ifs);
@@ -28,8 +28,8 @@ int main() {
         simulator.Simulator();
         ifs.close();
     } else {
-        LOG(lab::logger::Info, true) << "Encouter error while opening config.toml" << std::endl;
+        lab::logger::ERROR("Encouter error while opening config.toml", true);
     }
-    LOG(lab::logger::Info, true) << "Simulation done" << std::endl;
+    lab::logger::INFO("Simulation done", true);
     return 0;
 }

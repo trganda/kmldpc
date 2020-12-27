@@ -8,21 +8,22 @@
 #include <cstring>
 #include <chrono>
 #include <ctime>
+#include <mutex>
+#include <sstream>
 
 #ifndef __FILENAME__
 #define __FILENAME__ __FILE__
 #endif
+
 #define LOG(level, flag) \
-if (level > lab::logger::Log::get().log_level()) ; \
-else lab::logger::Log::get().log_stream(flag) << '[' << lab::logger::Log::get_time() << ']' \
+if (level <= lab::logger::Log::get().log_level()) \
+lab::logger::Log::get().log_stream(flag) << '[' << lab::logger::Log::get_time() << ']' \
 << '[' << __FILENAME__ << ':' << std::dec << __LINE__ << "] "
-namespace lab {
-namespace logger {
+
+namespace lab::logger {
 enum Level {
-    None,
     Error,
     Info,
-    InforVerbose,
 };
 //Courtesy of http://wordaligned.org/articles/cpp-streambufs#toctee-streams
 class TeeBuf : public std::streambuf {
@@ -55,14 +56,27 @@ class Log {
     void set_log_stream(std::ostream &stream);
     Log &set_log_level(Level level);
     Level log_level() const;
-    std::ostream &log_stream() const;
-    std::ostream &log_stream(bool flag) const;
+    std::ostream &log_stream();
+    std::ostream &log_stream(bool flag);
     static Log &get();
     static std::string get_time();
+    void log(const std::string &message, Level level, bool flag);
+
+ private:
+    void log(const std::string &message, bool flag);
  private:
     Level log_level_;
     std::ostream *log_stream_;
+    std::mutex log_mutex;
 };
+
+inline void ERROR(const std::string &message, bool both_to_stdout) {
+    Log::get().log(message, Level::Error, both_to_stdout);
 }
+
+inline void INFO(const std::string &message, bool both_to_stdout) {
+    Log::get().log(message, Level::Error, both_to_stdout);
+}
+
 } // namespace lab
 #endif

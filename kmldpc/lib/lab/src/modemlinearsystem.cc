@@ -5,8 +5,9 @@ ModemLinearSystem::ModemLinearSystem(const toml::value &arguments, int cc_len)
     : Modem(arguments), cc_len_(cc_len), sigma_(0.0),
       var_(0.0), sym_prob_(nullptr) {
     if (cc_len_ % input_len_ != 0) {
-        LOG(logger::Error, true) << "(cc_len_ = " << cc_len_ << " %% (input_len_ = "
-                                 << input_len_ << " ) != 0 !" << std::endl;
+        lab::logger::ERROR(std::string(
+                "(cc_len_ = " + std::to_string(cc_len_) +
+                " %% (input_len_ = " + std::to_string((input_len_)) + " ) != 0 !"), true);
         exit(-1);
     }
     xx_ = std::vector<std::complex<double>>(cc_len_ / input_len_);
