@@ -7,6 +7,8 @@
 #include <fstream>
 #include <iomanip>
 #include <thread>
+
+#include "threadsafe_sourcesink.h"
 #include "thread_pool.h"
 #include "sourcesink.h"
 #include "xorsegcodec.h"
@@ -54,10 +56,12 @@ class LDPCLinearSystem {
     virtual ~LDPCLinearSystem() = default;
     void Simulator();
  private:
-    std::pair<double, double> Run(
-        lab::XORSegCodec codec, lab::ModemLinearSystem mls, const CodecData cdata,
-        double snr, bool histogram_enable
-    ) const;
+    std::pair<double, double> run(
+        lab::XORSegCodec codec, lab::ModemLinearSystem mls, CodecData cdata,
+        double snr, bool histogram_enable);
+    void run_block(lab::XORSegCodec codec, lab::ModemLinearSystem mls,
+                   lab::threadsafe_sourcesink& ssink, CodecData cdata,
+                   std::fstream& out, double snr, bool histogram_enable);
  private:
     const toml::value arguments_;
     // Simulation range of snr
@@ -67,9 +71,9 @@ class LDPCLinearSystem {
     double step_snr_;
     // Maximum error blocks, stop simulation of one snr while
     // errors block is equal to it
-    int max_err_blk_;
+    unsigned int max_err_blk_;
     // Maximum blocks for simulation
-    int max_num_blk_;
+    unsigned int max_num_blk_;
     lab::XORSegCodec codec_;
     CodecData codec_data_;
     lab::ModemLinearSystem modem_linear_system_;

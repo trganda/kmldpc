@@ -16,30 +16,30 @@ void SourceSink::GetSymStr(int *uu, int qary, int len) {
 }
 
 void SourceSink::ClrCnt() {
-    num_tot_blk_ = 0;
-    num_tot_bit_ = 0;
-    num_err_blk_ = 0;
-    num_err_bit_ = 0;
+    tot_blk_ = 0;
+    tot_bit_ = 0;
+    err_blk_ = 0;
+    err_bit_ = 0;
 }
 
 void SourceSink::CntErr(
 const int *uu, const int *uu_hat,
 int len, int accumulator
 ) {
-    temp_err_ = 0;
+    int temp_err = 0;
     for (int t = 0; t < len; t++) {
         if (uu_hat[t] != uu[t])
-            temp_err_++;
+            temp_err++;
     }
     if (accumulator == 1) {
-        if (temp_err_ > 0) {
-            num_err_bit_ += temp_err_;
-            num_err_blk_ += 1;
+        if (temp_err > 0) {
+            err_bit_ += temp_err;
+            err_blk_ += 1;
         }
-        num_tot_blk_ += 1.0;
-        num_tot_bit_ += len;
-        ber_ = num_err_bit_ / num_tot_bit_;
-        fer_ = num_err_blk_ / num_tot_blk_;
+        tot_blk_ += 1.0;
+        tot_bit_ += len;
+        ber_ = double(err_bit_) / tot_bit_;
+        fer_ = double(err_blk_) / tot_blk_;
     }
 }
 
@@ -49,23 +49,23 @@ void SourceSink::PrintResult(double snr) const {
            << "SNR = "
            << std::setw(3) << std::right << snr << ' '
            << "Total blk = "
-           << std::setw(7) << std::right << std::setprecision(0) << num_tot_blk_ << ' '
+           << std::setw(7) << std::right << std::setprecision(0) << tot_blk_ << ' '
            << "Error blk = "
-           << std::setw(7) << std::right << num_err_blk_ << ' '
+           << std::setw(7) << std::right << err_blk_ << ' '
            << "Error bit = "
-           << std::setw(7) << std::right << num_err_bit_ << ' '
+           << std::setw(7) << std::right << err_bit_ << ' '
            << std::fixed << std::setprecision(14)
            << "BER = " << ber_ << ' '
            << "FER = " << fer_;
     logger::INFO(stream.str(), true);
 }
 
-double SourceSink::num_tot_blk() const {
-    return num_tot_blk_;
+unsigned int SourceSink::tot_blk() const {
+    return tot_blk_;
 }
 
-int SourceSink::num_err_blk() const {
-    return num_err_blk_;
+unsigned int SourceSink::err_blk() const {
+    return err_blk_;
 }
 
 double SourceSink::ber() const {

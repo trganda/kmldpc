@@ -25,6 +25,18 @@ class ThreadsPool {
         }
     }
 
+    ThreadsPool(unsigned const thread_count) : done_(false), joiner_(threads_) {
+        try {
+            for (unsigned i = 0; i < thread_count; ++i) {
+                threads_.emplace_back(&ThreadsPool::worker_thread, this);
+            }
+        }
+        catch (...) {
+            done_ = true;
+            throw;
+        }
+    }
+
     ~ThreadsPool() {
         done_ = true;
     }

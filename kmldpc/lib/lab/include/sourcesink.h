@@ -19,16 +19,15 @@ class SourceSink {
     );
     void PrintResult(double snr) const;
     // Getter
-    int num_err_blk() const;
-    double num_tot_blk() const;
+    unsigned int err_blk() const;
+    unsigned int tot_blk() const;
     double ber() const;
     double fer() const;
  private:
-    double num_tot_blk_;
-    double num_tot_bit_;
-    int num_err_blk_;
-    int num_err_bit_;
-    int temp_err_;
+    unsigned int tot_blk_;
+    unsigned int tot_bit_;
+    unsigned int err_blk_;
+    unsigned int err_bit_;
     double ber_;
     double fer_;
 };
