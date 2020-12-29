@@ -21,7 +21,7 @@ class KMeans {
     std::vector<std::complex<double>> clusters();
     std::vector<int> idx();
     void Run();
-#ifndef NO_MATIO
+#ifdef USE_MATIO
     void DumpToMat(std::string &filename, std::vector<std::complex<double>> &append);
 #endif
  private:

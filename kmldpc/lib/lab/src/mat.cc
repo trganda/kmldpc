@@ -1,7 +1,7 @@
 #include "mat.h"
 
 namespace lab {
-#ifndef NO_MATIO
+#ifdef USE_MATIO
 
 Mat::Mat(std::string &filename)
     : filename_(filename), matfp_(nullptr) {}

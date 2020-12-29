@@ -5,7 +5,7 @@
 #include <vector>
 #include <complex>
 
-#ifndef NO_MATIO
+#ifdef USE_MATIO
 #include <matio.h>
 #endif
 
@@ -14,7 +14,7 @@
 namespace lab {
 
 // Encapsulation of matio https://github.com/tbeu/matio
-#ifndef NO_MATIO
+#ifdef USE_MATIO
 class Mat {
  public:
     explicit Mat(std::string &filename);

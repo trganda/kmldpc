@@ -91,7 +91,7 @@ std::vector<int> KMeans::idx() {
     return this->idx_;
 }
 
-#ifndef NO_MATIO
+#ifdef USE_MATIO
 
 void KMeans::DumpToMat(std::string &filename, std::vector<std::complex<double>> &append) {
     lab::Mat mat = lab::Mat(filename);

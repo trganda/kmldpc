@@ -4,6 +4,7 @@ set(TOML11_DIR toml11)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/${LAB_DIR})
 
 aux_source_directory(${LAB_DIR}/src LAB_SRC)
+aux_source_directory(${LAB_DIR}/include LAB_INCLUDE)
 
 # add toml11 https://github.com/ToruNiina/toml11/releases/tag/v3.6.0
 # using set to include the source code since the aux_source_directory
@@ -32,14 +33,19 @@ set(TOML11_SRC
         ${TOML11_DIR}/utility.hpp
         ${TOML11_DIR}/value.hpp
         )
-if(NOT MATIO_FOUND)
-    add_definitions(-DNO_MATIO)
-endif()
 
-add_definitions(-DNO_MATIO)
+find_package(matio REQUIRED)
+
 # build as library
-add_library(lab ${LAB_SRC})
+add_library(lab ${LAB_SRC} ${LAB_INCLUDE})
 add_library(toml11 ${TOML11_SRC})
+if(MATIO_FOUND)
+    add_definitions("-DUSE_MATIO")
+    include_directories(${MATIO_INCLUDE_DIR})
+    target_link_libraries(lab PRIVATE ${MATIO_LIBRARY})
+else()
+    message(STATUS "matio directory not found, relative function will abandon.")
+endif()
 
 target_include_directories(lab PUBLIC
         ${TOML11_DIR}
