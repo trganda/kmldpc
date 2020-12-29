@@ -73,7 +73,6 @@ Binary5GLDPCCodec::Binary5GLDPCCodec(const toml::value &arguments)
         }
     }
     fclose(fp);
-
     if (encoder_active_ == 1)
         SystH_5G();
     cc_hat_ = new int[code_len_no_puncture_];

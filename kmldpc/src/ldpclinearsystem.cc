@@ -1,16 +1,17 @@
 ﻿#include "ldpclinearsystem.h"
 
 LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
-: arguments_(std::move(arguments)),
-  codec_(lab::XORSegCodec(arguments_)),
-  codec_data_(codec_.uu_len(), codec_.cc_len()),
-  modem_linear_system_(lab::ModemLinearSystem(arguments_, codec_.cc_len())) {
+    : arguments_(std::move(arguments)),
+      codec_(lab::XORSegCodec(arguments_)),
+      codec_data_(codec_.uu_len(), codec_.cc_len()),
+      modem_linear_system_(lab::ModemLinearSystem(arguments_, codec_.cc_len())) {
     const auto range = toml::find(arguments_, "range");
     min_snr_ = toml::find<double>(range, "minimum_snr");
     max_snr_ = toml::find<double>(range, "maximum_snr");
     step_snr_ = toml::find<double>(range, "step_snr");
     max_err_blk_ = toml::find<int>(range, "maximum_error_number");
     max_num_blk_ = toml::find<int>(range, "maximum_block_number");
+    thread_num_blk_ = toml::find<int>(range, "thread_block_number");
     std::stringstream stream;
     stream << '[' << std::fixed << std::setprecision(3)
            << min_snr_ << ','
@@ -28,7 +29,7 @@ LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
 void LDPCLinearSystem::Simulator() {
     // Threads number
     const auto max_threads = (unsigned long) (
-    (max_snr_ - min_snr_) / step_snr_ + 1);
+        (max_snr_ - min_snr_) / step_snr_ + 1);
     // Save simulation results
     std::vector<std::pair<double, double>> ber_result(max_threads);
     std::vector<std::pair<double, double>> fer_result(max_threads);
@@ -39,17 +40,16 @@ void LDPCLinearSystem::Simulator() {
     lab::ThreadsPool threads_pool(max_threads);
     for (unsigned long i = 0; i < max_threads; i++) {
         ber_and_fer[i] = threads_pool.submit(
-        std::bind(&LDPCLinearSystem::run, this, this->codec_, this->modem_linear_system_,
-                  this->codec_data_, (min_snr_ + step_snr_ * i), histogram_enable
-        ));
+            std::bind(
+                &LDPCLinearSystem::run, this, this->codec_, this->modem_linear_system_,
+                this->codec_data_, (min_snr_ + step_snr_ * i), histogram_enable
+            ));
     }
-
     for (size_t i = 0; i < max_threads; i++) {
         auto result = ber_and_fer[i].get();
         ber_result[i] = std::pair<double, double>((min_snr_ + step_snr_ * i), result.first);
         fer_result[i] = std::pair<double, double>((min_snr_ + step_snr_ * i), result.second);
     }
-
     std::stringstream stream;
     stream << "BER Result";
     lab::logger::INFO(stream.str(), true);
@@ -93,83 +93,95 @@ LDPCLinearSystem::run(lab::XORSegCodec codec, lab::ModemLinearSystem mls, CodecD
         std::string histfilename = "histogram_" + std::to_string(snr) + ".txt";
         out = std::fstream(histfilename, std::ios::out);
     }
-    unsigned const thread_count = max_num_blk_ / 50000 + 1;
-    unsigned const block_remainder = max_num_blk_ % 50000;
-    lab::ThreadsPool threads_pool;
-
-    while ((*ssink.try_tot_blk() < max_num_blk_
-            && *ssink.try_err_blk() < max_err_blk_)) {
-        run_block(codec, mls, ssink, cdata, out, snr, histogram_enable);
+    unsigned const thread_count = max_num_blk_ / thread_num_blk_;
+    unsigned const block_remainder = max_num_blk_ % thread_num_blk_;
+    {
+        lab::ThreadsPool threads_pool;
+        for (unsigned i = 0; i < thread_count; i++) {
+            threads_pool.submit([this, codec, mls, &ssink, cdata, &out, snr, histogram_enable] {
+              run_blocks(codec, mls, std::ref(ssink), cdata,
+                         std::ref(out), snr, histogram_enable, thread_num_blk_);
+            });
+        }
+        if (block_remainder > 0) {
+            threads_pool.submit([this, codec, mls, &ssink, cdata, &out, snr, histogram_enable, block_remainder] {
+              run_blocks(codec, mls, std::ref(ssink), cdata,
+                         std::ref(out), snr, histogram_enable, block_remainder);
+            });
+        }
     }
     if (histogram_enable) {
         out.close();
     }
-
     ssink.PrintResult(snr);
     // BER and FER
     auto ret = std::pair<double, double>(*ssink.try_ber(), *ssink.try_fer());
     return ret;
 }
 
-void LDPCLinearSystem::run_block(lab::XORSegCodec codec, lab::ModemLinearSystem mls,
-                                 lab::threadsafe_sourcesink &ssink, CodecData cdata,
-                                 std::fstream &out, double snr, bool histogram_enable) {
-    ssink.GetBitStr(cdata.uu_, cdata.uu_len_);
-    codec.Encoder(cdata.uu_, cdata.cc_);
-    // Generate H
-    double real;
-    double imag;
-    lab::CLCRandNum::Get().Normal(&real, 1);
-    lab::CLCRandNum::Get().Normal(&imag, 1);
-    std::complex<double> true_h(real, imag);
-    true_h *= sqrt(0.5);
-    std::stringstream stream;
-    stream << "Generated H = " << true_h;
-    lab::logger::INFO(stream.str(), false);
-
-    std::vector<std::complex<double>> generated_h(1);
-    for (auto &i : generated_h) {
-        i = true_h;
-    }
-    // Modulation and pass through the channel
-    mls.PartitionModemLSystem(cdata.cc_, generated_h);
-    // Get constellation
-    auto constellations = mls.constellations();
-    // Get received symbols
-    auto received_symbols = mls.GetRecvSymbol();
-    // KMeans
-    kmldpc::KMeans kmeans = kmldpc::KMeans(received_symbols, constellations, 20);
-    kmeans.Run();
-    auto clusters = kmeans.clusters();
-    auto idx = kmeans.idx();
-
-    // Get H hat
-    std::complex<double> h_hat = clusters[0] / constellations[0];
-    std::vector<std::complex<double>> h_hats(4);
-    for (size_t i = 0; i < h_hats.size(); i++) {
-        h_hats[i] = h_hat * exp(std::complex<double>(0, (lab::kPi / 2) * i));
-    }
-    stream.str("");
-    stream << std::fixed << std::setprecision(0) << std::setfill('0')
-           << "Current Block Number = "
-           << std::setw(7) << std::right << (*ssink.try_tot_blk() + 1);
-    lab::logger::INFO(stream.str(), false);
-
-    if (histogram_enable) {
-        auto metrics = codec.GetHistogramData(mls, h_hats, cdata.uu_hat_);
-        auto idx_of_min = std::distance(
-        metrics.begin(),
-        min_element(metrics.begin(), metrics.end()));
-        for (size_t i = idx_of_min; i < idx_of_min + metrics.size(); i++) {
-            out << metrics[i % metrics.size()] << ' ';
+void LDPCLinearSystem::run_blocks(
+    lab::XORSegCodec codec, lab::ModemLinearSystem mls,
+    lab::threadsafe_sourcesink &ssink, CodecData cdata,
+    std::fstream &out, double snr, bool histogram_enable, const unsigned int max_block) {
+    for (int i = 0; i < max_block; i++) {
+        if (*ssink.try_tot_blk() >= max_num_blk_ || *ssink.try_err_blk() >= max_err_blk_) {
+            return;
         }
-        out << std::endl;
-    } else {
-        codec.Decoder(mls, h_hats, cdata.uu_hat_);
-    }
-
-    ssink.CntErr(cdata.uu_, cdata.uu_hat_, codec.uu_len(), 1);
-    if (int(*ssink.try_tot_blk()) > 0 && int(*ssink.try_tot_blk()) % 100 == 0) {
-        ssink.PrintResult(snr);
+        ssink.GetBitStr(cdata.uu_, cdata.uu_len_);
+        codec.Encoder(cdata.uu_, cdata.cc_);
+        // Generate H
+        double real;
+        double imag;
+        lab::CLCRandNum::Get().Normal(&real, 1);
+        lab::CLCRandNum::Get().Normal(&imag, 1);
+        std::complex<double> true_h(real, imag);
+        true_h *= sqrt(0.5);
+        std::stringstream stream;
+        stream << "Generated H = " << true_h;
+        lab::logger::INFO(stream.str(), false);
+        std::vector<std::complex<double>> generated_h(1);
+        for (auto &item : generated_h) {
+            item = true_h;
+        }
+        // Modulation and pass through the channel
+        mls.PartitionModemLSystem(cdata.cc_, generated_h);
+        // Get constellation
+        auto constellations = mls.constellations();
+        // Get received symbols
+        auto received_symbols = mls.GetRecvSymbol();
+        // KMeans
+        kmldpc::KMeans kmeans = kmldpc::KMeans(received_symbols, constellations, 20);
+        kmeans.Run();
+        auto clusters = kmeans.clusters();
+        auto idx = kmeans.idx();
+        // Get H hat
+        std::complex<double> h_hat = clusters[0] / constellations[0];
+        std::vector<std::complex<double>> h_hats(4);
+        for (size_t j = 0; j < h_hats.size(); j++) {
+            h_hats[j] = h_hat * exp(std::complex<double>(0, (lab::kPi / 2) * j));
+        }
+        stream.str("");
+        stream << std::fixed << std::setprecision(0) << std::setfill('0')
+               << "Current Block Number = "
+               << std::setw(7) << std::right << (*ssink.try_tot_blk() + 1);
+        lab::logger::INFO(stream.str(), false);
+        if (histogram_enable) {
+            auto metrics = codec.GetHistogramData(mls, h_hats, cdata.uu_hat_);
+            auto idx_of_min = std::distance(
+                metrics.begin(),
+                min_element(metrics.begin(), metrics.end()));
+            std::mutex mutex;
+            std::lock_guard<std::mutex> lock(mutex);
+            for (size_t j = idx_of_min; j < idx_of_min + metrics.size(); j++) {
+                out << metrics[j % metrics.size()] << ' ';
+            }
+            out << std::endl;
+        } else {
+            codec.Decoder(mls, h_hats, cdata.uu_hat_);
+        }
+        ssink.CntErr(cdata.uu_, cdata.uu_hat_, codec.uu_len(), 1);
+        if (int(*ssink.try_tot_blk()) > 0 && int(*ssink.try_tot_blk()) % 100 == 0) {
+            ssink.PrintResult(snr);
+        }
     }
 }

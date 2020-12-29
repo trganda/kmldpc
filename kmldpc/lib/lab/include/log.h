@@ -14,12 +14,10 @@
 #ifndef __FILENAME__
 #define __FILENAME__ __FILE__
 #endif
-
 #define LOG(level, flag) \
 if (level <= lab::logger::Log::get().log_level()) \
 lab::logger::Log::get().log_stream(flag) << '[' << lab::logger::Log::get_time() << ']' \
 << '[' << __FILENAME__ << ':' << std::dec << __LINE__ << "] "
-
 namespace lab::logger {
 enum Level {
     Error,
@@ -61,7 +59,6 @@ class Log {
     static Log &get();
     static std::string get_time();
     void log(const std::string &message, Level level, bool flag);
-
  private:
     void log(const std::string &message, bool flag);
  private:
@@ -77,6 +74,5 @@ inline void ERROR(const std::string &message, bool both_to_stdout) {
 inline void INFO(const std::string &message, bool both_to_stdout) {
     Log::get().log(message, Level::Error, both_to_stdout);
 }
-
 } // namespace lab
 #endif

@@ -119,10 +119,10 @@ std::vector<double> XORSegCodec::GetMetrics(
         DeMapping(modem_linear_system, temp);
         metric_results[i] = Metric(ldpc_codec_, uu_hat);
         stream << std::fixed << std::setprecision(14)
-                                      << "Hhat = " << hHats[i]
-                                      << " Metric = "
-                                      << std::setw(5) << std::right
-                                      << metric_results[i] << std::endl;
+               << "Hhat = " << hHats[i]
+               << " Metric = "
+               << std::setw(5) << std::right
+               << metric_results[i];
         logger::INFO(stream.str(), false);
         stream.str("");
         metric_results[i] = abs(metric_results[i]);

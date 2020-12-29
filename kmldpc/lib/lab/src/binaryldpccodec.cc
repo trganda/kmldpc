@@ -122,7 +122,6 @@ BinaryLDPCCodec::BinaryLDPCCodec(const toml::value &arguments)
         }
     }
     fclose(fp);
-
     if (encoder_active_) {
         SystemMatrixH();
     }

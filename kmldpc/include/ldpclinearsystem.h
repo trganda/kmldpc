@@ -7,7 +7,6 @@
 #include <fstream>
 #include <iomanip>
 #include <thread>
-
 #include "threadsafe_sourcesink.h"
 #include "thread_pool.h"
 #include "sourcesink.h"
@@ -27,6 +26,7 @@ typedef struct CodecData {
         cc_ = new int[cc_len_];
         cc_hat_ = new int[cc_len_];
     }
+
     CodecData(int uu_len, int cc_len) {
         uu_len_ = uu_len;
         cc_len_ = cc_len;
@@ -35,12 +35,14 @@ typedef struct CodecData {
         cc_ = new int[cc_len_];
         cc_hat_ = new int[cc_len_];
     }
+
     ~CodecData() {
         delete[] uu_;
         delete[] uu_hat_;
         delete[] cc_;
         delete[] cc_hat_;
     }
+
     // Uncoded codeword
     int *uu_;
     int *uu_hat_;
@@ -58,10 +60,11 @@ class LDPCLinearSystem {
  private:
     std::pair<double, double> run(
         lab::XORSegCodec codec, lab::ModemLinearSystem mls, CodecData cdata,
-        double snr, bool histogram_enable);
-    void run_block(lab::XORSegCodec codec, lab::ModemLinearSystem mls,
-                   lab::threadsafe_sourcesink& ssink, CodecData cdata,
-                   std::fstream& out, double snr, bool histogram_enable);
+        double snr, bool histogram_enable
+    );
+    void run_blocks(lab::XORSegCodec codec, lab::ModemLinearSystem mls,
+                    lab::threadsafe_sourcesink &ssink, CodecData cdata,
+                    std::fstream &out, double snr, bool histogram_enable, const unsigned int max_block);
  private:
     const toml::value arguments_;
     // Simulation range of snr
@@ -74,6 +77,8 @@ class LDPCLinearSystem {
     unsigned int max_err_blk_;
     // Maximum blocks for simulation
     unsigned int max_num_blk_;
+    // Maximum blocks for each threads
+    unsigned int thread_num_blk_;
     lab::XORSegCodec codec_;
     CodecData codec_data_;
     lab::ModemLinearSystem modem_linear_system_;

@@ -5,6 +5,8 @@
     step_snr = 5.0
     maximum_error_number = 1
     maximum_block_number = 1
+    # maximum blocks for each threads under the snr
+    thread_block_number = 1
 
 [xcodec]
     # default, using normal ldcp.

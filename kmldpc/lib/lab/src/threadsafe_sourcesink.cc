@@ -1,7 +1,6 @@
 #include "threadsafe_sourcesink.h"
 
-namespace lab{
-
+namespace lab {
 void threadsafe_sourcesink::GetBitStr(int *uu, int len) {
     std::lock_guard<std::mutex> lock(mutex_);
     ssink_.GetBitStr(uu, len);
@@ -42,5 +41,4 @@ std::shared_ptr<double> threadsafe_sourcesink::try_fer() {
     std::lock_guard<std::mutex> lock(mutex_);
     return std::make_shared<double>(ssink_.fer());
 }
-
 }

@@ -3,16 +3,14 @@
 
 #include <mutex>
 #include <condition_variable>
-
 #include "sourcesink.h"
 
 namespace lab {
-
 class threadsafe_sourcesink {
  public:
     threadsafe_sourcesink() = default;
     threadsafe_sourcesink(const threadsafe_sourcesink &other) = delete;
-    threadsafe_sourcesink& operator=(const threadsafe_sourcesink &other) = delete;
+    threadsafe_sourcesink &operator=(const threadsafe_sourcesink &other) = delete;
     void GetBitStr(int *uu, int len);
     void ClrCnt();
     void CntErr(const int *uu, const int *uu_hat,
@@ -28,7 +26,5 @@ class threadsafe_sourcesink {
     std::condition_variable data_cond_;
     SourceSink ssink_;
 };
-
 }
-
 #endif //LAB_THREADSAFE_SOURCESINK_H
