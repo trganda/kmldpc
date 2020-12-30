@@ -85,7 +85,6 @@ LDPCLinearSystem::run(lab::XORSegCodec codec, lab::ModemLinearSystem mls, CodecD
     double sigma = sqrt(var);
     mls.set_sigma(sigma);
     mls.set_var(var);
-//    lab::SourceSink ssink = lab::SourceSink();
     lab::threadsafe_sourcesink ssink = lab::threadsafe_sourcesink();
     ssink.ClrCnt();
     std::fstream out;
