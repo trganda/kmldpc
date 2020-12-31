@@ -25,7 +25,7 @@ class ThreadsPool {
         }
     }
 
-    ThreadsPool(unsigned const thread_count) : done_(false), joiner_(threads_) {
+    explicit ThreadsPool(unsigned const thread_count) : done_(false), joiner_(threads_) {
         try {
             for (unsigned i = 0; i < thread_count; ++i) {
                 threads_.emplace_back(&ThreadsPool::worker_thread, this);
@@ -59,15 +59,19 @@ class ThreadsPool {
         return res;
     }
 
+    void run_pending_task() {
+        std::function<void()> task;
+        if (work_queue_.try_pop(task)) {
+            task();
+        } else {
+            std::this_thread::yield();
+        }
+    }
+
  private:
     void worker_thread() {
         while (!done_) {
-            std::function<void()> task;
-            if (work_queue_.try_pop(task)) {
-                task();
-            } else {
-                std::this_thread::yield();
-            }
+            run_pending_task();
         }
     }
 

@@ -64,7 +64,7 @@ class LDPCLinearSystem {
     );
     void run_blocks(lab::XORSegCodec codec, lab::ModemLinearSystem mls,
                     lab::threadsafe_sourcesink &ssink, CodecData cdata,
-                    std::fstream &out, double snr, bool histogram_enable, const unsigned int max_block);
+                    std::fstream &out, double snr, bool histogram_enable, const unsigned int max_block) const;
  private:
     const toml::value arguments_;
     // Simulation range of snr

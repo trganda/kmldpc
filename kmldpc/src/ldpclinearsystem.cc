@@ -92,21 +92,23 @@ LDPCLinearSystem::run(lab::XORSegCodec codec, lab::ModemLinearSystem mls, CodecD
         std::string histfilename = "histogram_" + std::to_string(snr) + ".txt";
         out = std::fstream(histfilename, std::ios::out);
     }
-    unsigned const thread_count = max_num_blk_ / thread_num_blk_;
-    unsigned const block_remainder = max_num_blk_ % thread_num_blk_;
     {
         lab::ThreadsPool threads_pool;
-        for (unsigned i = 0; i < thread_count; i++) {
-            threads_pool.submit([this, codec, mls, &ssink, cdata, &out, snr, histogram_enable] {
-              run_blocks(codec, mls, std::ref(ssink), cdata,
-                         std::ref(out), snr, histogram_enable, thread_num_blk_);
-            });
+        std::vector<std::future<void>> rets;
+        auto max_blocks = max_num_blk_;
+        auto blocks = thread_num_blk_;
+        while (max_blocks > 0) {
+            blocks = blocks <= max_blocks ? blocks : max_blocks;
+            max_blocks -= blocks;
+            rets.push_back(threads_pool.submit(
+                [this, codec, mls, &ssink, cdata, &out, snr, histogram_enable, blocks] {
+                  run_blocks(codec, mls, std::ref(ssink), cdata,
+                             std::ref(out), snr, histogram_enable, blocks);
+                }));
         }
-        if (block_remainder > 0) {
-            threads_pool.submit([this, codec, mls, &ssink, cdata, &out, snr, histogram_enable, block_remainder] {
-              run_blocks(codec, mls, std::ref(ssink), cdata,
-                         std::ref(out), snr, histogram_enable, block_remainder);
-            });
+        // Waiting for the working task to finished
+        for (auto &ret : rets) {
+            ret.get();
         }
     }
     if (histogram_enable) {
@@ -121,7 +123,7 @@ LDPCLinearSystem::run(lab::XORSegCodec codec, lab::ModemLinearSystem mls, CodecD
 void LDPCLinearSystem::run_blocks(
     lab::XORSegCodec codec, lab::ModemLinearSystem mls,
     lab::threadsafe_sourcesink &ssink, CodecData cdata,
-    std::fstream &out, double snr, bool histogram_enable, const unsigned int max_block) {
+    std::fstream &out, double snr, bool histogram_enable, const unsigned int max_block) const {
     for (int i = 0; i < max_block; i++) {
         if (*ssink.try_tot_blk() >= max_num_blk_ || *ssink.try_err_blk() >= max_err_blk_) {
             return;
