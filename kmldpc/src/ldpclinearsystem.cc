@@ -96,9 +96,9 @@ LDPCLinearSystem::run(lab::XORSegCodec codec, lab::ModemLinearSystem mls, CodecD
         lab::ThreadsPool threads_pool;
         std::vector<std::future<void>> rets;
         auto max_blocks = max_num_blk_;
-        auto blocks = thread_num_blk_;
+        auto blocks = 0;
         while (max_blocks > 0) {
-            blocks = blocks <= max_blocks ? blocks : max_blocks;
+            blocks = thread_num_blk_ <= max_blocks ? thread_num_blk_ : max_blocks;
             max_blocks -= blocks;
             rets.push_back(threads_pool.submit(
                 [this, codec, mls, &ssink, cdata, &out, snr, histogram_enable, blocks] {
