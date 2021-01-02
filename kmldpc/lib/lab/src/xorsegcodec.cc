@@ -2,11 +2,14 @@
 
 namespace lab {
 XORSegCodec::XORSegCodec(const XORSegCodec &codec)
-    : iter_cnt_(codec.iter_cnt_), using_ldpc_5g_(codec.using_ldpc_5g_),
+    : arguments_(codec.arguments_), iter_cnt_(codec.iter_cnt_), using_ldpc_5g_(codec.using_ldpc_5g_),
       using_syndrom_metric_(codec.using_syndrom_metric_),
       uu_len_(codec.uu_len_), cc_len_(codec.cc_len_) {
     if (using_ldpc_5g_) {
-        ldpc_codec_ = new Binary5GLDPCCodec(*dynamic_cast<Binary5GLDPCCodec *>(codec.ldpc_codec_));
+        // For unknown reason, the copy constructor of Binary5GLDPCCodec
+        // will occurs some memory problem. So, I use the one-arguments
+        // constructor to build a new object.
+        ldpc_codec_ = new Binary5GLDPCCodec(arguments_);
     } else {
         ldpc_codec_ = new BinaryLDPCCodec(*codec.ldpc_codec_);
     }
@@ -15,18 +18,19 @@ XORSegCodec::XORSegCodec(const XORSegCodec &codec)
     bit_l_out_ = new double[cc_len_];
 }
 
-XORSegCodec::XORSegCodec(const toml::value &arguments) {
-    const auto xcodec = toml::find(arguments, "xcodec");
+XORSegCodec::XORSegCodec(toml::value arguments)
+    : arguments_(std::move(arguments)) {
+    const auto xcodec = toml::find(arguments_, "xcodec");
     using_ldpc_5g_ = toml::find<bool>(xcodec, "5gldpc");
     using_syndrom_metric_ = toml::find<bool>(xcodec, "metric_type");
     iter_cnt_ = toml::find<int>(xcodec, "metric_iter");
     if (using_ldpc_5g_) {
         logger::INFO("Using 5G LDPC.", true);
-        ldpc_codec_ = new Binary5GLDPCCodec(arguments);
+        ldpc_codec_ = new Binary5GLDPCCodec(arguments_);
         cc_len_ = dynamic_cast<Binary5GLDPCCodec *>(ldpc_codec_)->code_len_puncture();
     } else {
         logger::INFO("Using traditional LDPC.", true);
-        ldpc_codec_ = new BinaryLDPCCodec(arguments);
+        ldpc_codec_ = new BinaryLDPCCodec(arguments_);
         cc_len_ = ldpc_codec_->code_len();
     }
     uu_len_ = ldpc_codec_->code_dim();

@@ -18,7 +18,7 @@ class XORSegCodec {
  public:
     XORSegCodec() = default;
     XORSegCodec(const XORSegCodec &codec);
-    explicit XORSegCodec(const toml::value &arguments);
+    explicit XORSegCodec(toml::value arguments);
     virtual ~XORSegCodec();
     void Encoder(int *uu, int *cc);
     void Decoder(
@@ -43,6 +43,7 @@ class XORSegCodec {
     );
     double Metric(BinaryLDPCCodec *codec, int *uu_hat);
  private:
+    const toml::value arguments_;
     BinaryLDPCCodec *ldpc_codec_;
     int iter_cnt_;       // iteration times while using LDPC on 5G
     bool using_ldpc_5g_;
