@@ -124,7 +124,7 @@ void LDPCLinearSystem::run_blocks(
     lab::XORSegCodec codec, lab::ModemLinearSystem mls,
     lab::threadsafe_sourcesink &ssink, CodecData cdata,
     std::fstream &out, double snr, bool histogram_enable, const unsigned int max_block) const {
-    for (int i = 0; i < max_block; i++) {
+    for (unsigned int i = 0; i < max_block; i++) {
         if (*ssink.try_tot_blk() >= max_num_blk_ || *ssink.try_err_blk() >= max_err_blk_) {
             return;
         }

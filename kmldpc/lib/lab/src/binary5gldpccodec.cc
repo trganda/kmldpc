@@ -9,8 +9,7 @@ Binary5GLDPCCodec::Binary5GLDPCCodec(const Binary5GLDPCCodec &codec)
 }
 
 Binary5GLDPCCodec::Binary5GLDPCCodec(const toml::value &arguments)
-    : BinaryLDPCCodec(arguments),
-      code_len_no_puncture_(0), code_len_puncture_(0), lifting_factor_(0),
+    : code_len_no_puncture_(0), code_len_puncture_(0), lifting_factor_(0),
       cc_no_puncture_(nullptr), cc_soft_no_puncture_(nullptr) {
     int i, j;
     int row_no, row_deg, col_no;
