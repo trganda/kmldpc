@@ -427,7 +427,6 @@ void BinaryLDPCCodec::SystemMatrixH() {
     //	}
     //}
 
-
     for (j = 0; j < num_col_; j++) {
         for (i = 0; i < num_row_; i++) {
             dec_h_[i][j] = tempH[i][tempP[j]];
@@ -472,13 +471,13 @@ void BinaryLDPCCodec::SystemMatrixH() {
     code_len_ = num_col_;
     code_dim_ = code_len_ - code_chk_;
     coderate_ = (double) code_dim_ / code_len_;
-    delete[]tempP;
+    delete[] tempP;
     for (i = 0; i < num_row_; i++) {
-        delete[]tempH[i];
-        delete[]dec_h_[i];
+        delete[] tempH[i];
+        delete[] dec_h_[i];
     }
-    delete[]tempH;
-    delete[]dec_h_;
+    delete[] tempH;
+    delete[] dec_h_;
 }
 
 void BinaryLDPCCodec::FreeTannerGraph() const {
@@ -491,7 +490,7 @@ void BinaryLDPCCodec::FreeTannerGraph() const {
             delete temp_edge;
         }
     }
-    delete[]row_head_;
-    delete[]col_head_;
+    delete[] row_head_;
+    delete[] col_head_;
 }
-} // namespace lab
+}// namespace lab

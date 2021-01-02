@@ -52,8 +52,7 @@ void XORSegCodec::Encoder(int *uu, int *cc) {
 
 void XORSegCodec::Decoder(
     ModemLinearSystem &modem_linear_system,
-    const std::vector<std::complex<double>> &hHats, int *uu_hat
-) {
+    const std::vector<std::complex<double>> &hHats, int *uu_hat) {
     std::vector<double> metric_results;
     std::vector<std::pair<int, std::complex<double>>> temp;
     metric_results = GetMetrics(modem_linear_system, hHats, uu_hat);
@@ -68,8 +67,7 @@ void XORSegCodec::Decoder(
 
 std::vector<double> XORSegCodec::GetHistogramData(
     ModemLinearSystem &mlsystem,
-    const std::vector<std::complex<double>> &hhats, int *uu_hat
-) {
+    const std::vector<std::complex<double>> &hhats, int *uu_hat) {
     return GetMetrics(mlsystem, hhats, uu_hat);
 }
 
@@ -83,16 +81,14 @@ int XORSegCodec::cc_len() const {
 
 void XORSegCodec::DeMapping(
     ModemLinearSystem &modem_linear_system,
-    std::vector<std::pair<int, std::complex<double>>> &thetaList
-) const {
+    std::vector<std::pair<int, std::complex<double>>> &thetaList) const {
     // demapping to Get soft information
     for (int i = 0; i < cc_len_; i++) {
         bit_l_in_[i] = 0.5;
     }
     modem_linear_system.DeMapping(
         thetaList,
-        bit_l_in_, bit_l_out_
-    );
+        bit_l_in_, bit_l_out_);
 }
 
 int XORSegCodec::GetParityCheck() const {
@@ -113,8 +109,7 @@ int XORSegCodec::GetParityCheck() const {
 
 std::vector<double> XORSegCodec::GetMetrics(
     ModemLinearSystem &modem_linear_system,
-    const std::vector<std::complex<double>> &hHats, int *uu_hat
-) {
+    const std::vector<std::complex<double>> &hHats, int *uu_hat) {
     std::vector<double> metric_results(hHats.size(), 0);
     std::vector<std::pair<int, std::complex<double>>> temp;
     std::stringstream stream;
@@ -153,4 +148,4 @@ double XORSegCodec::Metric(BinaryLDPCCodec *codec, int *uu_hat) {
     }
     return metric_result;
 }
-} // namespace lab
+}// namespace lab

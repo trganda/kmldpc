@@ -328,7 +328,6 @@ void Binary5GLDPCCodec::SystH_5G() {
     //	}
     //}
 
-
     for (j = 0; j < num_col_; j++) {
         for (i = 0; i < num_row_; i++) {
             dec_h_[i][j] = tempH[i][tempP[j]];
@@ -378,12 +377,12 @@ void Binary5GLDPCCodec::SystH_5G() {
     code_len_no_puncture_ = num_col_;
     code_dim_ = code_len_no_puncture_ - code_chk_;
     coderate_ = (double) code_dim_ / code_len_puncture_;
-    delete[]tempP;
+    delete[] tempP;
     for (i = 0; i < num_row_; i++) {
-        delete[]tempH[i];
-        delete[]dec_h_[i];
+        delete[] tempH[i];
+        delete[] dec_h_[i];
     }
-    delete[]tempH;
-    delete[]dec_h_;
+    delete[] tempH;
+    delete[] dec_h_;
 }
-} // namespace lab
+}// namespace lab

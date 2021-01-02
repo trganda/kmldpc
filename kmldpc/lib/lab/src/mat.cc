@@ -15,8 +15,7 @@ Mat::~Mat() {
 void Mat::Open() {
     matfp_ = Mat_CreateVer(
         filename_.c_str(), nullptr,
-        MAT_FT_DEFAULT
-    );
+        MAT_FT_DEFAULT);
     if (nullptr == matfp_) {
         logger::Log::get().set_log_level(logger::Error);
         LOG(logger::Error, true) << "Creating file failed, file name is "
@@ -34,8 +33,7 @@ void Mat::Close() {
 
 void Mat::WriteInt(
     const std::string &varname,
-    int32_t data
-) {
+    int32_t data) {
     if (nullptr == matfp_) {
         logger::Log::get().set_log_level(logger::Error);
         LOG(logger::Error, true) << "Create of Open the file first" << std::endl;
@@ -46,8 +44,7 @@ void Mat::WriteInt(
     matvar_t *mat_var = Mat_VarCreate(
         varname.c_str(),
         MAT_C_INT32, MAT_T_INT32,
-        2, dims, datas, 0
-    );
+        2, dims, datas, 0);
     if (nullptr == matfp_) {
         logger::Log::get().set_log_level(logger::Error);
         LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
@@ -69,8 +66,7 @@ void Mat::WriteDouble(const std::string &varname, double data) {
     size_t dims[2] = {1, 1};
     double datas[1] = {data};
     matvar_t *mat_var = Mat_VarCreate(
-        varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, datas, 0
-    );
+        varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, datas, 0);
     if (nullptr == mat_var) {
         logger::Log::get().set_log_level(logger::Error);
         LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
@@ -91,13 +87,12 @@ void Mat::WriteComplex(const std::string &varname, std::complex<double> data) {
     }
     size_t dims[2] = {1, 1};
     double x[1] = {data.real()},
-        y[1] = {data.imag()};
+           y[1] = {data.imag()};
     struct mat_complex_split_t datas = {x, y};
     matvar_t *mat_var = Mat_VarCreate(
         varname.c_str(),
         MAT_C_DOUBLE, MAT_T_DOUBLE,
-        2, dims, &datas, MAT_F_COMPLEX
-    );
+        2, dims, &datas, MAT_F_COMPLEX);
     if (nullptr == mat_var) {
         logger::Log::get().set_log_level(logger::Error);
         LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
@@ -147,8 +142,7 @@ void Mat::WriteVector(const std::string &varname, const std::vector<double> &dat
         data_wrap[i] = data[i];
     }
     matvar_t *mat_var = Mat_VarCreate(
-        varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, data_wrap, 0
-    );
+        varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, data_wrap, 0);
     delete[] data_wrap;
     if (nullptr == mat_var) {
         logger::Log::get().set_log_level(logger::Error);
@@ -178,8 +172,7 @@ void Mat::WriteVector(const std::string &varname, const std::vector<std::complex
     struct mat_complex_split_t datas = {x, y};
     matvar_t *mat_var = Mat_VarCreate(
         varname.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, &datas,
-        MAT_F_COMPLEX
-    );
+        MAT_F_COMPLEX);
     if (nullptr == mat_var) {
         logger::Log::get().set_log_level(logger::Error);
         LOG(logger::Error, true) << "Error creating variable for " << varname << std::endl;
@@ -193,4 +186,4 @@ void Mat::WriteVector(const std::string &varname, const std::vector<std::complex
 }
 
 #endif
-} // namespace lab
+}// namespace lab

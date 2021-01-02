@@ -17,20 +17,17 @@ void CLCRandNum::SetSeed(int flag) {
     } else {
         fprintf(
             stdout,
-            "\nEnter the initial state: "
-        );
+            "\nEnter the initial state: ");
         fscanf(
             stdin,
-            "%ld", &state
-        );
+            "%ld", &state);
     }
 }
 
 void CLCRandNum::PrintState(FILE *fp) {
     fprintf(
         fp,
-        "\n***init_state = %ld***\n", state
-    );
+        "\n***init_state = %ld***\n", state);
 }
 
 double CLCRandNum::Uniform() {
@@ -41,8 +38,7 @@ double CLCRandNum::Uniform() {
     else
         state = tmpState + M;
     u = state / (double) M;
-    return
-        u;
+    return u;
 }
 
 void CLCRandNum::Normal(double *nn, int len_nn) {
@@ -153,4 +149,4 @@ CWHRandNum &CWHRandNum::Get() {
     static CWHRandNum instance;
     return instance;
 }
-} // namespace lab
+}// namespace lab

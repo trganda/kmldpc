@@ -1,10 +1,10 @@
 #ifndef LAB_THREADSAFE_QUEUE_H_
 #define LAB_THREADSAFE_QUEUE_H_
 
-#include <memory>
-#include <queue>
-#include <mutex>
 #include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <queue>
 
 namespace lab {
 template<typename T>
@@ -13,6 +13,7 @@ class threadsafe_queue {
     mutable std::mutex mut;
     std::queue<T> data_queue;
     std::condition_variable data_cond;
+
  public:
     threadsafe_queue() = default;
 
@@ -62,6 +63,6 @@ class threadsafe_queue {
         return data_queue.empty();
     }
 };
-} // namespace lab
+}// namespace lab
 
-#endif //LAB_THREADSAFE_QUEUE_H_
+#endif//LAB_THREADSAFE_QUEUE_H_

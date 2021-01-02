@@ -28,8 +28,7 @@ LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
 
 void LDPCLinearSystem::Simulator() {
     // Threads number
-    const auto max_threads = (unsigned long) (
-        (max_snr_ - min_snr_) / step_snr_ + 1);
+    const auto max_threads = (unsigned long) ((max_snr_ - min_snr_) / step_snr_ + 1);
     // Save simulation results
     std::vector<std::pair<double, double>> ber_result(max_threads);
     std::vector<std::pair<double, double>> fer_result(max_threads);
@@ -42,8 +41,7 @@ void LDPCLinearSystem::Simulator() {
         ber_and_fer[i] = threads_pool.submit(
             std::bind(
                 &LDPCLinearSystem::run, this, std::ref(this->codec_), this->modem_linear_system_,
-                std::ref(this->codec_data_), (min_snr_ + step_snr_ * i), histogram_enable
-            ));
+                std::ref(this->codec_data_), (min_snr_ + step_snr_ * i), histogram_enable));
     }
     for (size_t i = 0; i < max_threads; i++) {
         auto result = ber_and_fer[i].get();
@@ -102,8 +100,8 @@ LDPCLinearSystem::run(lab::XORSegCodec &codec, lab::ModemLinearSystem mls, Codec
             max_blocks -= blocks;
             rets.push_back(threads_pool.submit(
                 [this, codec, mls, &ssink, cdata, &out, snr, histogram_enable, blocks] {
-                  run_blocks(codec, mls, std::ref(ssink), cdata,
-                             std::ref(out), snr, histogram_enable, blocks);
+                    run_blocks(codec, mls, std::ref(ssink), cdata,
+                               std::ref(out), snr, histogram_enable, blocks);
                 }));
         }
         // Waiting for the working task to finished

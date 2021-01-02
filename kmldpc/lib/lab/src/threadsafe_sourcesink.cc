@@ -41,4 +41,4 @@ std::shared_ptr<double> threadsafe_sourcesink::try_fer() {
     std::lock_guard<std::mutex> lock(mutex_);
     return std::make_shared<double>(ssink_.fer());
 }
-}
+}// namespace lab

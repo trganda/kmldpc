@@ -72,8 +72,7 @@ std::string Log::get_time() {
     char usrdefFormat[50] = {0};
     strftime(
         usrdefFormat, 50,
-        "%Y-%m-%d %H-%M-%S", calendarTime
-    );
+        "%Y-%m-%d %H-%M-%S", calendarTime);
     return std::string(usrdefFormat);
 }
 
@@ -97,4 +96,4 @@ Log &Log::get() {
     static Log instance;
     return instance;
 }
-} // namespace lab
+}// namespace lab::logger

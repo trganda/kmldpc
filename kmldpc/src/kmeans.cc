@@ -3,8 +3,7 @@
 namespace kmldpc {
 KMeans::KMeans(
     std::vector<std::complex<double>> &data,
-    std::vector<std::complex<double>> &constellations, int iter
-)
+    std::vector<std::complex<double>> &constellations, int iter)
     : data_(data), constellations_(constellations), iter_(iter) {
     clusters_ = std::vector<std::complex<double>>(constellations.size());
     idx_ = std::vector<int>(data.size());
@@ -106,4 +105,4 @@ void KMeans::DumpToMat(std::string &filename, std::vector<std::complex<double>> 
 }
 
 #endif
-}   // namespace
+}// namespace kmldpc

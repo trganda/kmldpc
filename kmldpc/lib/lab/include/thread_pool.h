@@ -1,13 +1,13 @@
 #ifndef LAB_THREADPOOL_H_
 #define LAB_THREADPOOL_H_
 
-#include <thread>
-#include <atomic>
-#include <future>
-#include <functional>
-#include <type_traits>
-#include "threadsafe_queue.h"
 #include "join_threads.h"
+#include "threadsafe_queue.h"
+#include <atomic>
+#include <functional>
+#include <future>
+#include <thread>
+#include <type_traits>
 
 namespace lab {
 class ThreadsPool {
@@ -18,8 +18,7 @@ class ThreadsPool {
             for (unsigned i = 0; i < thread_count; ++i) {
                 threads_.emplace_back(&ThreadsPool::worker_thread, this);
             }
-        }
-        catch (...) {
+        } catch (...) {
             done_ = true;
             throw;
         }
@@ -30,8 +29,7 @@ class ThreadsPool {
             for (unsigned i = 0; i < thread_count; ++i) {
                 threads_.emplace_back(&ThreadsPool::worker_thread, this);
             }
-        }
-        catch (...) {
+        } catch (...) {
             done_ = true;
             throw;
         }
@@ -53,9 +51,8 @@ class ThreadsPool {
         }
         work_queue_.push(
             [task]() {
-              (*task)();
-            }
-        );
+                (*task)();
+            });
         return res;
     }
 
@@ -82,6 +79,6 @@ class ThreadsPool {
     std::vector<std::thread> threads_;
     JoinThreads joiner_;
 };
-} // namespace lab
+}// namespace lab
 
 #endif

@@ -24,8 +24,7 @@ void SourceSink::ClrCnt() {
 
 void SourceSink::CntErr(
     const int *uu, const int *uu_hat,
-    int len, int accumulator
-) {
+    int len, int accumulator) {
     int temp_err = 0;
     for (int t = 0; t < len; t++) {
         if (uu_hat[t] != uu[t])
@@ -75,4 +74,4 @@ double SourceSink::ber() const {
 double SourceSink::fer() const {
     return fer_;
 }
-} // namespace lab
+}// namespace lab

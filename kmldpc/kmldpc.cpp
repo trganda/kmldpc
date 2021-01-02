@@ -1,10 +1,10 @@
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
-#include "randnum.h"
-#include "log.h"
-#include "toml.hpp"
 #include "ldpclinearsystem.h"
+#include "log.h"
+#include "randnum.h"
+#include "toml.hpp"
 
 int main() {
     // Start measuring time

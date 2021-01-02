@@ -6,8 +6,8 @@ ModemLinearSystem::ModemLinearSystem(const toml::value &arguments, int cc_len)
       var_(0.0), sym_prob_(nullptr) {
     if (cc_len_ % input_len_ != 0) {
         lab::logger::ERROR(std::string(
-            "(cc_len_ = " + std::to_string(cc_len_) +
-                " %% (input_len_ = " + std::to_string((input_len_)) + " ) != 0 !"), true);
+                               "(cc_len_ = " + std::to_string(cc_len_) + " %% (input_len_ = " + std::to_string((input_len_)) + " ) != 0 !"),
+                           true);
         exit(-1);
     }
     xx_ = std::vector<std::complex<double>>(cc_len_ / input_len_);
@@ -23,13 +23,12 @@ ModemLinearSystem::ModemLinearSystem(const ModemLinearSystem &mls)
 }
 
 ModemLinearSystem::~ModemLinearSystem() {
-    delete[]sym_prob_;
+    delete[] sym_prob_;
 }
 
 void ModemLinearSystem::PartitionModemLSystem(
     const int *cc,
-    std::vector<std::complex<double>> &select_h
-) {
+    std::vector<std::complex<double>> &select_h) {
     Mapping(cc, xx_);
     PartitionHAWGNSystem(select_h);
 }
@@ -48,8 +47,7 @@ void ModemLinearSystem::PartitionHAWGNSystem(std::vector<std::complex<double>> &
 
 void ModemLinearSystem::SoftAWGNDemodulation(
     const std::complex<double> &yy, double *sym_prob,
-    std::complex<double> &theta_h
-) const {
+    std::complex<double> &theta_h) const {
     std::vector<double> symbol_prob(symbol_num_);
     double sqr_norm = 0.0;
     for (size_t i = 0; i < symbol_prob.size(); i++) {
@@ -89,8 +87,7 @@ void ModemLinearSystem::SoftDemodulation(std::vector<std::pair<int, std::complex
 
 void ModemLinearSystem::DeMapping(
     std::vector<std::pair<int, std::complex<double>>> &thetaList, double *bitLin,
-    double *bitLout
-) {
+    double *bitLout) {
     SoftDemodulation(thetaList);
     Modem::DeMapping(bitLin, sym_prob_, bitLout, yy_.size());
 }
@@ -106,4 +103,4 @@ void ModemLinearSystem::set_sigma(double sigma) {
 void ModemLinearSystem::set_var(double var) {
     this->var_ = var;
 }
-} // namespace lab
+}// namespace lab

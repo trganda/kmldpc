@@ -1,12 +1,12 @@
 #ifndef LAB_RAND_NUM_H
 #define LAB_RAND_NUM_H
 
-#include <cstdio>
-#include <vector>
-#include <cstdlib>
-#include <ctime>
 #include <cmath>
 #include <complex>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
 
 namespace lab {
 class RandNum {
@@ -36,6 +36,7 @@ class CLCRandNum : public RandNum {
     void Normal(std::vector<std::complex<double>> &nn);
     // Singleton pattern
     static CLCRandNum &Get();
+
  private:
     long int state;
     int A;
@@ -55,10 +56,11 @@ class CWHRandNum : public RandNum {
     double Uniform() final;
     void Normal(double *nn, int len_nn) final;
     static CWHRandNum &Get();
+
  private:
     int X;
     int Y;
     int Z;
 };
-} // namespace lab
-#endif // RAND_NUM_H
+}// namespace lab
+#endif// RAND_NUM_H

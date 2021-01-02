@@ -33,5 +33,5 @@ std::ostream &operator<<(std::ostream &os, const std::complex<double> &c) {
        << std::resetiosflags(std::ios::showpos);
     return os;
 }
-}
-} // namespace lab
+}// namespace utility
+}// namespace lab

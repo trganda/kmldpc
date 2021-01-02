@@ -1,21 +1,21 @@
 #ifndef KMLDPC_LDPC_LINEAR_SYSTEM_H
 #define KMLDPC_LDPC_LINEAR_SYSTEM_H
 
-#include <complex>
+#include "kmeans.h"
+#include "log.h"
+#include "modemlinearsystem.h"
+#include "randnum.h"
+#include "sourcesink.h"
+#include "thread_pool.h"
+#include "threadsafe_sourcesink.h"
+#include "toml.hpp"
+#include "xorsegcodec.h"
 #include <algorithm>
-#include <vector>
+#include <complex>
 #include <fstream>
 #include <iomanip>
 #include <thread>
-#include "threadsafe_sourcesink.h"
-#include "thread_pool.h"
-#include "sourcesink.h"
-#include "xorsegcodec.h"
-#include "modemlinearsystem.h"
-#include "randnum.h"
-#include "log.h"
-#include "toml.hpp"
-#include "kmeans.h"
+#include <vector>
 
 typedef struct CodecData {
     CodecData(const CodecData &codec_data) {
@@ -58,14 +58,15 @@ class LDPCLinearSystem {
     explicit LDPCLinearSystem(toml::value arguments);
     virtual ~LDPCLinearSystem() = default;
     void Simulator();
+
  private:
     std::pair<double, double> run(
         lab::XORSegCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata,
-        double snr, bool histogram_enable
-    );
+        double snr, bool histogram_enable);
     void run_blocks(lab::XORSegCodec codec, lab::ModemLinearSystem mls,
                     lab::threadsafe_sourcesink &ssink, CodecData cdata,
                     std::fstream &out, double snr, bool histogram_enable, unsigned int max_block) const;
+
  private:
     const toml::value arguments_;
     // Simulation range of snr

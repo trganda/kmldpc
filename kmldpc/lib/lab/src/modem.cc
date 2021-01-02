@@ -20,8 +20,7 @@ void Modem::Mapping(const int *bin_cc, std::vector<std::complex<double>> &xx) {
 
 void Modem::DeMapping(
     double *bitLin, double *symRin,
-    double *bitLout, int yy_len
-) const {
+    double *bitLout, int yy_len) const {
     utility::ProbClip(bitLin, yy_len * input_len_);
     utility::ProbClip(symRin, symbol_num_ * yy_len);
     std::vector<double> symbol_prob(symbol_num_);
@@ -109,8 +108,8 @@ void Modem::init(const std::string &modem_file) {
         }
         if (sym_dec != temp_dec || sym_dec != i) {
             lab::logger::ERROR(std::string(
-                std::to_string(sym_dec) + " is not the binary expression of " +
-                    std::to_string(temp_dec)), true);
+                                   std::to_string(sym_dec) + " is not the binary expression of " + std::to_string(temp_dec)),
+                               true);
             exit(-1);
         }
         double real, imag;
@@ -124,4 +123,4 @@ void Modem::init(const std::string &modem_file) {
         symbol_out_[i] /= sqrt(energies);
     }
 }
-} // namespace lab
+}// namespace lab

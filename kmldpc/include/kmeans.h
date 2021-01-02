@@ -1,12 +1,12 @@
 #ifndef KMLDPC_KMEANS_H
 #define KMLDPC_KMEANS_H
 
-#include <vector>
-#include <complex>
-#include <algorithm>
-#include <utility>
-#include <iostream>
 #include "mat.h"
+#include <algorithm>
+#include <complex>
+#include <iostream>
+#include <utility>
+#include <vector>
 
 namespace kmldpc {
 class KMeans {
@@ -14,9 +14,9 @@ class KMeans {
     explicit KMeans(
         std::vector<std::complex<double>> &data,
         std::vector<std::complex<double>> &constellations,
-        int iter
-    );
+        int iter);
     ~KMeans();
+
  public:
     std::vector<std::complex<double>> clusters();
     std::vector<int> idx();
@@ -31,6 +31,6 @@ class KMeans {
     std::vector<int> idx_;
     unsigned int iter_;
 };
-} // namespace
+}// namespace kmldpc
 
-#endif //KMLDPC_KMEANS_H
+#endif//KMLDPC_KMEANS_H

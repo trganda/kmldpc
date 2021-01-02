@@ -20,5 +20,5 @@ class JoinThreads {
  private:
     std::vector<std::thread> &threads_;
 };
-} // namespace lab
+}// namespace lab
 #endif

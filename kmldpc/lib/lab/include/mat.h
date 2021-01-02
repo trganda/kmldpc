@@ -1,9 +1,9 @@
 #ifndef LAB_MAT_H
 #define LAB_MAT_H
 
+#include <complex>
 #include <string>
 #include <vector>
-#include <complex>
 
 #ifdef USE_MATIO
 #include <matio.h>
@@ -19,6 +19,7 @@ class Mat {
  public:
     explicit Mat(std::string &filename);
     ~Mat();
+
  public:
     void Open();
     void Close();
@@ -28,10 +29,11 @@ class Mat {
     void WriteVector(const std::string &varname, const std::vector<int32_t> &data);
     void WriteVector(const std::string &varname, const std::vector<double> &data);
     void WriteVector(const std::string &varname, const std::vector<std::complex<double>> &data);
+
  private:
     std::string filename_;
     mat_t *matfp_;
 };
 #endif
-} // namespace lab
+}// namespace lab
 #endif

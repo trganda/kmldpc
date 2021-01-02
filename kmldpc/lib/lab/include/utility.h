@@ -1,10 +1,10 @@
 #ifndef LAB_UTILITY_H
 #define LAB_UTILITY_H
 
-#include <string>
-#include <vector>
 #include <complex>
 #include <iomanip>
+#include <string>
+#include <vector>
 
 namespace lab {
 const double kPi = 3.14159265358979;
@@ -31,6 +31,6 @@ namespace utility {
 void MatrixProd(int *uu, int *cc, int **G, int dim, int len);
 void ProbClip(double *xx, int len_xx);
 std::ostream &operator<<(std::ostream &os, const std::complex<double> &c);
-}
-} // namespace lab
+}// namespace utility
+}// namespace lab
 #endif
