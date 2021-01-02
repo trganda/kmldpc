@@ -41,7 +41,7 @@ void LDPCLinearSystem::Simulator() {
     for (unsigned long i = 0; i < max_threads; i++) {
         ber_and_fer[i] = threads_pool.submit(
             std::bind(
-                &LDPCLinearSystem::run, this, std::ref(this->codec_), std::ref(this->modem_linear_system_),
+                &LDPCLinearSystem::run, this, std::ref(this->codec_), this->modem_linear_system_,
                 std::ref(this->codec_data_), (min_snr_ + step_snr_ * i), histogram_enable
             ));
     }
@@ -78,7 +78,7 @@ void LDPCLinearSystem::Simulator() {
 }
 
 std::pair<double, double>
-LDPCLinearSystem::run(lab::XORSegCodec &codec, lab::ModemLinearSystem &mls, CodecData &cdata,
+LDPCLinearSystem::run(lab::XORSegCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata,
                       double snr, bool histogram_enable) {
     //var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
     double var = pow(10.0, -0.1 * (snr));

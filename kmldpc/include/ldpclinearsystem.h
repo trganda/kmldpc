@@ -60,7 +60,7 @@ class LDPCLinearSystem {
     void Simulator();
  private:
     std::pair<double, double> run(
-        lab::XORSegCodec &codec, lab::ModemLinearSystem &mls, CodecData &cdata,
+        lab::XORSegCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata,
         double snr, bool histogram_enable
     );
     void run_blocks(lab::XORSegCodec codec, lab::ModemLinearSystem mls,
