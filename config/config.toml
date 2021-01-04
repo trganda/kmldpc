@@ -8,6 +8,9 @@
     # maximum blocks for each threads under the snr
     thread_block_number = 1
 
+[decoder]
+    true_h_arg = false
+
 [xcodec]
     # default, using normal ldcp.
     5gldpc = false

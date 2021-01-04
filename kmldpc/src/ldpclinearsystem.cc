@@ -12,6 +12,8 @@ LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
     max_err_blk_ = toml::find<int>(range, "maximum_error_number");
     max_num_blk_ = toml::find<int>(range, "maximum_block_number");
     thread_num_blk_ = toml::find<int>(range, "thread_block_number");
+    const auto decoder = toml::find(arguments_, "decoder");
+    known_h_ = toml::find<bool>(decoder, "true_h_arg");
     std::stringstream stream;
     stream << '[' << std::fixed << std::setprecision(3)
            << min_snr_ << ','
@@ -148,22 +150,26 @@ void LDPCLinearSystem::run_blocks(
         auto constellations = mls.constellations();
         // Get received symbols
         auto received_symbols = mls.GetRecvSymbol();
-        // KMeans
-        kmldpc::KMeans kmeans = kmldpc::KMeans(received_symbols, constellations, 20);
-        kmeans.Run();
-        auto clusters = kmeans.clusters();
-        auto idx = kmeans.idx();
-        // Get H hat
-        std::complex<double> h_hat = clusters[0] / constellations[0];
-        std::vector<std::complex<double>> h_hats(4);
-        for (size_t j = 0; j < h_hats.size(); j++) {
-            h_hats[j] = h_hat * exp(std::complex<double>(0, (lab::kPi / 2) * j));
+        std::vector<std::complex<double>> h_hats;
+        if (known_h_) {
+            h_hats.push_back(true_h);
+        } else {
+            // KMeans
+            kmldpc::KMeans kmeans = kmldpc::KMeans(received_symbols, constellations, 20);
+            kmeans.Run();
+            auto clusters = kmeans.clusters();
+            auto idx = kmeans.idx();
+            // Get H hat
+            std::complex<double> h_hat = clusters[0] / constellations[0];
+            for (size_t j = 0; j < 4; j++) {
+                h_hats.push_back(h_hat * exp(std::complex<double>(0, (lab::kPi / 2) * j)));
+            }
+            stream.str("");
+            stream << std::fixed << std::setprecision(0) << std::setfill('0')
+                   << "Current Block Number = "
+                   << std::setw(7) << std::right << (*ssink.try_tot_blk() + 1);
+            lab::logger::INFO(stream.str(), false);
         }
-        stream.str("");
-        stream << std::fixed << std::setprecision(0) << std::setfill('0')
-               << "Current Block Number = "
-               << std::setw(7) << std::right << (*ssink.try_tot_blk() + 1);
-        lab::logger::INFO(stream.str(), false);
         if (histogram_enable) {
             auto metrics = codec.GetHistogramData(mls, h_hats, cdata.uu_hat_);
             auto idx_of_min = std::distance(

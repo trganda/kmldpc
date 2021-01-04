@@ -81,6 +81,8 @@ class LDPCLinearSystem {
     unsigned int max_num_blk_;
     // Maximum blocks for each threads
     unsigned int thread_num_blk_;
+    // Known H for simulation
+    bool known_h_;
     lab::XORSegCodec codec_;
     CodecData codec_data_;
     lab::ModemLinearSystem modem_linear_system_;

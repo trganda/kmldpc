@@ -12,5 +12,6 @@ _deps
 cmake-build-debug
 cmake-build-release
 cmake-build-relwithdebinfo
-out
+out/
 .idea
+.vs/
