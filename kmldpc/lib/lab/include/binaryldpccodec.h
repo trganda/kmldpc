@@ -20,6 +20,8 @@ class BinaryLDPCCodec {
     virtual int Decoder(const double *M2V, int *uu_hat, int iter_count);
     int ParityCheck(const int *rr) const;
     void InitMsg() const;
+
+ public:
     int code_dim() const;
     int code_len() const;
     int num_row() const;
@@ -28,7 +30,7 @@ class BinaryLDPCCodec {
     int max_iter() const;
 
  private:
-    void SystemMatrixH();
+    virtual void SystemMatrixH();
 
  protected:
     void FreeTannerGraph() const;

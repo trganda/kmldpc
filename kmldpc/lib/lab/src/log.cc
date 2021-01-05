@@ -82,6 +82,7 @@ void Log::log(const std::string &message, Level level, bool flag) {
     }
     std::stringstream stream;
     stream << '[' << get_time() << ']'
+           << colored.at(level)
            << message << std::endl;
     log(stream.str(), flag);
 }

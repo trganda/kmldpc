@@ -73,7 +73,7 @@ Binary5GLDPCCodec::Binary5GLDPCCodec(const toml::value &arguments)
     }
     fclose(fp);
     if (encoder_active_ == 1)
-        SystH_5G();
+        SystemMatrixH();
     cc_hat_ = new int[code_len_no_puncture_];
 }
 
@@ -233,7 +233,7 @@ int Binary5GLDPCCodec::code_len_puncture() const {
     return code_len_puncture_;
 }
 
-void Binary5GLDPCCodec::SystH_5G() {
+void Binary5GLDPCCodec::SystemMatrixH() {
     int i, j, ii, jj, m, n;
     int temp;
     int flag;

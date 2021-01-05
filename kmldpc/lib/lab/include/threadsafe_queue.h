@@ -9,11 +9,6 @@
 namespace lab {
 template<typename T>
 class threadsafe_queue {
- private:
-    mutable std::mutex mut;
-    std::queue<T> data_queue;
-    std::condition_variable data_cond;
-
  public:
     threadsafe_queue() = default;
 
@@ -62,6 +57,11 @@ class threadsafe_queue {
         std::lock_guard<std::mutex> lk(mut);
         return data_queue.empty();
     }
+
+ private:
+    mutable std::mutex mut;
+    std::queue<T> data_queue;
+    std::condition_variable data_cond;
 };
 }// namespace lab
 

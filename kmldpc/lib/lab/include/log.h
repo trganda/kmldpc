@@ -10,6 +10,7 @@
 #include <mutex>
 #include <sstream>
 #include <string>
+#include <map>
 
 #ifndef __FILENAME__
 #define __FILENAME__ __FILE__
@@ -22,6 +23,10 @@ namespace lab::logger {
 enum Level {
     Error,
     Info,
+};
+const std::map<Level, std::string> colored{
+    {Error, " \x1b[31;1m[ERROR]\x1b[0m "},
+    {Info, " \x1b[32;1m[INFO]\x1b[0m "}
 };
 //Courtesy of http://wordaligned.org/articles/cpp-streambufs#toctee-streams
 class TeeBuf : public std::streambuf {
@@ -77,7 +82,7 @@ inline void ERROR(const std::string &message, bool both_to_stdout) {
 }
 
 inline void INFO(const std::string &message, bool both_to_stdout) {
-    Log::get().log(message, Level::Error, both_to_stdout);
+    Log::get().log(message, Level::Info, both_to_stdout);
 }
 }// namespace lab::logger
 #endif
