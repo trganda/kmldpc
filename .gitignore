@@ -15,3 +15,5 @@ cmake-build-relwithdebinfo
 out/
 .idea
 .vs/
+.vscode/
+build/
