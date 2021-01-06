@@ -33,13 +33,13 @@ void ModemLinearSystem::PartitionModemLSystem(
     PartitionHAWGNSystem(select_h);
 }
 
-void ModemLinearSystem::PartitionHAWGNSystem(std::vector<std::complex<double>> &selected_h) {
+void ModemLinearSystem::PartitionHAWGNSystem(std::vector<std::complex<double>> &h) {
     std::vector<std::complex<double>> noise(xx_.size());
     CLCRandNum::Get().Normal(noise);
-    for (size_t i = 0; i < selected_h.size(); i++) {
-        auto num_of_part = xx_.size() / selected_h.size();
+    for (size_t i = 0; i < h.size(); i++) {
+        auto num_of_part = xx_.size() / h.size();
         for (size_t j = i * num_of_part; j < num_of_part; j++) {
-            std::complex<double> temp = xx_[j] * selected_h[i];
+            std::complex<double> temp = xx_[j] * h[i];
             yy_[j] = temp + noise[j] * std::complex<double>(sigma_ / kSqrt2, 0);
         }
     }

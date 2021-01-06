@@ -131,11 +131,8 @@ void LDPCLinearSystem::run_blocks(
         ssink.GetBitStr(cdata.uu_, cdata.uu_len_);
         codec.Encoder(cdata.uu_, cdata.cc_);
         // Generate H
-        double real;
-        double imag;
-        lab::CLCRandNum::Get().Normal(&real, 1);
-        lab::CLCRandNum::Get().Normal(&imag, 1);
-        std::complex<double> true_h(real, imag);
+        std::complex<double> true_h;
+        lab::CLCRandNum::Get().Normal(true_h);
         true_h *= sqrt(0.5);
         std::stringstream stream;
         stream << "Generated H = " << true_h;

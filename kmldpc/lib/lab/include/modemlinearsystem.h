@@ -28,7 +28,7 @@ class ModemLinearSystem : public Modem {
 
  private:
     void SoftDemodulation(std::vector<std::pair<int, std::complex<double>>> &thetaList) const;
-    void PartitionHAWGNSystem(std::vector<std::complex<double>> &selected_h);
+    void PartitionHAWGNSystem(std::vector<std::complex<double>> &h);
     void SoftAWGNDemodulation(
         const std::complex<double> &yy, double *sym_prob,
         std::complex<double> &theta_h) const;

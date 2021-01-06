@@ -67,11 +67,15 @@ void CLCRandNum::Normal(double *nn, int len_nn) {
     }
 };
 
-void CLCRandNum::Normal(std::vector<std::complex<double>> &nn) {
+void CLCRandNum::Normal(std::complex<double> &nn) {
     double temp[2];
+    Normal(temp, 2);
+    nn = std::complex<double>(temp[0], temp[1]);
+}
+
+void CLCRandNum::Normal(std::vector<std::complex<double>> &nn) {
     for (auto &item : nn) {
-        Normal(temp, 2);
-        item = std::complex<double>(temp[0], temp[1]);
+        Normal(item);
     }
 }
 

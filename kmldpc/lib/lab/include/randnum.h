@@ -33,6 +33,7 @@ class CLCRandNum : public RandNum {
     void PrintState(FILE *fp) final;
     double Uniform() final;
     void Normal(double *nn, int len_nn) final;
+    void Normal(std::complex<double> &nn);
     void Normal(std::vector<std::complex<double>> &nn);
     // Singleton pattern
     static CLCRandNum &Get();
