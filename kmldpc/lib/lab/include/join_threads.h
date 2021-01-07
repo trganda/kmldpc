@@ -7,18 +7,18 @@
 namespace lab {
 class JoinThreads {
  public:
-    explicit JoinThreads(std::vector<std::thread> &threads)
-        : threads_(threads) {}
+  explicit JoinThreads(std::vector<std::thread> &threads)
+      : threads_(threads) {}
 
-    ~JoinThreads() {
-        for (auto &thread : threads_) {
-            if (thread.joinable())
-                thread.join();
-        }
+  ~JoinThreads() {
+    for (auto &thread : threads_) {
+      if (thread.joinable())
+        thread.join();
     }
+  }
 
  private:
-    std::vector<std::thread> &threads_;
+  std::vector<std::thread> &threads_;
 };
 }// namespace lab
 #endif
