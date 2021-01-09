@@ -97,8 +97,8 @@ ModemLinearSystem::DeMapping(
   Modem::DeMapping(bitLin, sym_prob_, bitLout, yy_.size());
 }
 
-std::vector<std::complex<double>>
-ModemLinearSystem::GetRecvSymbol() const {
+std::vector<std::complex<double>>&
+ModemLinearSystem::GetRecvSymbol(){
   return yy_;
 }
 

@@ -117,7 +117,7 @@ LDPCLinearSystem::run_blocks(
     if (*ssink.try_tot_blk() >= max_num_blk_ || *ssink.try_err_blk() >= max_err_blk_) { return; }
     ssink.GetBitStr(cdata.uu_, cdata.uu_len_);
     codec.Encoder(cdata.uu_, cdata.cc_);
-    // Generate H
+    // Generating H
     std::complex<double> true_h;
     lab::CLCRandNum::Get().Normal(true_h);
     true_h *= sqrt(0.5);
@@ -128,14 +128,14 @@ LDPCLinearSystem::run_blocks(
     for (auto &item : generated_h) { item = true_h; }
     // Modulation and pass through the channel
     mls.PartitionModemLSystem(cdata.cc_, generated_h);
-    // Get constellation
-    auto constellations = mls.constellations();
-    // Get received symbols
-    auto received_symbols = mls.GetRecvSymbol();
     std::vector<std::complex<double>> h_hats;
     if (known_h_) {
       h_hats.push_back(true_h);
     } else {
+	  // Get constellation
+	  auto constellations = mls.constellations();
+	  // Get received symbols
+	  auto received_symbols = mls.GetRecvSymbol();
       // KMeans
       kmldpc::KMeans kmeans = kmldpc::KMeans(received_symbols, constellations, 20);
       kmeans.Run();

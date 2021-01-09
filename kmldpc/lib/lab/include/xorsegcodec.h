@@ -22,8 +22,8 @@ class XORSegCodec {
   virtual ~XORSegCodec();
   void Encoder(int *uu, int *cc);
   void Decoder(
-      ModemLinearSystem &modem_linear_system,
-      const std::vector<std::complex<double>> &hHats, int *uu_hat);
+	  ModemLinearSystem &modem_linear_system,
+	  const std::vector<std::complex<double>> &h_hats, int *uu_hat);
   std::vector<double> GetHistogramData(
       ModemLinearSystem &mlsystem,
       const std::vector<std::complex<double>> &hhats, int *uu_hat);

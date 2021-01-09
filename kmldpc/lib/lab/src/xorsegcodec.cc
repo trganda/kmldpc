@@ -53,16 +53,21 @@ XORSegCodec::Encoder(int *uu, int *cc) {
 
 void
 XORSegCodec::Decoder(
-    ModemLinearSystem &modem_linear_system,
-    const std::vector<std::complex<double>> &hHats, int *uu_hat) {
+	ModemLinearSystem &modem_linear_system,
+	const std::vector<std::complex<double>> &h_hats, int *uu_hat) {
   std::vector<double> metric_results;
   std::vector<std::pair<int, std::complex<double>>> temp;
-  metric_results = GetMetrics(modem_linear_system, hHats, uu_hat);
-  auto minIndex = std::distance(
-      metric_results.begin(),
-      min_element(metric_results.begin(), metric_results.end()));
-  logger::INFO(std::string("hatIndex = " + std::to_string(minIndex)), false);
-  temp = {std::pair<int, std::complex<double>>(0, hHats[minIndex])};
+  if (h_hats.size() > 1) {
+	metric_results = GetMetrics(modem_linear_system, h_hats, uu_hat);
+	auto minIndex = std::distance(
+		metric_results.begin(),
+		min_element(metric_results.begin(), metric_results.end()));
+	logger::INFO(std::string("hatIndex = " + std::to_string(minIndex)), false);
+	temp = {std::pair<int, std::complex<double>>(0, h_hats[minIndex])};
+  } else {
+	temp = {std::pair<int, std::complex<double>>(0, h_hats[0])};
+  }
+
   DeMapping(modem_linear_system, temp);
   ldpc_codec_->Decoder(bit_l_out_, uu_hat, ldpc_codec_->max_iter());
 }
