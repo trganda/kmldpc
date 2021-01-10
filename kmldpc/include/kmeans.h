@@ -12,8 +12,7 @@ namespace kmldpc {
 class KMeans {
  public:
   explicit KMeans(
-      std::vector<std::complex<double>> &data,
-      std::vector<std::complex<double>> &constellations,
+      std::vector<std::complex<double>> &data, std::vector<std::complex<double>> &constellations,
       int iter);
   ~KMeans();
 
@@ -32,5 +31,4 @@ class KMeans {
   unsigned int iter_;
 };
 }// namespace kmldpc
-
 #endif//KMLDPC_KMEANS_H

@@ -95,16 +95,17 @@ KMeans::idx() {
 
 #ifdef USE_MATIO
 
-void KMeans::DumpToMat(std::string &filename, std::vector<std::complex<double>> &append) {
-    lab::Mat mat = lab::Mat(filename);
-    mat.Open();
-    mat.WriteVector("data", data_);
-    mat.WriteVector("cluster", clusters_);
-    mat.WriteVector("idx", idx_);
-    mat.WriteVector("constellations", constellations_);
-    mat.WriteVector("hHats", std::vector<std::complex<double>>(append.begin(), append.begin() + 4));
-    mat.WriteComplex("realH", append[4]);
-    mat.Close();
+void
+KMeans::DumpToMat(std::string &filename, std::vector<std::complex<double>> &append) {
+  lab::Mat mat = lab::Mat(filename);
+  mat.Open();
+  mat.WriteVector("data", data_);
+  mat.WriteVector("cluster", clusters_);
+  mat.WriteVector("idx", idx_);
+  mat.WriteVector("constellations", constellations_);
+  mat.WriteVector("hHats", std::vector<std::complex<double>>(append.begin(), append.begin() + 4));
+  mat.WriteComplex("realH", append[4]);
+  mat.Close();
 }
 
 #endif

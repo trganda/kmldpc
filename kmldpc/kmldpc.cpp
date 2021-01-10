@@ -1,9 +1,9 @@
 #include <chrono>
 #include <iostream>
 
-#include "ldpclinearsystem.h"
 #include "log.h"
 #include "randnum.h"
+#include "simulator.h"
 #include "toml.hpp"
 
 int
@@ -29,8 +29,8 @@ main() {
   std::ifstream ifs("config.toml", std::ios_base::binary);
   if (ifs.is_open()) {
     auto arguments = toml::parse(ifs);
-    LDPCLinearSystem simulator(arguments);
-    simulator.Simulator();
+    Simulator simulator(arguments);
+    simulator.Simulate();
     ifs.close();
   } else {
     lab::logger::ERROR("Encouter error while opening config.toml", true);

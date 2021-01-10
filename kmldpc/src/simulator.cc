@@ -1,7 +1,7 @@
-﻿#include "ldpclinearsystem.h"
+﻿#include "simulator.h"
 
-LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
-    : arguments_(std::move(arguments)), codec_(lab::XORSegCodec(arguments_)),
+Simulator::Simulator(toml::value arguments)
+    : arguments_(std::move(arguments)), codec_(XORSegCodec(arguments_)),
       codec_data_(codec_.uu_len(), codec_.cc_len()),
       modem_linear_system_(lab::ModemLinearSystem(arguments_, codec_.cc_len())) {
   const auto range = toml::find(arguments_, "range");
@@ -22,9 +22,9 @@ LDPCLinearSystem::LDPCLinearSystem(toml::value arguments)
 }
 
 void
-LDPCLinearSystem::Simulator() {
+Simulator::Simulate() {
   // Threads number
-  const auto max_threads = (unsigned long) ((max_snr_ - min_snr_) / step_snr_ + 1);
+  const auto max_threads = (unsigned long)((max_snr_ - min_snr_) / step_snr_ + 1);
   // Save simulation results
   std::vector<std::pair<double, double>> ber_result(max_threads);
   std::vector<std::pair<double, double>> fer_result(max_threads);
@@ -36,7 +36,7 @@ LDPCLinearSystem::Simulator() {
   for (unsigned long i = 0; i < max_threads; i++) {
     ber_and_fer[i] = threads_pool.submit(
         std::bind(
-            &LDPCLinearSystem::run, this, std::ref(this->codec_),
+            &Simulator::run, this, std::ref(this->codec_),
             this->modem_linear_system_, std::ref(this->codec_data_),
             (min_snr_ + step_snr_ * i), histogram_enable));
   }
@@ -67,8 +67,8 @@ LDPCLinearSystem::Simulator() {
 }
 
 std::pair<double, double>
-LDPCLinearSystem::run(
-    lab::XORSegCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata,
+Simulator::run(
+    XORSegCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata,
     double snr, bool histogram_enable) {
   //var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
   double var = pow(10.0, -0.1 * (snr));
@@ -109,8 +109,8 @@ LDPCLinearSystem::run(
 }
 
 void
-LDPCLinearSystem::run_blocks(
-    lab::XORSegCodec codec, lab::ModemLinearSystem mls, lab::threadsafe_sourcesink &ssink,
+Simulator::run_blocks(
+    XORSegCodec codec, lab::ModemLinearSystem mls, lab::threadsafe_sourcesink &ssink,
     CodecData cdata, std::fstream &out, double snr, bool histogram_enable,
     const unsigned int max_block) const {
   for (unsigned int i = 0; i < max_block; i++) {
@@ -132,10 +132,10 @@ LDPCLinearSystem::run_blocks(
     if (known_h_) {
       h_hats.push_back(true_h);
     } else {
-	  // Get constellation
-	  auto constellations = mls.constellations();
-	  // Get received symbols
-	  auto received_symbols = mls.GetRecvSymbol();
+      // Get constellation
+      auto constellations = mls.constellations();
+      // Get received symbols
+      auto received_symbols = mls.GetRecvSymbol();
       // KMeans
       kmldpc::KMeans kmeans = kmldpc::KMeans(received_symbols, constellations, 20);
       kmeans.Run();

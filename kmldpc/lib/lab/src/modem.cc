@@ -78,8 +78,8 @@ Modem::DeMapping(
   utility::ProbClip(bitLout, yy_len * input_len_);
 }
 
-std::vector<std::complex<double>>&
-Modem::constellations(){
+std::vector<std::complex<double>> &
+Modem::constellations() {
   return symbol_out_;
 }
 
@@ -112,7 +112,7 @@ Modem::init(const std::string &modem_file) {
     }
     if (sym_dec != temp_dec || sym_dec != i) {
       lab::logger::ERROR(std::string(
-          std::to_string(sym_dec) + " is not the binary expression of " + std::to_string(temp_dec)),
+                             std::to_string(sym_dec) + " is not the binary expression of " + std::to_string(temp_dec)),
                          true);
       exit(-1);
     }

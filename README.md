@@ -4,7 +4,7 @@ Author: marrow1203@gmail.com
 
 This project was develop for lab works. Using a hacked kmeans algorithm for bind-detect and solve the ambiguity.
 
-## Compile && Run
+## Compile && Simulate
 
 compile:
 

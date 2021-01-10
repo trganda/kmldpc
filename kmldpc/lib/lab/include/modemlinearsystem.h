@@ -15,11 +15,11 @@ class ModemLinearSystem : public Modem {
   ModemLinearSystem(const ModemLinearSystem &mls);
   ~ModemLinearSystem() override;
   void PartitionModemLSystem(
-	  const int *cc,
-	  std::vector<std::complex<double>> &select_h);
+      const int *cc,
+      std::vector<std::complex<double>> &select_h);
   void DeMapping(
-	  std::vector<std::pair<int, std::complex<double>>> &thetaList,
-	  double *bitLin, double *bitLout);
+      std::vector<std::pair<int, std::complex<double>>> &thetaList,
+      double *bitLin, double *bitLout);
   std::vector<std::complex<double>> &GetRecvSymbol();
 
  public:
@@ -30,8 +30,8 @@ class ModemLinearSystem : public Modem {
   void SoftDemodulation(std::vector<std::pair<int, std::complex<double>>> &thetaList) const;
   void PartitionHAWGNSystem(std::vector<std::complex<double>> &h);
   void SoftAWGNDemodulation(
-	  const std::complex<double> &yy, double *sym_prob,
-	  std::complex<double> &theta_h) const;
+      const std::complex<double> &yy, double *sym_prob,
+      std::complex<double> &theta_h) const;
 
  private:
   int cc_len_;

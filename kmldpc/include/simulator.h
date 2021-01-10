@@ -1,5 +1,5 @@
-#ifndef KMLDPC_LDPC_LINEAR_SYSTEM_H
-#define KMLDPC_LDPC_LINEAR_SYSTEM_H
+#ifndef KMLDPC_SIMULATOR_H
+#define KMLDPC_SIMULATOR_H
 
 #include "kmeans.h"
 #include "log.h"
@@ -53,19 +53,19 @@ typedef struct CodecData {
   int cc_len_;
 } CodecData;
 
-class LDPCLinearSystem {
+class Simulator {
  public:
-  explicit LDPCLinearSystem(toml::value arguments);
-  virtual ~LDPCLinearSystem() = default;
-  void Simulator();
+  explicit Simulator(toml::value arguments);
+  virtual ~Simulator() = default;
+  void Simulate();
 
  private:
   std::pair<double, double> run(
-      lab::XORSegCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata,
-      double snr, bool histogram_enable);
-  void run_blocks(lab::XORSegCodec codec, lab::ModemLinearSystem mls,
-                  lab::threadsafe_sourcesink &ssink, CodecData cdata,
-                  std::fstream &out, double snr, bool histogram_enable, unsigned int max_block) const;
+      XORSegCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata, double snr,
+      bool histogram_enable);
+  void run_blocks(
+      XORSegCodec codec, lab::ModemLinearSystem mls, lab::threadsafe_sourcesink &ssink, CodecData cdata,
+      std::fstream &out, double snr, bool histogram_enable, unsigned int max_block) const;
 
  private:
   const toml::value arguments_;
@@ -83,7 +83,7 @@ class LDPCLinearSystem {
   unsigned int thread_num_blk_;
   // Known H for simulation
   bool known_h_;
-  lab::XORSegCodec codec_;
+  XORSegCodec codec_;
   CodecData codec_data_;
   lab::ModemLinearSystem modem_linear_system_;
 };

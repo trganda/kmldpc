@@ -20,7 +20,7 @@ class Modem {
   void DeMapping(
       double *bitLin, double *symRin,
       double *bitLout, int yy_len) const;
-  std::vector<std::complex<double>> & constellations();
+  std::vector<std::complex<double>> &constellations();
 
  private:
   void init(const std::string &modem_file);

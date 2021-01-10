@@ -82,7 +82,7 @@ BinaryLDPCCodec::BinaryLDPCCodec(const toml::value &arguments)
   fscanf(fp, "%d %d %d", &num_row_, &num_col_, &code_chk_);
   code_len_ = num_col_;
   code_dim_ = code_len_ - code_chk_;
-  coderate_ = (double) code_dim_ / code_len_;
+  coderate_ = (double)code_dim_ / code_len_;
   row_head_ = new Edge[num_row_];
   col_head_ = new Edge[num_col_];
   syndrom_soft_ = new double[code_dim_];
@@ -481,7 +481,7 @@ BinaryLDPCCodec::SystemMatrixH() {
   }
   code_len_ = num_col_;
   code_dim_ = code_len_ - code_chk_;
-  coderate_ = (double) code_dim_ / code_len_;
+  coderate_ = (double)code_dim_ / code_len_;
   delete[] tempP;
   for (i = 0; i < num_row_; i++) {
     delete[] tempH[i];

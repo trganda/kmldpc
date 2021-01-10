@@ -1,6 +1,5 @@
 #include "xorsegcodec.h"
 
-namespace lab {
 XORSegCodec::XORSegCodec(const XORSegCodec &codec)
     : arguments_(codec.arguments_), iter_cnt_(codec.iter_cnt_), using_ldpc_5g_(codec.using_ldpc_5g_),
       using_syndrom_metric_(codec.using_syndrom_metric_),
@@ -9,9 +8,9 @@ XORSegCodec::XORSegCodec(const XORSegCodec &codec)
     // For unknown reason, the copy constructor of Binary5GLDPCCodec will
     // occurs some memory problem. It's recommend to  use the one-arguments
     // constructor to build a new object.
-    ldpc_codec_ = std::make_unique<Binary5GLDPCCodec>(arguments_);
+    ldpc_codec_ = std::make_unique<lab::Binary5GLDPCCodec>(arguments_);
   } else {
-    ldpc_codec_ = std::make_unique<BinaryLDPCCodec>(*codec.ldpc_codec_);
+    ldpc_codec_ = std::make_unique<lab::BinaryLDPCCodec>(*codec.ldpc_codec_);
   }
   rr_ = new int[cc_len_];
   bit_l_in_ = new double[cc_len_];
@@ -25,13 +24,13 @@ XORSegCodec::XORSegCodec(toml::value arguments)
   using_syndrom_metric_ = toml::find<bool>(xcodec, "metric_type");
   iter_cnt_ = toml::find<int>(xcodec, "metric_iter");
   if (using_ldpc_5g_) {
-    logger::INFO("Using 5G LDPC.", true);
-    auto temp = new Binary5GLDPCCodec(arguments_);
+    lab::logger::INFO("Using 5G LDPC.", true);
+    auto temp = new lab::Binary5GLDPCCodec(arguments_);
     cc_len_ = temp->code_len_puncture();
-    ldpc_codec_ = std::unique_ptr<Binary5GLDPCCodec>(temp);
+    ldpc_codec_ = std::unique_ptr<lab::Binary5GLDPCCodec>(temp);
   } else {
-    logger::INFO("Using traditional LDPC.", true);
-    ldpc_codec_ = std::make_unique<BinaryLDPCCodec>(arguments_);
+    lab::logger::INFO("Using traditional LDPC.", true);
+    ldpc_codec_ = std::make_unique<lab::BinaryLDPCCodec>(arguments_);
     cc_len_ = ldpc_codec_->code_len();
   }
   uu_len_ = ldpc_codec_->code_dim();
@@ -53,19 +52,19 @@ XORSegCodec::Encoder(int *uu, int *cc) {
 
 void
 XORSegCodec::Decoder(
-	ModemLinearSystem &modem_linear_system,
-	const std::vector<std::complex<double>> &h_hats, int *uu_hat) {
+    lab::ModemLinearSystem &modem_linear_system,
+    const std::vector<std::complex<double>> &h_hats, int *uu_hat) {
   std::vector<double> metric_results;
   std::vector<std::pair<int, std::complex<double>>> temp;
   if (h_hats.size() > 1) {
-	metric_results = GetMetrics(modem_linear_system, h_hats, uu_hat);
-	auto minIndex = std::distance(
-		metric_results.begin(),
-		min_element(metric_results.begin(), metric_results.end()));
-	logger::INFO(std::string("hatIndex = " + std::to_string(minIndex)), false);
-	temp = {std::pair<int, std::complex<double>>(0, h_hats[minIndex])};
+    metric_results = GetMetrics(modem_linear_system, h_hats, uu_hat);
+    auto minIndex = std::distance(
+        metric_results.begin(),
+        min_element(metric_results.begin(), metric_results.end()));
+    lab::logger::INFO(std::string("hatIndex = " + std::to_string(minIndex)), false);
+    temp = {std::pair<int, std::complex<double>>(0, h_hats[minIndex])};
   } else {
-	temp = {std::pair<int, std::complex<double>>(0, h_hats[0])};
+    temp = {std::pair<int, std::complex<double>>(0, h_hats[0])};
   }
 
   DeMapping(modem_linear_system, temp);
@@ -74,7 +73,7 @@ XORSegCodec::Decoder(
 
 std::vector<double>
 XORSegCodec::GetHistogramData(
-    ModemLinearSystem &mlsystem,
+    lab::ModemLinearSystem &mlsystem,
     const std::vector<std::complex<double>> &hhats, int *uu_hat) {
   return GetMetrics(mlsystem, hhats, uu_hat);
 }
@@ -91,7 +90,7 @@ XORSegCodec::cc_len() const {
 
 void
 XORSegCodec::DeMapping(
-    ModemLinearSystem &modem_linear_system,
+    lab::ModemLinearSystem &modem_linear_system,
     std::vector<std::pair<int, std::complex<double>>> &thetaList) const {
   // demapping to Get soft information
   for (int i = 0; i < cc_len_; i++) {
@@ -121,7 +120,7 @@ XORSegCodec::GetParityCheck() const {
 
 std::vector<double>
 XORSegCodec::GetMetrics(
-    ModemLinearSystem &modem_linear_system,
+    lab::ModemLinearSystem &modem_linear_system,
     const std::vector<std::complex<double>> &h_hats, int *uu_hat) {
   std::vector<double> metric_results(h_hats.size(), 0);
   std::vector<std::pair<int, std::complex<double>>> temp;
@@ -135,9 +134,9 @@ XORSegCodec::GetMetrics(
            << " Metric = "
            << std::setw(5) << std::right
            << metric_results[i];
-    logger::INFO(stream.str(), false);
+    lab::logger::INFO(stream.str(), false);
     stream.str("");
-    metric_results[i] = abs(metric_results[i]);
+    metric_results[i] = std::abs(metric_results[i]);
   }
   return metric_results;
 }
@@ -162,4 +161,3 @@ XORSegCodec::Metric(int *uu_hat) {
   }
   return metric_result;
 }
-}// namespace lab
