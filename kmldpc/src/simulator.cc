@@ -1,7 +1,7 @@
 ﻿#include "simulator.h"
 
 Simulator::Simulator(toml::value arguments)
-    : arguments_(std::move(arguments)), codec_(XORSegCodec(arguments_)),
+    : arguments_(std::move(arguments)), codec_(KmCodec(arguments_)),
       codec_data_(codec_.uu_len(), codec_.cc_len()),
       modem_linear_system_(lab::ModemLinearSystem(arguments_, codec_.cc_len())) {
   const auto range = toml::find(arguments_, "range");
@@ -68,7 +68,7 @@ Simulator::Simulate() {
 
 std::pair<double, double>
 Simulator::run(
-    XORSegCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata,
+    KmCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata,
     double snr, bool histogram_enable) {
   //var_ = pow(10.0, -0.1 * (snr)) / (codec_.m_coderate * modem_linear_system_.modem_.input_len_);
   double var = pow(10.0, -0.1 * (snr));
@@ -110,7 +110,7 @@ Simulator::run(
 
 void
 Simulator::run_blocks(
-    XORSegCodec codec, lab::ModemLinearSystem mls, lab::threadsafe_sourcesink &ssink,
+    KmCodec codec, lab::ModemLinearSystem mls, lab::threadsafe_sourcesink &ssink,
     CodecData cdata, std::fstream &out, double snr, bool histogram_enable,
     const unsigned int max_block) const {
   for (unsigned int i = 0; i < max_block; i++) {

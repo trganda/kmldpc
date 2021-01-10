@@ -1,6 +1,7 @@
 #ifndef KMLDPC_SIMULATOR_H
 #define KMLDPC_SIMULATOR_H
 
+#include "kmcodec.h"
 #include "kmeans.h"
 #include "log.h"
 #include "modemlinearsystem.h"
@@ -9,7 +10,6 @@
 #include "thread_pool.h"
 #include "threadsafe_sourcesink.h"
 #include "toml.hpp"
-#include "xorsegcodec.h"
 #include <algorithm>
 #include <complex>
 #include <fstream>
@@ -61,10 +61,10 @@ class Simulator {
 
  private:
   std::pair<double, double> run(
-      XORSegCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata, double snr,
+      KmCodec &codec, lab::ModemLinearSystem mls, CodecData &cdata, double snr,
       bool histogram_enable);
   void run_blocks(
-      XORSegCodec codec, lab::ModemLinearSystem mls, lab::threadsafe_sourcesink &ssink, CodecData cdata,
+      KmCodec codec, lab::ModemLinearSystem mls, lab::threadsafe_sourcesink &ssink, CodecData cdata,
       std::fstream &out, double snr, bool histogram_enable, unsigned int max_block) const;
 
  private:
@@ -83,7 +83,7 @@ class Simulator {
   unsigned int thread_num_blk_;
   // Known H for simulation
   bool known_h_;
-  XORSegCodec codec_;
+  KmCodec codec_;
   CodecData codec_data_;
   lab::ModemLinearSystem modem_linear_system_;
 };

@@ -1,6 +1,6 @@
-#include "xorsegcodec.h"
+#include "kmcodec.h"
 
-XORSegCodec::XORSegCodec(const XORSegCodec &codec)
+KmCodec::KmCodec(const KmCodec &codec)
     : arguments_(codec.arguments_), iter_cnt_(codec.iter_cnt_), using_ldpc_5g_(codec.using_ldpc_5g_),
       using_syndrom_metric_(codec.using_syndrom_metric_),
       uu_len_(codec.uu_len_), cc_len_(codec.cc_len_) {
@@ -17,7 +17,7 @@ XORSegCodec::XORSegCodec(const XORSegCodec &codec)
   bit_l_out_ = new double[cc_len_];
 }
 
-XORSegCodec::XORSegCodec(toml::value arguments)
+KmCodec::KmCodec(toml::value arguments)
     : arguments_(std::move(arguments)) {
   const auto xcodec = toml::find(arguments_, "xcodec");
   using_ldpc_5g_ = toml::find<bool>(xcodec, "5gldpc");
@@ -39,19 +39,19 @@ XORSegCodec::XORSegCodec(toml::value arguments)
   bit_l_out_ = new double[cc_len_];
 }
 
-XORSegCodec::~XORSegCodec() {
+KmCodec::~KmCodec() {
   delete[] rr_;
   delete[] bit_l_in_;
   delete[] bit_l_out_;
 }
 
 void
-XORSegCodec::Encoder(int *uu, int *cc) {
+KmCodec::Encoder(int *uu, int *cc) {
   ldpc_codec_->Encoder(uu, cc);
 }
 
 void
-XORSegCodec::Decoder(
+KmCodec::Decoder(
     lab::ModemLinearSystem &modem_linear_system,
     const std::vector<std::complex<double>> &h_hats, int *uu_hat) {
   std::vector<double> metric_results;
@@ -72,24 +72,24 @@ XORSegCodec::Decoder(
 }
 
 std::vector<double>
-XORSegCodec::GetHistogramData(
+KmCodec::GetHistogramData(
     lab::ModemLinearSystem &mlsystem,
-    const std::vector<std::complex<double>> &hhats, int *uu_hat) {
-  return GetMetrics(mlsystem, hhats, uu_hat);
+    const std::vector<std::complex<double>> &h_hats, int *uu_hat) {
+  return GetMetrics(mlsystem, h_hats, uu_hat);
 }
 
 int
-XORSegCodec::uu_len() const {
+KmCodec::uu_len() const {
   return uu_len_;
 }
 
 int
-XORSegCodec::cc_len() const {
+KmCodec::cc_len() const {
   return cc_len_;
 }
 
 void
-XORSegCodec::DeMapping(
+KmCodec::DeMapping(
     lab::ModemLinearSystem &modem_linear_system,
     std::vector<std::pair<int, std::complex<double>>> &thetaList) const {
   // demapping to Get soft information
@@ -102,7 +102,7 @@ XORSegCodec::DeMapping(
 }
 
 int
-XORSegCodec::GetParityCheck() const {
+KmCodec::GetParityCheck() const {
   if (using_ldpc_5g_) {
     return ldpc_codec_->ParityCheck(ldpc_codec_->cc_hat());
   } else {
@@ -119,7 +119,7 @@ XORSegCodec::GetParityCheck() const {
 }
 
 std::vector<double>
-XORSegCodec::GetMetrics(
+KmCodec::GetMetrics(
     lab::ModemLinearSystem &modem_linear_system,
     const std::vector<std::complex<double>> &h_hats, int *uu_hat) {
   std::vector<double> metric_results(h_hats.size(), 0);
@@ -142,7 +142,7 @@ XORSegCodec::GetMetrics(
 }
 
 double
-XORSegCodec::Metric(int *uu_hat) {
+KmCodec::Metric(int *uu_hat) {
   double metric_result = 0.0;
   if (using_syndrom_metric_ == 1) {
     ldpc_codec_->Decoder(bit_l_out_, uu_hat, iter_cnt_);

@@ -13,19 +13,19 @@
 #include <iomanip>
 #include <vector>
 
-class XORSegCodec {
+class KmCodec {
  public:
-  XORSegCodec() = default;
-  XORSegCodec(const XORSegCodec &codec);
-  explicit XORSegCodec(toml::value arguments);
-  virtual ~XORSegCodec();
+  KmCodec() = default;
+  KmCodec(const KmCodec &codec);
+  explicit KmCodec(toml::value arguments);
+  virtual ~KmCodec();
   void Encoder(int *uu, int *cc);
   void Decoder(
       lab::ModemLinearSystem &modem_linear_system, const std::vector<std::complex<double>> &h_hats,
       int *uu_hat);
   std::vector<double> GetHistogramData(
       lab::ModemLinearSystem &mlsystem,
-      const std::vector<std::complex<double>> &hhats, int *uu_hat);
+      const std::vector<std::complex<double>> &h_hats, int *uu_hat);
   int uu_len() const;
   int cc_len() const;
 
